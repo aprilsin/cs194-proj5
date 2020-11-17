@@ -45,50 +45,55 @@ def warp(img, h_matrix) -> np.ndarray:
 
     h, w, c = img.shape
     H,W=range(h),range(w)
-    warped = np.zeros((int(h*1.2),int(w*1.2), c))
-
-    # Interpolation functions
+    
+    # initialize warped img matrix
+    r = 1.8
+    warped = np.zeros((int(h*r),int(w*r), c))
+    print(img.shape)
+    print(warped.shape)
+    
+    # interpolation functions
     f_red, f_green, f_blue = [interpolate.RectBivariateSpline(
         H, W, img[:, :, c]) for c in range(3)]
 
+    # source coordinates
 #     coordinates = np.meshgrid(H,W) # for each pixel
     coordinates = np.array(list(itertools.product(H, W)))
+    src_rr, src_cc = coordinates[:, 0], coordinates[:, 1]
     
     pts_3D = [[x, y, 1] for x, y in coordinates]
-    pts_3D = np.array(pts_3D).T
+    pts_3D = np.array(pts_3D).T # transpose so that each column is [x, y, 1]
+
+    # compute target coordinates
     target_pts = h_matrix @ pts_3D
-    
-    rows = pts_3D.T[:, 0]
-    cols = pts_3D.T[:, 1]
-    print(warped.shape)
-    print(rows.min(), cols.min())
-    print(rows.max(), cols.max())
-    
     # fix w
     target_pts /= target_pts[2]
     
-    rows = target_pts[:, 0]
-    cols = target_pts[:, 1]
-    print(warped.shape)
-    print(rows.min(), cols.min())
-    print(rows.max(), cols.max())
-    
-    target_cc, target_rr = target_pts[:2] # x, y = c, r
-    # normalize
-#     target_rr += abs(rows.min())
-#     target_cc += abs(cols.min())
-    src_rr, src_cc = coordinates[:, 0], coordinates[:, 1]
-    
+    print("=====src=====")
     print(img.shape)
+    print(src_rr.min(), src_cc.min())
     print(src_rr.max(), src_cc.max())
     
-    target_cc = np.int32(np.round(target_cc))
+    target_cc, target_rr = target_pts[:2] # x, y = c, r
+    
     target_rr = np.int32(np.round(target_rr))
+    target_cc = np.int32(np.round(target_cc))
+    if target_rr.min() < 0:
+        target_rr += abs(target_rr.min())
+    if target_cc.min() < 0:
+        target_cc += abs(target_cc.min())
+    
+    print("====target====")
+    print(warped.shape)
+    print(target_rr.min(), target_cc.min())
+    print(target_rr.max(), target_cc.max())
 
     # Interpolate
+    print(target_rr)
+    print(target_cc)
     for i, f in enumerate([f_red, f_green, f_blue]):
-        warped[target_cc, target_rr, i] = f.ev(xi=src_cc, yi=src_rr) # x = cols, y = rows
+        warped[target_rr, target_cc, i] = f.ev(xi=src_cc, yi=src_rr) # x = cols, y = rows
 
-#     warped = np.clip(warped, 0.0, 1.0)
+    warped = np.clip(warped, 0.0, 1.0)
 #     assert_img_type(warped)
     return warped
