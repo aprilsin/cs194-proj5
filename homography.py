@@ -101,9 +101,10 @@ def warp(img, h_matrix, r) -> np.ndarray:
     target_pts = h_matrix @ pts_3D
     target_pts /= target_pts[2] # fix w
     print(f'{target_pts.shape = }')
+    
     target_cc, target_rr = target_pts.T[:, 0], target_pts.T[:, 1] # x, y = c, r
 #     target_cc, target_rr = target_pts[0, :], target_pts[1, :] # x, y = c, r
-    print(target_rr.shape, target_cc.shape)
+#     print(target_rr.shape, target_cc.shape)
     
     # make sure indicies are integers
     target_rr = np.int32(np.round(target_rr))
