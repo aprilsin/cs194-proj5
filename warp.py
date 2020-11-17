@@ -102,9 +102,9 @@ def warp_img(
     target_pts: np.ndarray,
     triangulation: Delaunay,
 ) -> np.ndarray:
-    assert_img_type(img)
-    assert_points(img_pts)
-    assert_points(target_pts)
+#     assert_img_type(img)
+#     assert_points(img_pts)
+#     assert_points(target_pts)
 
     h, w, c = img.shape
     warped = np.zeros_like(img)
