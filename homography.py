@@ -32,14 +32,45 @@ def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
 #     H = H/i
     return H
 
-def target_pts(pts, H):
-    """ Returns target points in forward warping """
-    pts_3D = [[x, y, 1] for x, y in pts]
-    pts_3D = np.array(pts_3D).T
-    target = (H @ pts_3D).T
-    return target[:, :2] # remove 3rd dimension
+def bounding_box(img, H):
+    """ Return the corners of the projected image in H, W domain """
+    h, w, c = img.shape
+    corners_hw = [[0, 0], [0, w], [h, 0], [h, w]] # TODO should there be a minus 1?
+    corners_xy = [[c, r] for r, c in corners_hw] # x, y = c, r
+    print(corners_xy)
+    
+    pts = [[x, y, 1] for x, y in corners_xy]
+    pts = np.array(pts).T
 
-def warp(img, h_matrix) -> np.ndarray:
+    bounds = H @ pts
+    
+    bounds /= bounds[2] # fix w, scaling due to transformation
+    bounds = bounds.T[:, :2] # reshape into the form [[x1, y1], [x2, y2]]
+    
+    # make sure indicies are integers
+    bounds = np.ceil(bounds).astype(np.int64)
+    
+    # shift indices to zero-indexed    
+    min_x = bounds[:, 0].min()
+    min_y = bounds[:, 1].min()
+    bounds[:, 0] += -min_x
+    bounds[:, 1] += -min_y
+    return np.flip(bounds, axis=1) # flip x, y to r, c
+#     return bounds
+
+
+def empty_warp(img, h_matrix, r):
+    h, w, c = img.shape
+    box = bounding_box(img, h_matrix)
+    
+    warp_h, warp_w = box[:, 0].max() + 1, box[:, 1].max() + 1
+    # + 1 since the bounding box needs to be a valid index
+    
+    warp_h, warp_w = int(warp_h * r), int(warp_w * r)
+    return np.zeros((warp_h,warp_w, c))
+    
+    
+def warp(img, h_matrix, r) -> np.ndarray:
 #     assert_img_type(img)
     assert h_matrix.shape == (3, 3)
 
@@ -47,10 +78,7 @@ def warp(img, h_matrix) -> np.ndarray:
     H,W=range(h),range(w)
     
     # initialize warped img matrix
-    r = 1.8
-    warped = np.zeros((int(h*r),int(w*r), c))
-    print(img.shape)
-    print(warped.shape)
+    warped = empty_warp(img, h_matrix, r)
     
     # interpolation functions
     f_red, f_green, f_blue = [interpolate.RectBivariateSpline(
