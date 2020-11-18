@@ -12,8 +12,6 @@ from my_types import assert_points
 
 def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     """Returns a homographic transformation matrix from ptsA to ptsB"""
-    # assert_points(im1_pts, ratio=False)
-    # assert_points(im2_pts, ratio=False)
     assert len(im1_pts) == len(im2_pts)
 
     num_pts = len(im1_pts)
@@ -33,9 +31,8 @@ def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     B = np.array(B)
 
     params, *_ = np.linalg.lstsq(A, B, rcond=None)
-    H = np.reshape(np.hstack((params, [1])), (3, 3))
-    # a, b, c, d, e, f, g, h = params
-    # H = np.array([[a, b, c], [d, e, f], [g, h, 1]])
+    a, b, c, d, e, f, g, h = params
+    H = np.array([[a, b, c], [d, e, f], [g, h, 1]])
     return H
 
 
@@ -70,7 +67,6 @@ def bounding_box(img, H):
 
 
 def warp_mask(img, h_matrix) -> np.ndarray:
-    #     assert_img_type(img)
     assert h_matrix.shape == (3, 3)
 
     h, w, c = img.shape
@@ -78,7 +74,6 @@ def warp_mask(img, h_matrix) -> np.ndarray:
 
     # initialize warped img matrix
     box, row_shift, col_shift = bounding_box(img, h_matrix)
-    print(f"{box = }")
     bound_rows = box[:, 0]
     bound_cols = box[:, 1]
     mask_h, mask_w = bound_rows.max() + 1, bound_cols.max() + 1
@@ -115,7 +110,7 @@ def forward_warp(img, h_matrix) -> np.ndarray:
 
     # Compute Source Coordinates
     print("=====src=====")
-    #     coordinates = np.meshgrid(H,W) # for each pixel
+    # coordinates = np.meshgrid(H,W) # for each pixel
     coordinates = np.array(list(itertools.product(H, W)))
     src_rr, src_cc = coordinates[:, 0], coordinates[:, 1]
 
@@ -150,10 +145,6 @@ def forward_warp(img, h_matrix) -> np.ndarray:
 
     # Do interpolation
     print("=====interpolate=====")
-    print(target_rr)
-    print(target_cc)
-
-    # interpolation functions
     interp_funcs = [
         interpolate.RectBivariateSpline(H, W, img[:, :, c]) for c in range(ch)
     ]
@@ -166,26 +157,23 @@ def forward_warp(img, h_matrix) -> np.ndarray:
 
 
 def fill_holes(warped, src_img, h_matrix):
-    # fill holes due to forward warping
+    """ fill holes formed due to forward warping """
     bound_mask = warp_mask(src_img, h_matrix)
     mask = np.ma.make_mask((bound_mask == 1) & (warped == 0)).astype(np.uint8)
-    # mask = mask.astype(np.int).astype(np.float)
-    #    assert mask.dtype == float, mask.dtype
-    warped = warped.astype(np.float32)
 
+    warped = warped.astype(np.float32)
     filled = np.zeros_like(warped)
+
     for ch in range(3):
         w_ch = warped[:, :, ch].astype(np.float32)
         m_ch = mask[:, :, ch]
-
         filled_ch = cv2.inpaint(w_ch, m_ch, 3, cv2.INPAINT_NS)
         filled[:, :, ch] = filled_ch
-    # filled = np.clip(filled, 0.0, 1.0)
+
     return filled
 
 
 def inverse_warp(img, h_matrix) -> np.ndarray:
-    #     assert_img_type(img)
     assert h_matrix.shape == (3, 3)
 
     h, w, c = img.shape
@@ -237,7 +225,6 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     interp_funcs = [
         interpolate.RectBivariateSpline(H, W, img[:, :, c]) for c in range(3)
     ]
-
     for i, f in enumerate(interp_funcs):
         warped[target_rr, target_cc, i] = f.ev(xi=src_cc, yi=src_rr)
 
