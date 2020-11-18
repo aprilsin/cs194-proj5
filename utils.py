@@ -59,3 +59,11 @@ def load_points(name: os.PathLike) -> np.ndarray:
     name = Path(name)
     pickle_name = name.with_suffix(".pkl")
     return pickle.load(open(pickle_name, "rb"))
+
+def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
+    """
+    Displays the keypoints of an image
+    """
+    plt.imshow(img)
+    plt.scatter(points[:, 0], points[:, 1], marker="o", color="b", s=30)
+    plt.show()
