@@ -15,6 +15,7 @@ from scipy.interpolate import interp2d
 from scipy.spatial import Delaunay
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
+
 from my_types import *
 
 
@@ -59,6 +60,7 @@ def load_points(name: os.PathLike) -> np.ndarray:
     name = Path(name)
     pickle_name = name.with_suffix(".pkl")
     return pickle.load(open(pickle_name, "rb"))
+
 
 def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     """

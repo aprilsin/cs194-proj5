@@ -2,10 +2,7 @@ import copy
 import os
 import pickle
 from pathlib import Path
-from typing import (
-    Sequence,
-    Union,
-)
+from typing import Sequence, Union
 
 import numpy as np
 import skimage.io as io
