@@ -163,12 +163,12 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     
     # compute source coordinates
     print("=====src=====")
+    
     num_pts = len(target_rr)
     target_pts = np.vstack((target_cc, target_rr, np.ones((1, num_pts))))
-
+    
     src_pts = np.linalg.inv(h_matrix) @ target_pts
-    src_cc, src_rr = src_pts.T[:, 0], src_pts.T[:, 1] # x, y = c, r
-    print(src_rr.shape, src_cc.shape)
+    src_rr, src_cc = src_pts.T[:, 0], src_pts.T[:, 1] # in correct order with r, c since inversed
     
     # make sure indicies are integers
     src_rr = np.int32(np.round(src_rr))
