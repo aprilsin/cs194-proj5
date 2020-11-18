@@ -2,6 +2,7 @@ import numpy as np
 from my_types import assert_points
 import itertools
 from scipy import interpolate
+import skimage as sk
 
 def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     """Returns a homographic transformation matrix from ptsA to ptsB"""
@@ -55,13 +56,16 @@ def bounding_box(img, H):
     min_y = bounds[:, 1].min()
     bounds[:, 0] += -min_x
     bounds[:, 1] += -min_y
-    return np.flip(bounds, axis=1) # flip x, y to r, c
+    bounds = np.flip(bounds, axis=1) # flip x, y to r, c
+    row_shift = -min_y
+    col_shift = -min_x
+    return bounds, row_shift, col_shift
 #     return bounds
 
 
 def empty_warp(img, h_matrix, r):
     h, w, c = img.shape
-    box = bounding_box(img, h_matrix)
+    box, _, _ = bounding_box(img, h_matrix)
     
     warp_h, warp_w = box[:, 0].max() + 1, box[:, 1].max() + 1
     # + 1 since the bounding box needs to be a valid index
@@ -70,7 +74,7 @@ def empty_warp(img, h_matrix, r):
     return np.zeros((warp_h,warp_w, c))
     
     
-def warp(img, h_matrix, r) -> np.ndarray:
+def forward_warp(img, h_matrix, r) -> np.ndarray:
 #     assert_img_type(img)
     assert h_matrix.shape == (3, 3)
 
@@ -131,5 +135,63 @@ def warp(img, h_matrix, r) -> np.ndarray:
 
     warped = np.clip(warped, 0.0, 1.0)
 #     assert_img_type(warped)
+    return warped
+
+
+def inverse_warp(img, h_matrix) -> np.ndarray:
+#     assert_img_type(img)
+    assert h_matrix.shape == (3, 3)
+
+    h, w, c = img.shape
+    H,W=range(h),range(w)
+    
+    # initialize warped img matrix
+    box, row_shift, col_shift = bounding_box(img, h_matrix)
+    bound_rows = box[:, 0]
+    bound_cols = box[:, 1]
+    warp_h, warp_w = bound_rows.max() + 1, bound_cols.max() + 1
+    # + 1 since the bounding box needs to be a valid index
+    warped = np.zeros((warp_h, warp_w, c))
+    
+    # compute target coordinates
+    print("====target====")
+    target_rr, target_cc = sk.draw.polygon(bound_rows, bound_cols, shape=(warp_h, warp_w))
+    
+    print(warped.shape)
+    print(target_rr.min(), target_cc.min())
+    print(target_rr.max(), target_cc.max())
+    
+    # compute source coordinates
+    print("=====src=====")
+    num_pts = len(target_rr)
+    target_pts = np.vstack((target_cc, target_rr, np.ones((1, num_pts))))
+
+    src_pts = np.linalg.inv(h_matrix) @ target_pts
+    src_cc, src_rr = src_pts.T[:, 0], src_pts.T[:, 1] # x, y = c, r
+    print(src_rr.shape, src_cc.shape)
+    
+    # make sure indicies are integers
+    src_rr = np.int32(np.round(src_rr))
+    src_cc = np.int32(np.round(src_cc))
+    # shift indices to zero-indexed
+#     src_rr += -src_rr.min()
+#     src_cc += -src_cc.min()
+    
+    print(img.shape)
+    print(src_rr.min(), src_cc.min())
+    print(src_rr.max(), src_cc.max())
+#     print(src_rr.argmin(), src_cc.argmin())
+#     print(src_rr.argmax(), src_cc.argmax())
+#     print(coordinates[src_rr.argmax()])
+#     print(coordinates[src_cc.argmax()])
+
+    # interpolate
+    print("=====interpolate=====")
+    f_red, f_green, f_blue = [interpolate.RectBivariateSpline(
+        H, W, img[:, :, c]) for c in range(3)]
+    
+    for i, f in enumerate([f_red, f_green, f_blue]):
+        warped[target_rr, target_cc, i] = f.ev(xi=src_cc, yi=src_rr)
+        
     return warped
     
