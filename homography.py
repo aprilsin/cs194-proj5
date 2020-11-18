@@ -36,7 +36,7 @@ def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
 def bounding_box(img, H):
     """ Return the corners of the projected image in H, W domain """
     h, w, c = img.shape
-    corners_hw = [[0, 0], [0, w], [h, 0], [h, w]] # TODO should there be a minus 1?
+    corners_hw = [[0, 0], [0, w], [h, w], [h, 0]] # TODO should there be a minus 1?
     corners_xy = [[c, r] for r, c in corners_hw] # x, y = c, r
     print(corners_xy)
     
@@ -195,3 +195,26 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
         
     return warped
     
+def test(img, h_matrix) -> np.ndarray:
+#     assert_img_type(img)
+    assert h_matrix.shape == (3, 3)
+
+    h, w, c = img.shape
+    H,W=range(h),range(w)
+    
+    # initialize warped img matrix
+    box, row_shift, col_shift = bounding_box(img, h_matrix)
+    bound_rows = box[:, 0]
+    bound_cols = box[:, 1]
+    warp_h, warp_w = bound_rows.max() + 1, bound_cols.max() + 1
+    # + 1 since the bounding box needs to be a valid index
+    warped = np.zeros((warp_h, warp_w, c))
+    print(f"{warped.shape = }")
+    
+    # compute target coordinates
+    print("====target====")
+    print(bound_rows)
+    print(bound_cols)
+    target_rr, target_cc = sk.draw.polygon(bound_rows, bound_cols, shape=(warp_h, warp_w))
+    warped[target_rr, target_cc] = 1
+    return warped
