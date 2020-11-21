@@ -71,5 +71,10 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     plt.scatter(points[:, 0], points[:, 1], marker="o", color="b", s=30)
     plt.show()
 
-def load_else_do(file: os.PathLike, func:Callable):
+
+def load_else_do(file: os.PathLike, func: Callable):
     pass
+
+
+def read_img(x):
+    return to_img_arr(x)
