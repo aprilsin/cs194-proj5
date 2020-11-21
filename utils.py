@@ -5,7 +5,7 @@ import pickle
 import re
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -70,3 +70,6 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     plt.imshow(img)
     plt.scatter(points[:, 0], points[:, 1], marker="o", color="b", s=30)
     plt.show()
+
+def load_else_do(file: os.PathLike, func:Callable):
+    pass
