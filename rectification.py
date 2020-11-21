@@ -1,4 +1,5 @@
 import numpy as np
+
 import filters
 
 
@@ -48,8 +49,10 @@ def align(im1, im2, im1_pts, im2_pts):
     assert im1_aligned.shape == im2_aligned.shape
     return im1_aligned, im2_aligned
 
+
 def blend_windows(aligned1_pts, aligned2_pts):
     x, y = aligned1_pts[:, 0], aligned2_pts[:, 1]
+
 
 def stitch(im1, im2, im1_pts, im2_pts, blend_method="two-band"):
     """ Stictch two warped images. All inputs should be warped. """

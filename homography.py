@@ -1,12 +1,13 @@
 import itertools
 
+import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import skimage as sk
-import matplotlib.pyplot as plt
 
 # import skimage.io as io
 from scipy import interpolate
-import cv2
+
 from my_types import assert_points
 
 
