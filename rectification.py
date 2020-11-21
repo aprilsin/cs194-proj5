@@ -22,12 +22,14 @@ def two_band_blend(im1, im2):
 
 def align(im1, im2, im1_pts, im2_pts):
     """ Return two separate images with padding added for alignment. """
-    h1, w1, c1 = im1.shape
-    h2, w2, c2 = im2.shape
-    p1_h, p1_w = im1_pts[:, 0].max(), im1_pts[:, 1].max()
-    p2_h, p2_w = im2_pts[:, 0].max(), im2_pts[:, 1].max()
-
-    im1_pad, im2_pad = ((0, 0), (0, 0), (0, 0)), ((0, 0), (0, 0), (0, 0))
+    im1_pts = np.int32(np.round(im1_pts))
+    im2_pts = np.int32(np.round(im2_pts))
+    
+    # w, h = x, y
+    p1_w, p1_h = im1_pts[:, 0].max(), im1_pts[:, 1].max()
+    p2_w, p2_h = im2_pts[:, 0].max(), im2_pts[:, 1].max()
+    
+    im1_pad, im2_pad = [[0, 0], [0, 0], [0, 0]], [[0, 0], [0, 0], [0, 0]]
     h_diff, w_diff = abs(p1_h - p2_h), abs(p1_w - p2_w)
     if p1_h < p2_h:
         im1_pad[0][0] = h_diff  # pad before
@@ -42,11 +44,13 @@ def align(im1, im2, im1_pts, im2_pts):
     else:
         im2_pad[1][0] = w_diff  # pad before
         im1_pad[1][1] = w_diff  # pad after
-
+    
+    im1_pad = tuple((before, after) for before, after in im1_pad)
+    im2_pad = tuple((before, after) for before, after in im2_pad)
     im1_aligned = np.pad(im1, im1_pad)
     im2_aligned = np.pad(im2, im2_pad)
 
-    assert im1_aligned.shape == im2_aligned.shape
+    assert im1_aligned.shape == im2_aligned.shape, f"{h_diff = }, {w_diff = }\n{im1.shape} -> {im1_aligned.shape} \n {im2.shape} -> {im2_aligned.shape}"
     return im1_aligned, im2_aligned
 
 
