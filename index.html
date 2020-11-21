@@ -12,14 +12,14 @@
 
   <body>
     <h1>CS194 Project 5A: IMAGE WARPING and MOSAICING </h1>
-    <h2>April Sin</h2>
+    <h1 style="font-size: 24px">April Sin</h1>
 
-    <h3>Overview</h3>
+    <h2>Overview</h2>
 
     <p>The goal of this part is to blend two images of the same scene togeter.
       we can </p>
 
-    <h3>Part 1: Pick Correspondences</h3>
+    <h2>Part 1: Pick Correspondences</h2>
 
     <p>In this first part, we first pick
       correspondences by hand and then use those points to compute homography matrices. Since perspective transformation
@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <h3>Part 2: Homography Matrices</h3>
+    <h2>Part 2: Homography Matrices</h2>
 
     <div class="row">
       <div class="clear" <p class=left>The simplest angle for stitching is the frontal plane. We want to warp the two
@@ -50,53 +50,97 @@
     </div>
 
     <p>Using the matrices,
-      I performed forward warping on the input images. I first tried using inverse warping, but parts of the image is
-      always cut out and I will need to scale each edge by trial and error.</p>
+      I performed forward warping on the input images. I first tried using inverse warping, but parts of the image are
+      always cut out and I will need to scale each edge by trial and error. I ended up using <code>cv2.inpaint</code>
+      with the mask shown below.</p>
+    <div class="row">
+      <div class="column">
+        <img src="web_imgs/inverse.png" alt="inverse warp" />
+        <figcaption>inverse warped image 1 </figcaption>
+      </div>
+      <div class="column">
+        <img src="web_imgs/forward.png" alt="forward warp" />
+        <figcaption>forward warped image 1</figcaption>
+      </div>
+      <div class="column">
+        <img src="web_imgs/forward_mask.png" alt="forward warp" />
+        <figcaption>forward warp mask</figcaption>
+      </div>
+    </div>
+
+    <h3>Here are the results of warping.</h3>
     <div class="row">
       <div class="column">
         <img src="web_imgs/doll1_warped.png" alt="warped 1" />
-        <figcaption>warped image 1</figcaption>
+        <figcaption>warped image 1 </figcaption>
       </div>
       <div class="column">
-        <img src="output/doll2_warped.png" alt="warped 2" />
+        <img src="web_imgs/doll2_warped.png" alt="warped 2" />
         <figcaption>warped image 2</figcaption>
       </div>
     </div>
-    <h3>Part 2: Rectification and Stitching </h3>
-    <p>TODO: write about part 2</p>
-    <p>TODO: add results</p>
+
+    <h2>Part 2: Rectification and Stitching </h2>
+    <p>To create a mosaic, I first aligned the images by padding the images. Then blended the two images with
+      alpha-blending.</p>
     <div class="row">
       <div class="column">
-        <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-        <figcaption>Test</figcaption>
+        <img src="web_imgs/doll_aligned.png" alt="aligned" />
+        <figcaption>aligned</figcaption>
       </div>
       <div class="column">
-        <img src="img_forest.jpg" alt="Forest" />
-        <figcaption>Test</figcaption>
+        <img src="web_imgs/doll_mask.png" alt="mask" />
+        <figcaption>blending mask</figcaption>
       </div>
       <div class="column">
-        <img src="img_mountains.jpg" alt="Mountains" />
-        <figcaption>Test</figcaption>
+        <img src="web_imgs/doll_blend.png" alt="blended" />
+        <figcaption>blended</figcaption>
       </div>
     </div>
-    <h3>Part 3: ______</h3>
-    <p>TODO: write about part 3</p>
-    <p>TODO: add results</p>
+    <h2>More Mosaics</h2>
     <div class="row">
       <div class="column">
-        <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-        <figcaption>Test</figcaption>
+        <img src="web_imgs/plush1.jpg" alt="input 1" />
+        <figcaption>input 1</figcaption>
       </div>
       <div class="column">
-        <img src="img_forest.jpg" alt="Forest" />
-        <figcaption>Test</figcaption>
+        <img src="web_imgs/plush2.jpg" alt="input 2" />
+        <figcaption>input 2</figcaption>
       </div>
       <div class="column">
-        <img src="img_mountains.jpg" alt="Mountains" />
-        <figcaption>Test</figcaption>
+        <img src="web_imgs/plush_blend.jpg" alt="mosaic" />
+        <figcaption>mosaic</figcaption>
       </div>
     </div>
-    <h3>Bells and Whisles</h3>
+    <div class="row">
+      <div class="column">
+        <img src="web_imgs/plush1.jpg" alt="input 1" />
+        <figcaption>input 1</figcaption>
+      </div>
+      <div class="column">
+        <img src="web_imgs/plush2.jpg" alt="input 2" />
+        <figcaption>input 2</figcaption>
+      </div>
+      <div class="column">
+        <img src="web_imgs/plush_blend.jpg" alt="mosaic" />
+        <figcaption>mosaic</figcaption>
+      </div>
+    </div>
+    <div class="row">
+      <div class="column">
+        <img src="web_imgs/plush1.jpg" alt="input 1" />
+        <figcaption>input 1</figcaption>
+      </div>
+      <div class="column">
+        <img src="web_imgs/plush2.jpg" alt="input 2" />
+        <figcaption>input 2</figcaption>
+      </div>
+      <div class="column">
+        <img src="web_imgs/plush_blend.jpg" alt="mosaic" />
+        <figcaption>mosaic</figcaption>
+      </div>
+    </div>
+    <h2>Bells and Whisles</h2>
     <p>TODO: write something</p>
     <p>TODO: add results</p>
     </div>

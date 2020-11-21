@@ -10,16 +10,14 @@ body {
   margin-top: 5%;
 }
 
-h1,
-h2 {
+h1 {
   font-family: "Actor";
-  color: black;
   text-align: center;
 }
 
-h3 {
+h2 {
   padding-top: 20px;
-  font-size: 130%;
+  color: #ffa2a2;
 }
 
 img {
@@ -61,6 +59,10 @@ figcaption {
 .row {
   display: flex;
   flex-direction: row;
+}
+
+.row img {
+  height: 250px;
 }
 
 .column {
