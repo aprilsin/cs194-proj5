@@ -21,8 +21,8 @@ def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     for (x1, y1), (x2, y2) in zip(im1_pts, im2_pts):
         row1 = [x1, y1, 1, 0, 0, 0, -x1 * x2, -y1 * x2]
         row2 = [0, 0, 0, x1, y1, 1, -x1 * y2, -y1 * y2]
-        # row1 = [-x1, -y1, -1, 0, 0, 0, x1 * x2, y1 * x2]
-        # row2 = [0, 0, 0, -x1, -y1, -1, x1 * y2, y1 * y2]
+        #         row1 = [-x1, -y1, -1, 0, 0, 0, x1 * x2, y1 * x2]
+        #         row2 = [0, 0, 0, -x1, -y1, -1, x1 * y2, y1 * y2]
         A.append(row1)
         A.append(row2)
         B.extend((x2, y2))
@@ -152,8 +152,12 @@ def forward_warp(img, h_matrix) -> np.ndarray:
         # x = rows, y = cols for forward warping
         warped[target_rr, target_cc, i] = f.ev(xi=src_rr, yi=src_cc)
 
+    # fill gaps caused by forward warping
+    if fill:
+        warped = fill_holes(warped, img, h_matrix)
+
     warped = np.clip(warped, 0.0, 1.0)
-    return warped
+    return warped, [col_shift, row_shift]  # x, y = c, r
 
 
 def fill_holes(warped, src_img, h_matrix):
@@ -185,12 +189,15 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     bound_cols = box[:, 1]
     warp_h, warp_w = bound_rows.max() + 1, bound_cols.max() + 1
     # + 1 since the bounding box needs to be a valid index
+
+    hr, wr = 1, 1
+    warp_h, warp_w = int(warp_h * hr), int(warp_w * wr)
     warped = np.zeros((warp_h, warp_w, c))
 
     # compute target coordinates
     print("====target====")
     target_rr, target_cc = sk.draw.polygon(
-        bound_rows, bound_cols, shape=(warp_h, warp_w)
+        bound_rows * hr, bound_cols * wr, shape=(warp_h, warp_w)
     )
 
     print(warped.shape)
@@ -215,6 +222,8 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     # shift indices to zero-indexed
     src_rr += -src_rr.min()
     src_cc += -src_cc.min()
+    # src_rr -= row_shift
+    # src_cc -= col_shift
 
     print(img.shape)
     print(src_rr.min(), src_cc.min())
