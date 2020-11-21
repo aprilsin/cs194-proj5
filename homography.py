@@ -99,7 +99,18 @@ def empty_warp(img, h_matrix):
     return np.zeros((warp_h, warp_w, c))
 
 
-def forward_warp(img, h_matrix) -> np.ndarray:
+def warp_pts(pts, h_matrix, pts_shift):
+    print(pts)
+    pts_3D = [[x, y, 1] for x, y in pts]  # x, y = c, r
+    pts_3D = np.array(pts_3D).T  # so that each column is [x, y, 1]
+    print(pts_3D)
+    target_pts = h_matrix @ pts_3D
+    target_pts /= target_pts[2]  # fix w, scaling due to transformation
+    print(target_pts)
+    return np.add(target_pts.T[:, :2], pts_shift)
+
+
+def forward_warp(img, h_matrix, fill=True) -> np.ndarray:
     assert h_matrix.shape == (3, 3)
 
     h, w, ch = img.shape
@@ -132,8 +143,10 @@ def forward_warp(img, h_matrix) -> np.ndarray:
     target_rr = np.int32(np.round(target_rr))
     target_cc = np.int32(np.round(target_cc))
     # shift indices to zero-indexed
-    target_rr += -target_rr.min()
-    target_cc += -target_cc.min()
+    row_shift = -target_rr.min()
+    col_shift = -target_cc.min()
+    target_rr += row_shift
+    target_cc += col_shift
 
     print(warped.shape)
     print(target_rr.min(), target_cc.min())
