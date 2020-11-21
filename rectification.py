@@ -2,36 +2,14 @@ import numpy as np
 
 import filters
 
-
-def blend(im1, im2, method):
-    """ Blend two images together """
-    if method == "two-band":
-        return two_band_blend(im1, im2)
-    else:
-        return None
-
-
-def two_band_blend(im1, im2):
-    assert im1.shape == im2.shape
-    low1 = filters.gaussian_filter(im1)
-    low2 = filters.gaussian_filter(im2)
-    high1 = filters.unsharp_mask_filter(im1)
-    high2 = filters.unsharp_mask_filter(im2)
-    return np.sum([low1, low2, high1, high2])
-
-def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
-    """ 
-    Returns two separate images with padding added for alignment.
-    Input points should be standardized. (using the same coordinate system / warped)
-    """
-    im1, im2 = warped_im1, warped_im2
-    im1_pts = np.int32(np.round(warped_im1_pts))
-    im2_pts = np.int32(np.round(warped_im2_pts))
-    aligned_pts1, aligned_pts2 = im1_pts.copy(), im2_pts.copy()
+def match_shift(im1, im2, pts1, pts2):
+    pts1 = np.int32(np.round(pts1))
+    pts2 = np.int32(np.round(pts2))
+    aligned_pts1, aligned_pts2 = pts1.copy(), pts2.copy()
 
     # w, h = x, y
-    p1_w, p1_h = im1_pts[:, 0].max(), im1_pts[:, 1].max()
-    p2_w, p2_h = im2_pts[:, 0].max(), im2_pts[:, 1].max()
+    p1_w, p1_h = pts1[:, 0].max(), pts1[:, 1].max()
+    p2_w, p2_h = pts2[:, 0].max(), pts2[:, 1].max()
 
     im1_pad, im2_pad = [[0, 0], [0, 0], [0, 0]], [[0, 0], [0, 0], [0, 0]]
 
@@ -56,12 +34,68 @@ def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
     
     im1_pad = tuple((before, after) for before, after in im1_pad)
     im2_pad = tuple((before, after) for before, after in im2_pad)
-    im1_aligned = np.pad(im1, im1_pad)
-    im2_aligned = np.pad(im2, im2_pad)
+    im1_shifted = np.pad(im1, im1_pad)
+    im2_shifted = np.pad(im2, im2_pad)
 
-    assert im1_aligned.shape == im2_aligned.shape, f"{h_diff = }, {w_diff = }\n{im1.shape} -> {im1_aligned.shape} \n {im2.shape} -> {im2_aligned.shape}"
-    return im1_aligned, im2_aligned
+    assert np.equal(aligned_pts1, aligned_pts2).all(), (aligned_pts1, aligned_pts2)
+    return im1_shifted, im2_shifted
 
+
+def match_shape(im1, im2):
+    h1, w1, c1 = im1.shape
+    h2, w2, c2 = im2.shape
+    assert c1 == c2, (im1.shape, im2.shape)
+
+    im1_pad, im2_pad = [[0, 0], [0, 0], [0, 0]], [[0, 0], [0, 0], [0, 0]]
+    
+    h_diff, w_diff = abs(h1 - h2), abs(w1 - w2)
+
+    if h1 < h2:
+        im1_pad[0][1] = h_diff  # pad after
+    else:
+        im2_pad[0][1] = h_diff  # pad after
+
+    if w1 < w2:
+        im1_pad[1][1] = w_diff  # pad after
+    else:
+        im2_pad[1][1] = w_diff  # pad after
+    
+    im1_pad = tuple((before, after) for before, after in im1_pad)
+    im2_pad = tuple((before, after) for before, after in im2_pad)
+    im1_matched = np.pad(im1, im1_pad)
+    im2_matched = np.pad(im2, im2_pad)
+
+    assert im1_matched.shape == im2_matched.shape, (im1_matched.shape, im2_matched.shape)
+    return im1_matched, im2_matched
+    
+def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
+    """ 
+    Returns two separate images with padding added for alignment.
+    Input points should be standardized. (using the same coordinate system / warped)
+    """
+    im1, im2, pts1, pts2 = warped_im1, warped_im2, warped_im1_pts, warped_im2_pts
+    
+    im1, im2 = match_shift(im1, im2, pts1, pts2)
+    im1, im2 = match_shape(im1, im2)
+
+    return im1, im2
+
+
+def blend(im1, im2, method):
+    """ Blend two images together """
+    if method == "two-band":
+        return two_band_blend(im1, im2)
+    else:
+        return None
+
+
+def two_band_blend(im1, im2):
+    assert im1.shape == im2.shape
+    low1 = filters.gaussian_filter(im1)
+    low2 = filters.gaussian_filter(im2)
+    high1 = filters.unsharp_mask_filter(im1)
+    high2 = filters.unsharp_mask_filter(im2)
+    return np.sum([low1, low2, high1, high2])
 
 def blend_windows(aligned1_pts, aligned2_pts):
     x, y = aligned1_pts[:, 0], aligned2_pts[:, 1]
