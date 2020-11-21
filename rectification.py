@@ -90,8 +90,19 @@ def blend_windows(aligned1_pts, aligned2_pts):
     x, y = aligned1_pts[:, 0], aligned2_pts[:, 1]
 
 
-def alpha_blend(im1, im2, mask, alpha):
-    pass
+def overlap(im1, im2):
+    assert im1.shape == im2.shape, (im1.shape, im2.shape)
+    tmp1 = np.where(im1 != 0, True, False)
+    tmp2 = np.where(im2 != 0, True, False)
+    overlap = np.where(tmp1 & tmp2, 1.0, 0.0)
+    return overlap
+
+
+def alpha_blend(im1, im2, mask):
+    mask = filters.gauss_blur(overlap(im1, im2))
+    base = (1 - mask) * (im1 + im2)
+    blend = mask * (im1 * 0.5 + im2 * 0.5)
+    return np.clip(np.add(base, blend), 0.0, 1.0)
 
 
 def two_band_blend(im1, im2):
