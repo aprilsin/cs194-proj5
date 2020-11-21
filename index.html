@@ -1,73 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="mystyle.css" />
     <title>
-      CS194 Project _: PROJECT TITLE
+      CS194 Project 5: [Auto]stitching and Photo Mosaics
     </title>
   </head>
+
   <body>
     <h1>CS194 Project 5A: IMAGE WARPING and MOSAICING </h1>
     <h2>April Sin</h2>
 
     <h3>Overview</h3>
-    <p>Write overview here</p>
-    <h3>Part 1: Pick Correspondences and Warp </h3>
-    <p>TODO: write about part 1</p>
-    <p>TODO: add results</p>
+
+    <p>The goal of this part is to blend two images of the same scene togeter.
+      we can </p>
+
+    <h3>Part 1: Pick Correspondences</h3>
+
+    <p>In this first part, we first pick
+      correspondences by hand and then use those points to compute homography matrices. Since perspective transformation
+      has 8 degrees of freedom, we need at least 4 correspondences to compute the homography matrix. Here are the input
+      imager and the points I picked.</p>
     <div class="row">
       <div class="column">
-        <img src="output/doll1_pts.png" alt="input 1" />
+        <img src="web_imgs/doll1.png" alt="input 1" />
         <figcaption>input image 1</figcaption>
       </div>
       <div class="column">
-        <img src="output/doll2_pts.png" alt="input 2" />
+        <img src="web_imgs/doll2.png" alt="input 2" />
         <figcaption>input image 2</figcaption>
       </div>
+    </div>
+
+    <h3>Part 2: Homography Matrices</h3>
+
+    <div class="row">
+      <div class="clear" <p class=left>The simplest angle for stitching is the frontal plane. We want to warp the two
+        images onto the same
+        front view camera angle. </p>
+
+        <p>My input image size is <code>780x1000</code> and the points are
+          <code>[[360,  70], [360, 306], [560 , 306], [560,  70]]</code> </p>
+      </div>
+      <img id="canvas" src="web_imgs/plane.png" />
+    </div>
+
+    <p>Using the matrices,
+      I performed forward warping on the input images. I first tried using inverse warping, but parts of the image is
+      always cut out and I will need to scale each edge by trial and error.</p>
+    <div class="row">
       <div class="column">
-        <img src="output/doll1_warped.png" alt="warped 1" />
+        <img src="web_imgs/doll1_warped.png" alt="warped 1" />
         <figcaption>warped image 1</figcaption>
       </div>
+      <div class="column">
+        <img src="output/doll2_warped.png" alt="warped 2" />
+        <figcaption>warped image 2</figcaption>
       </div>
-        <h3>Part 2: Rectification and Stitching </h3>
-        <p>TODO: write about part 2</p>
-        <p>TODO: add results</p>
-        <div class="row">
-          <div class="column">
-            <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-            <figcaption>Test</figcaption>
-          </div>
-          <div class="column">
-            <img src="img_forest.jpg" alt="Forest" />
-            <figcaption>Test</figcaption>
-          </div>
-          <div class="column">
-            <img src="img_mountains.jpg" alt="Mountains" />
-            <figcaption>Test</figcaption>
-          </div>
+    </div>
+    <h3>Part 2: Rectification and Stitching </h3>
+    <p>TODO: write about part 2</p>
+    <p>TODO: add results</p>
+    <div class="row">
+      <div class="column">
+        <img src="imm_face_db/01-1m.jpg" alt="Snow" />
+        <figcaption>Test</figcaption>
       </div>
-          <h3>Part 3: ______</h3>
-          <p>TODO: write about part 3</p>
-          <p>TODO: add results</p>
-          <div class="row">
-            <div class="column">
-              <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-              <figcaption>Test</figcaption>
-            </div>
-            <div class="column">
-              <img src="img_forest.jpg" alt="Forest" />
-              <figcaption>Test</figcaption>
-            </div>
-            <div class="column">
-              <img src="img_mountains.jpg" alt="Mountains" />
-              <figcaption>Test</figcaption>
-            </div>
+      <div class="column">
+        <img src="img_forest.jpg" alt="Forest" />
+        <figcaption>Test</figcaption>
       </div>
-            <h3>Bells and Whisles</h3>
-            <p>TODO: write something</p>
-            <p>TODO: add results</p>
+      <div class="column">
+        <img src="img_mountains.jpg" alt="Mountains" />
+        <figcaption>Test</figcaption>
+      </div>
+    </div>
+    <h3>Part 3: ______</h3>
+    <p>TODO: write about part 3</p>
+    <p>TODO: add results</p>
+    <div class="row">
+      <div class="column">
+        <img src="imm_face_db/01-1m.jpg" alt="Snow" />
+        <figcaption>Test</figcaption>
+      </div>
+      <div class="column">
+        <img src="img_forest.jpg" alt="Forest" />
+        <figcaption>Test</figcaption>
+      </div>
+      <div class="column">
+        <img src="img_mountains.jpg" alt="Mountains" />
+        <figcaption>Test</figcaption>
+      </div>
+    </div>
+    <h3>Bells and Whisles</h3>
+    <p>TODO: write something</p>
+    <p>TODO: add results</p>
     </div>
   </body>
+
 </html>
