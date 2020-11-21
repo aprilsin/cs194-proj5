@@ -67,7 +67,8 @@ def match_shape(im1, im2):
 
     assert im1_matched.shape == im2_matched.shape, (im1_matched.shape, im2_matched.shape)
     return im1_matched, im2_matched
-    
+
+
 def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
     """ 
     Returns two separate images with padding added for alignment.
@@ -81,26 +82,32 @@ def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
     return im1, im2
 
 
-def blend(im1, im2, method):
+
+def blend_windows(aligned1_pts, aligned2_pts):
+    x, y = aligned1_pts[:, 0], aligned2_pts[:, 1]
+    
+def alpha_blend(im1, im2, mask, alpha):
+    pass
+
+def two_band_blend(im1, im2):
+    assert im1.shape == im2.shape
+    
+    low1 = filters.gauss_blur(im1)
+    low2 = filters.gauss_blur(im2)
+    high1 = filters.unsharp_mask(im1)
+    high2 = filters.unsharp_mask(im2)
+    
+    return np.add(low1, np.add(low2, np.add(high1, high2)))
+
+
+def blend(im1, im2, method="two-band"):
     """ Blend two images together """
     if method == "two-band":
         return two_band_blend(im1, im2)
     else:
         return None
-
-
-def two_band_blend(im1, im2):
-    assert im1.shape == im2.shape
-    low1 = filters.gaussian_filter(im1)
-    low2 = filters.gaussian_filter(im2)
-    high1 = filters.unsharp_mask_filter(im1)
-    high2 = filters.unsharp_mask_filter(im2)
-    return np.sum([low1, low2, high1, high2])
-
-def blend_windows(aligned1_pts, aligned2_pts):
-    x, y = aligned1_pts[:, 0], aligned2_pts[:, 1]
-
-
+    
+    
 def stitch(im1, im2, im1_pts, im2_pts, blend_method="two-band"):
     """ Stictch two warped images. All inputs should be warped. """
     im1, im2 = align(im1, im2, im1_pts, im2_pts)
