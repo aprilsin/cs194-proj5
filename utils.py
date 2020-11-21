@@ -78,3 +78,11 @@ def load_else_do(file: os.PathLike, func: Callable):
 
 def read_img(x):
     return to_img_arr(x)
+
+
+def show_two(im1, im2):
+    fig = plt.figure(figsize=(12, 12))
+    p1 = fig.add_subplot(1, 2, 1)
+    p1.imshow(im1)
+    p2 = fig.add_subplot(1, 2, 2)
+    p2.imshow(im2)

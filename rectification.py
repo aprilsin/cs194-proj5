@@ -124,8 +124,9 @@ def blend(im1, im2, method="two-band"):
         return None
 
 
-def stitch(im1, im2, im1_pts, im2_pts, blend_method="two-band"):
+def stitch(im1, im2, im1_pts, im2_pts):
     """ Stictch two warped images. All inputs should be warped. """
-    im1, im2 = align(im1, im2, im1_pts, im2_pts)
-    mosaic = blend(im1, im2, blend_method)
+    
+    align1, align2 = align(im1, im2, im1_pts, im2_pts)
+    mosaic = alpha_blend(im1, im2, mask=overlap(align1, align2))
     return mosaic
