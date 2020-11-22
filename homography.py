@@ -22,8 +22,8 @@ def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     for (x1, y1), (x2, y2) in zip(im1_pts, im2_pts):
         row1 = [x1, y1, 1, 0, 0, 0, -x1 * x2, -y1 * x2]
         row2 = [0, 0, 0, x1, y1, 1, -x1 * y2, -y1 * y2]
-        #         row1 = [-x1, -y1, -1, 0, 0, 0, x1 * x2, y1 * x2]
-        #         row2 = [0, 0, 0, -x1, -y1, -1, x1 * y2, y1 * y2]
+        # row1 = [-x1, -y1, -1, 0, 0, 0, x1 * x2, y1 * x2]
+        # row2 = [0, 0, 0, -x1, -y1, -1, x1 * y2, y1 * y2]
         A.append(row1)
         A.append(row2)
         B.extend((x2, y2))
@@ -35,36 +35,6 @@ def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     a, b, c, d, e, f, g, h = params
     H = np.array([[a, b, c], [d, e, f], [g, h, 1]])
     return H
-
-
-def bounding_box(img, H):
-    """ Return the corners of the projected image in H, W domain """
-    h, w, c = img.shape
-    corners_hw = [[0, 0], [0, w - 1], [h - 1, w - 1], [h - 1, 0]]
-    corners_xy = [[c, r] for r, c in corners_hw]  # x, y = c, r
-
-    corners = [[x, y, 1] for x, y in corners_xy]
-    corners = np.array(corners).T  # so that each column is [x, y, 1]
-
-    bounds = H @ corners
-
-    bounds /= bounds[2]  # fix w, scaling due to transformation
-    bounds = bounds.T[:, :2]  # reshape into the form [[x1, y1], [x2, y2]]
-
-    # make sure indices are integers
-    bounds = np.ceil(bounds).astype(np.int64)
-
-    # shift indices to zero-indexed
-    min_x = bounds[:, 0].min()
-    min_y = bounds[:, 1].min()
-
-    bounds[:, 0] += -min_x
-    bounds[:, 1] += -min_y
-
-    bounds = np.flip(bounds, axis=1)  # flip x, y to r, c
-    row_shift = -min_y
-    col_shift = -min_x
-    return bounds, row_shift, col_shift
 
 
 def warp_mask(img, h_matrix) -> np.ndarray:
@@ -188,6 +158,39 @@ def fill_holes(warped, src_img, h_matrix):
     return filled
 
 
+def bounding_box(img, H):
+    """ Return the corners of the projected image in H, W domain """
+    h, w, c = img.shape
+    corners_hw = [
+        [0, 0],
+        [0, w - 1],
+        [h - 1, w - 1],
+        [h - 1, 0],
+    ]  # in this order for polygon
+    corners_xy = [[c, r] for r, c in corners_hw]  # x, y = c, r
+
+    corners = [[x, y, 1] for x, y in corners_xy]
+    corners = np.array(corners).T  # so that each column is [x, y, 1]
+
+    bounds = H @ corners
+
+    bounds /= bounds[2]  # fix w, scaling due to transformation
+    bounds = bounds.T[:, :2]  # reshape into the form [[x1, y1], [x2, y2]]
+
+    # make sure indices are integers
+    bounds = np.round(bounds).astype(np.int64)
+
+    # shift indices to zero-indexed
+    x_shift = -bounds[:, 0].min()
+    y_shift = -bounds[:, 1].min()
+
+    # bounds[:, 0] += x_shift
+    # bounds[:, 1] += y_shift
+    bounds = np.flip(bounds, axis=1)  # flip x, y to r, c
+
+    return bounds, x_shift, y_shift
+
+
 def inverse_warp(img, h_matrix) -> np.ndarray:
     assert h_matrix.shape == (3, 3)
 
@@ -195,14 +198,15 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     H, W = range(h), range(w)
 
     # initialize warped img matrix
-    box, row_shift, col_shift = bounding_box(img, h_matrix)
-    bound_rows = box[:, 0]
-    bound_cols = box[:, 1]
+    box, x_shift, y_shift = bounding_box(img, h_matrix)
+    row_shift, col_shift = y_shift, x_shift
+
+    bound_rows, bound_cols = box[:, 0], box[:, 1]
     warp_h, warp_w = bound_rows.max() + 1, bound_cols.max() + 1
     # + 1 since the bounding box needs to be a valid index
 
     hr, wr = 1, 1
-    warp_h, warp_w = int(warp_h * hr), int(warp_w * wr)
+    warp_h, warp_w = int(np.ceil(warp_h * hr)), int(np.ceil(warp_w * wr))
     warped = np.zeros((warp_h, warp_w, c))
 
     # compute target coordinates
@@ -210,6 +214,10 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     target_rr, target_cc = sk.draw.polygon(
         bound_rows * hr, bound_cols * wr, shape=(warp_h, warp_w)
     )
+
+    # reverse shifting to get the original trasformed values
+    target_rr -= row_shift
+    target_cc -= col_shift
 
     print(warped.shape)
     print(target_rr.min(), target_cc.min())
@@ -222,19 +230,16 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     target_pts = np.vstack((target_cc, target_rr, np.ones((1, num_pts))))
 
     src_pts = np.linalg.inv(h_matrix) @ target_pts
-    src_rr, src_cc = (
-        src_pts.T[:, 0],
-        src_pts.T[:, 1],
-    )  # in correct order with r, c since inversed
+    src_cc, src_rr = src_pts.T[:, 0], src_pts.T[:, 1]
 
     # make sure indices are integers
     src_rr = np.int32(np.round(src_rr))
     src_cc = np.int32(np.round(src_cc))
     # shift indices to zero-indexed
+    # src_rr += row_shift
+    # src_cc += col_shift
     src_rr += -src_rr.min()
     src_cc += -src_cc.min()
-    # src_rr -= row_shift
-    # src_cc -= col_shift
 
     print(img.shape)
     print(src_rr.min(), src_cc.min())
@@ -248,4 +253,4 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     for i, f in enumerate(interp_funcs):
         warped[target_rr, target_cc, i] = f.ev(xi=src_cc, yi=src_rr)
 
-    return warped
+    return warped, [col_shift, row_shift]
