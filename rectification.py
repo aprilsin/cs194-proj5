@@ -120,7 +120,7 @@ def two_band_blend(im1, im2):
     high1 = im1 - low1
     high2 = im2 - low2
     high = overlap * (high1 + high2)
-    
+
     result = low + high + base
     return np.clip(result, 0.0, 1.0)
 
