@@ -1,9 +1,5 @@
-import argparse
-import math
 import os
 import pickle
-import re
-import sys
 from pathlib import Path
 from typing import Callable, Optional, Tuple, Union
 
@@ -16,14 +12,19 @@ from scipy.spatial import Delaunay
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
 
-from my_types import to_img_arr
+ToImgArray = Union[str, Path, os.PathLike]
 
 
-def read_img(im_name: os.PathLike, gray=False):
+def read_img(x: ToImgArray, gray=False):
+    assert isinstance(x, (str, Path, os.PathLike)), f"Didn't expect type {type(x)}"
+
+    x = Path(x)
+    assert x.suffix in (".jpeg", ".jpg"), x.suffix
+
     if gray:
-        img = io.imread(im_name, as_gray=True)
+        img = io.imread(x, as_gray=True)
     else:
-        img = io.imread(im_name)
+        img = io.imread(x)
     return img_as_float(img)
 
 
@@ -31,7 +32,7 @@ def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarr
     """
     Returns an array of points for one image with ginput
     """
-    img = to_img_arr(img)
+    img = read_img(img)
     print(f"Please select {num_pts} points in image.")
     plt.imshow(img)
     points = plt.ginput(num_pts, timeout=0)  # never timeout
