@@ -1,6 +1,8 @@
 import argparse
-import os
 import sys
+import os
+import homography, rectification
+from pathlib import Path
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -53,7 +55,6 @@ if __name__ == "__main__":
         f"""
 stitching {num_imgs} images for {name}...
     detection-method = {args.detection}
-    stitching-method = {args.stitch}
     """
     )
 
@@ -61,22 +62,23 @@ stitching {num_imgs} images for {name}...
     DATA = Path("data")
     OUTDIR = Path("output")
     assert DATA.exists()
-    assert CACHE.exists()
     assert OUTDIR.exists()
     (DATA / name).mkdir(parents=False, exist_ok=True)
 
     # read images to arrays
-    imgs = [utils.reag_img(im) for im in args.images]
+    imgs = [utils.read_img(im) for im in args.images]
 
     if args.detection == "manual":
-        if num_imgs == 2:
+
+        if num_imgs == 2:  # warp images to a frontal plane
 
             pts = [utils.pick_points(im, 4) for im in imgs]
 
             h, w, c = imgs[0].shape
             num_pixels = 1600 * 1600
             RESIZE = h * w > num_pixels
-            if RESIZE:
+            r = int(h * w / num_pixels)
+            if RESIZE and r > 1:
                 print("resizing to target shape ({h / r}, {w / r}")
                 imgs = [
                     sk.transform.resize(

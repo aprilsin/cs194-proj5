@@ -8,9 +8,6 @@ import skimage as sk
 # import skimage.io as io
 from scipy import interpolate
 
-from my_types import assert_points
-
-
 def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     """Returns a homographic transformation matrix from ptsA to ptsB"""
     assert len(im1_pts) == len(im2_pts)

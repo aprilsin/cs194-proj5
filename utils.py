@@ -12,20 +12,20 @@ from scipy.spatial import Delaunay
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
 
-ToImgArray = Union[str, Path, os.PathLike]
+ToImgArray = Union[np.ndarray, str, Path, os.PathLike]
 
 
-def read_img(x: ToImgArray, gray=False):
-    assert isinstance(x, (str, Path, os.PathLike)), f"Didn't expect type {type(x)}"
-
-    x = Path(x)
-    assert x.suffix in (".jpeg", ".jpg"), x.suffix
-
-    if gray:
-        img = io.imread(x, as_gray=True)
-    else:
-        img = io.imread(x)
-    return img_as_float(img)
+def read_img(x: ToImgArray, gray=False) -> np.ndarray:
+    if isinstance(x, np.ndarray):
+        return img_as_float(x).clip(0, 1)
+    elif isinstance(x, (str, Path, os.PathLike)):
+        x = Path(x)
+        if x.suffix in (".jpeg", ".jpg"):
+            img = io.imread(x)
+            img = img_as_float(img)
+            return img
+        else:
+            raise ValueError(f"Didn't expect type {type(x)}")
 
 
 def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarray:
