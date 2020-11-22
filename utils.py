@@ -5,7 +5,7 @@ import pickle
 import re
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, Union, Callable
+from typing import Callable, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np

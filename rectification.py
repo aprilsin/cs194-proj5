@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import signal
 
 import filters
 
@@ -81,34 +82,36 @@ def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
     return im1, im2
 
 
-def blend_windows(aligned1_pts, aligned2_pts):
-    x, y = aligned1_pts[:, 0], aligned2_pts[:, 1]
-
-
 def overlap(im1, im2):
     assert im1.shape == im2.shape, (im1.shape, im2.shape)
     tmp1 = np.where(im1 != 0, True, False)
     tmp2 = np.where(im2 != 0, True, False)
-    # overlap = np.where(tmp1 & tmp2, 1.0, 0.0)
     return (tmp1 & tmp2).astype(int).astype(np.float64)
 
 
-def alpha_blend(im1, im2, mask):
-    mask = filters.gauss_blur(overlap(im1, im2))
-    base = (1 - mask) * (im1 + im2)
-    blend = mask * (im1 * 0.5 + im2 * 0.5)
+def alpha_blend(im1, im2):
+    mask_hard = overlap(im1, im2)
+    # mask_soft = filters.gauss_blur(mask_hard, kernel_size=100, sigma=30)
+    base = (1 - mask_hard) * (im1 + im2)
+    blend = mask_hard * (im1 * 0.5 + im2 * 0.5)
     return np.clip(np.add(base, blend), 0.0, 1.0)
 
 
 def two_band_blend(im1, im2):
     assert im1.shape == im2.shape
 
+    overlap = overlap(im1, im2)
+    mask = filters.gauss_blur(overlap, kernel_size=100, sigma=30)
+
     low1 = filters.gauss_blur(im1)
     low2 = filters.gauss_blur(im2)
+    low = alpha_blend(low1, low2, mask=mask)
+
     high1 = filters.unsharp_mask(im1)
     high2 = filters.unsharp_mask(im2)
+    high = high1 + high2
 
-    return np.add(low1, np.add(low2, np.add(high1, high2)))
+    return np.add(low, high)
 
 
 def blend(im1, im2, method="two-band"):
@@ -119,9 +122,24 @@ def blend(im1, im2, method="two-band"):
         return None
 
 
+# blends stacks for one channel
+def blend_channel(im1_Lstack, im2_Lstack, region_stack, mask):
+    assert len(im1_Lstack) == len(im2_Lstack) == len(region_stack)
+
+    blended = []
+    for L1, L2, R in zip(im1_Lstack, im2_Lstack, region_stack):
+        R = signal.convolve2d(R, mask, mode="same")
+        curr_level = R * L1 + (1 - R) * L2
+        blended.append(curr_level)
+    blended = np.array(blended)
+    result = np.sum(blended, axis=0)
+    print(result.shape)
+    return result
+
+
 def stitch(im1, im2, im1_pts, im2_pts):
     """ Stictch two warped images. All inputs should be warped. """
-    
+
     align1, align2 = align(im1, im2, im1_pts, im2_pts)
     mosaic = alpha_blend(im1, im2, mask=overlap(align1, align2))
     return mosaic

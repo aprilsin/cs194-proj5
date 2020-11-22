@@ -84,3 +84,26 @@ def unsharp_mask(im, kernel_size=15, sigma=3, display=False):
         pass
 
     return result
+
+
+def gaussian_stack(im, gauss_filter, num_levels=5):
+    assert im.ndim == gauss_filter.ndim
+    stack = []
+
+    def g_stack(prev_level, level):
+        if level == 0:
+            return
+        else:
+            new_level = signal.convolve2d(prev_level, gauss_filter, mode="same")
+            stack.append(new_level)
+            g_stack(new_level, level - 1)
+
+    g_stack(im, num_levels)
+    return stack
+
+
+def laplacian_stack(gauss_stack):
+    Lstack = []
+    for i in range(len(gauss_stack)):
+        Lstack.append(gauss_stack[i - 1] - gauss_stack[i])
+    return Lstack
