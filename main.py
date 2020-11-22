@@ -87,8 +87,62 @@ stitching {num_imgs} images for {name}...
                     for im in imgs
                 ]
                 pts = [p / r for p in pts]
-        elif num_imgs == 3:
 
+            im1, im2 = imgs
+            im1_pts, im2_pts = pts
+            plane_pts = (im1_pts + im2_pts) / 2
+
+            # warp image 1
+            h_matrix1 = homography.homo_matrix(im1_pts, plane_pts)
+            warp1, shift_pts1 = homography.inverse_warp(im1, h_matrix1)
+            warp_pts1 = homography.warp_pts(im1_pts, h_matrix1, shift_pts1)
+            # warp image 2
+            h_matrix2 = homography.homo_matrix(im2_pts, plane_pts)
+            warp2, shift_pts2 = homography.inverse_warp(im2, h_matrix2)
+            warp_pts2 = homography.warp_pts(im2_pts, h_matrix2, shift_pts2)
+
+            aligned1, aligned2 = rectification.align(warp1, warp2, warp_pts1, warp_pts2)
+            blended = rectification.two_band_blend(aligned1, aligned2)
+
+            mosaic_name = OUTDIR / (name + "_mosaic.jpg")
+            plt.imsave(mosaic_name, blended)
+
+        elif num_imgs == 3:  # warp image 1 and image 3 to middle image 2
+            for i in range(len(imgs)):
+                h, w, c = imgs[0].shape
+                num_pixels = 1600 * 1600
+                RESIZE = h * w > num_pixels
+                r = int(h * w / num_pixels)
+                if RESIZE and r > 1:
+                    imgs[i] = sk.transform.resize(
+                        imgs[i],
+                        (imgs[i].shape[0] // r, imgs[i].shape[1] // r),
+                        anti_aliasing=True,
+                    )
+            im1, im2, im3 = imgs
+
+            # merge im1 and im2
+            im1_pts = utils.pick_points(im1, 4)
+            im2_pts = utils.pick_points(im2, 4)
+
+            # warp image 1
+            h_matrix1 = homography.homo_matrix(im1_pts, im2_pts)
+            warp1, shift_pts1 = homography.inverse_warp(im1, h_matrix1)
+            warp_pts1 = homography.warp_pts(im1_pts, h_matrix1, shift_pts1)
+
+            # warp image 2
+            im2_pts = utils.pick_points(im2, 4)
+            im3_pts = utils.pick_points(im3, 4)
+
+            h_matrix3 = homography.homo_matrix(im3_pts, im2_pts)
+            warp3, shift_pts3 = homography.inverse_warp(im3, h_matrix3)
+            warp_pts3 = homography.warp_pts(im2_pts, h_matrix3, shift_pts3)
+
+            aligned1, aligned2 = rectification.align(warp1, im2, warp_pts1, warp_pts2)
+            blended = rectification.two_band_blend(aligned1, aligned2)
+
+            mosaic_name = OUTDIR / (name + "_mosaic.jpg")
+            plt.imsave(mosaic_name, blended)
             pass
         else:
             raise ValueError(f"{num_imgs = }")
