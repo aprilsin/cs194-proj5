@@ -255,7 +255,7 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     src_pts /= src_pts[2]
 
     src_x, src_y = src_pts[0, :], src_pts[1, :]
-    src_rr, src_cc = src_x, src_y
+    src_rr, src_cc = src_y, src_x
 
     print(img.shape)
     print(src_rr.min(), src_cc.min())
@@ -263,13 +263,16 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
 
     # interpolate
     print("=====interpolate=====")
+
+    # use zero indexed for interpolation
     target_rr += y_shift
     target_cc += x_shift
+
     interp_funcs = [
         interpolate.RectBivariateSpline(H, W, img[:, :, c]) for c in range(3)
     ]
     for i, f in enumerate(interp_funcs):
-        warped[target_rr, target_cc, i] = f.ev(xi=src_cc, yi=src_rr)
+        warped[target_rr, target_cc, i] = f.ev(xi=src_rr, yi=src_cc)
 
-    # warped = np.roll(warped, (x_shift, y_shift, 0))
+    warped = np.clip(warped, 0.0, 1.0)
     return warped, [x_shift, y_shift]

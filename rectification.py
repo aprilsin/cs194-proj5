@@ -18,27 +18,22 @@ def match_shift(im1, im2, pts1, pts2):
     if p1_h < p2_h:
         im1_pad[0][0] = h_diff  # pad before
         #         im2_pad[0][1] = h_diff  # pad after
-        algined_pts1[:, 1] += h_diff
     else:
         im2_pad[0][0] = h_diff  # pad before
         #         im1_pad[0][1] = h_diff  # pad after
-        aligned_pts2[:, 1] += h_diff
 
     if p1_w < p2_w:
         im1_pad[1][0] = w_diff  # pad before
         #         im2_pad[1][1] = w_diff  # pad after
-        algined_pts1[:, 0] += w_diff
     else:
         im2_pad[1][0] = w_diff  # pad before
         #         im1_pad[1][1] = w_diff  # pad after
-        aligned_pts2[:, 0] += w_diff
 
     im1_pad = tuple((before, after) for before, after in im1_pad)
     im2_pad = tuple((before, after) for before, after in im2_pad)
     im1_shifted = np.pad(im1, im1_pad)
     im2_shifted = np.pad(im2, im2_pad)
 
-    assert np.equal(aligned_pts1, aligned_pts2).all(), (aligned_pts1, aligned_pts2)
     return im1_shifted, im2_shifted
 
 
@@ -94,8 +89,8 @@ def overlap(im1, im2):
     assert im1.shape == im2.shape, (im1.shape, im2.shape)
     tmp1 = np.where(im1 != 0, True, False)
     tmp2 = np.where(im2 != 0, True, False)
-    overlap = np.where(tmp1 & tmp2, 1.0, 0.0)
-    return overlap
+    # overlap = np.where(tmp1 & tmp2, 1.0, 0.0)
+    return (tmp1 & tmp2).astype(int).astype(np.float64)
 
 
 def alpha_blend(im1, im2, mask):
