@@ -19,8 +19,28 @@ from skimage import img_as_float, img_as_ubyte
 from sklearn import preprocessing
 from tqdm import tqdm, trange
 
+from constants import *
 
-def gaussian_filter(kernel_size, sigma, display=False):
+
+def getGradient(im):
+    """ returns the gradient magnitudes and gradient angles for an image """
+    assert im.ndim == 2
+    D_x = np.array([[1, -1]])
+    D_y = np.array([[1], [-1]])
+
+    # use convolution to find partial derivative x
+    x_partial = signal.convolve2d(im, D_x, mode="same")
+    # convolution to find partial derivative y
+    y_partial = signal.convolve2d(im, D_y, mode="same")
+
+    # get magnitude of gradient by taking the norm
+    gradient = np.stack([x_partial, y_partial], axis=-1)
+    gradient_magnitude = la.norm(gradient, axis=-1)
+    gradient_angle = np.rad2deg(np.arctan2(y_partial, x_partial))
+    return gradient_magnitude, gradient_angle
+
+
+def gaussian_filter(kernel_size=DEFAULT_KERNEL, sigma=DEFAULT_SIGMA, display=False):
     """returns a 2D gaussian filter"""
     gauss_1d = cv2.getGaussianKernel(kernel_size, sigma)
     gauss_2d = gauss_1d.T * gauss_1d
@@ -30,7 +50,7 @@ def gaussian_filter(kernel_size, sigma, display=False):
     return gauss_2d
 
 
-def gauss_blur(im, kernel_size=15, sigma=3, display=False):
+def gauss_blur(im, kernel_size=DEFAULT_KERNEL, sigma=DEFAULT_SIGMA, display=False):
     """ blurrs an image"""
     assert np.ndim(im) == 3
 
@@ -86,19 +106,21 @@ def unsharp_mask(im, kernel_size=15, sigma=3, display=False):
     return result
 
 
-def gaussian_stack(im, gauss_filter, num_levels=5):
-    assert im.ndim == gauss_filter.ndim
+def gaussian_stack(im, num_levels=5, gauss_filter=None):
+    if gauss_filter is None:
+        gauss_filter = gaussian_filter(kernel_size=50, sigma=15)
+
     stack = []
 
-    def g_stack(prev_level, level):
+    def helper(prev_level, level):
         if level == 0:
             return
         else:
             new_level = signal.convolve2d(prev_level, gauss_filter, mode="same")
             stack.append(new_level)
-            g_stack(new_level, level - 1)
+            helper(new_level, level - 1)
 
-    g_stack(im, num_levels)
+    helper(im, num_levels)
     return stack
 
 
