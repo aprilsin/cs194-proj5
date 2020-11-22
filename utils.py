@@ -11,7 +11,6 @@ from scipy.interpolate import interp2d
 from scipy.spatial import Delaunay
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
-import my_types as mt
 
 ToImgArray = Union[str, Path, os.PathLike]
 
@@ -89,3 +88,8 @@ def show_two(im1, im2):
     p1.imshow(im1)
     p2 = fig.add_subplot(1, 2, 2)
     p2.imshow(im2)
+
+
+# handle file namings
+def get_fname(name: str, i):
+    pass

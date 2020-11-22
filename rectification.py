@@ -88,8 +88,10 @@ def overlap_mask(im1, im2):
     tmp2 = np.where(im2 != 0, True, False)
     return (tmp1 & tmp2).astype(int).astype(np.float64)
 
+
 def alpha_blend_mask(img, blend_window):
     pass
+
 
 def alpha_blend(im1, im2):
     mask_hard = overlap_mask(im1, im2)
