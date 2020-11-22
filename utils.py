@@ -11,6 +11,7 @@ from scipy.interpolate import interp2d
 from scipy.spatial import Delaunay
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
+import my_types as mt
 
 ToImgArray = Union[str, Path, os.PathLike]
 
@@ -75,6 +76,7 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     """
     Displays the keypoints of an image
     """
+    mt.assert_points(points)
     plt.figure()
     plt.imshow(img)
     plt.scatter(points[:, 0], points[:, 1], marker="o", color="b", s=30)

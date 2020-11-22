@@ -1,5 +1,5 @@
 import numpy as np
-from skimage.feature import corner_harris, peak_local_max
+from skimage.feature import corner_harris, corner_peaks
 
 
 def get_harris_corners(im, edge_discard=20):
@@ -11,14 +11,14 @@ def get_harris_corners(im, edge_discard=20):
     containing the h value of every pixel is also returned.
 
     h is the same shape as the original image, im.
-    coords is 2 x n (ys, xs).
+    coords is n x 2 (xs, ys).
     """
 
     assert edge_discard >= 20
 
     # find harris corners
     h = corner_harris(im, method="eps", sigma=1)
-    coords = peak_local_max(h, min_distance=1, indices=True)
+    coords = corner_peaks(h, min_distance=2, indices=True)
 
     # discard points on edge
     edge = edge_discard  # pixels
@@ -28,8 +28,8 @@ def get_harris_corners(im, edge_discard=20):
         & (coords[:, 1] > edge)
         & (coords[:, 1] < im.shape[1] - edge)
     )
-    coords = coords[mask].T
-    return h, coords
+
+    return h, np.flip(coords[mask], axis=1)
 
 
 def dist2(x, c):
