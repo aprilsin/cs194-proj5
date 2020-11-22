@@ -76,7 +76,7 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     """
     Displays the keypoints of an image
     """
-    mt.assert_points(points)
+    mt.assert_points(points, ratio=False)
     plt.figure()
     plt.imshow(img)
     plt.scatter(points[:, 0], points[:, 1], marker="o", color="b", s=30)

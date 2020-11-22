@@ -10,9 +10,7 @@ from skimage.util import img_as_float
 from torch import Tensor
 
 
-def assert_points(
-    pts, *, ratio=True
-) -> bool:  # TODO make ratio a "must" variable with *,
+def assert_points(pts, *, ratio) -> bool:  # TODO make ratio a "must" variable with *,
     if isinstance(pts, np.ndarray):
         assert pts.shape[1] == 2
         assert (pts >= 0).all()

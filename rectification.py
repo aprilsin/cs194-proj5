@@ -88,6 +88,8 @@ def overlap_mask(im1, im2):
     tmp2 = np.where(im2 != 0, True, False)
     return (tmp1 & tmp2).astype(int).astype(np.float64)
 
+def alpha_blend_mask(img, blend_window):
+    pass
 
 def alpha_blend(im1, im2):
     mask_hard = overlap_mask(im1, im2)
@@ -115,11 +117,11 @@ def two_band_blend(im1, im2):
     low1 = filters.gauss_blur(im1, display=True)
     low2 = filters.gauss_blur(im2, display=True)
 
-    low = mask_soft * (low1 * 0.5 + low2 * 0.5)
+    low = mask_soft * (low1 + low2) / 2
 
     high1 = im1 - low1
     high2 = im2 - low2
-    high = overlap * (high1 + high2)
+    high = overlap * (high1 + high2) / 2
 
     result = low + high + base
     return np.clip(result, 0.0, 1.0)
@@ -150,7 +152,6 @@ def blend_channel(im1_Lstack, im2_Lstack, region_stack, mask):
 
 def stitch(im1, im2, im1_pts, im2_pts):
     """ Stictch two warped images. All inputs should be warped. """
-
     align1, align2 = align(im1, im2, im1_pts, im2_pts)
     mosaic = alpha_blend(im1, im2)
     return mosaic

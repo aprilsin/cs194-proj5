@@ -1,12 +1,9 @@
 # Project 05: [Auto]Stitching Photo Mosaics - Part 1
 
-Name: April Sin
-
-SID: 3035168618
-
 ### Requirements:
 
-None
+Make sure all images are named with the format "name0.jpg".
+This program can only stitch up to 10 images due to 0-9 for now.
 
 ### Instructions:
 
