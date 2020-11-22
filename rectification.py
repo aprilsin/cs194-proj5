@@ -82,7 +82,7 @@ def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
     return im1, im2
 
 
-def overlap(im1, im2):
+def overlap_mask(im1, im2):
     assert im1.shape == im2.shape, (im1.shape, im2.shape)
     tmp1 = np.where(im1 != 0, True, False)
     tmp2 = np.where(im2 != 0, True, False)
@@ -90,35 +90,39 @@ def overlap(im1, im2):
 
 
 def alpha_blend(im1, im2):
-    mask_hard = overlap(im1, im2)
-    mask_soft = filters.gauss_blur(mask_hard, kernel_size=50, sigma=20)
+    mask_hard = overlap_mask(im1, im2)
+    mask_soft = filters.gauss_blur(mask_hard)
     base = (1 - mask_hard) * (im1 + im2)
     blend = mask_soft * (im1 * 0.5 + im2 * 0.5)
     return np.clip(np.add(base, blend), 0.0, 1.0)
 
 
 def average_blend(im1, im2):
-    mask = overlap(im1, im2)
-    base = (1 - mask) * (im1 + im2)
-    blend = mask * (im1 * 0.5 + im2 * 0.5)
+    overlap = overlap_mask(im1, im2)
+    base = (1 - overlap) * (im1 + im2)
+    blend = overlap * (im1 * 0.5 + im2 * 0.5)
     return np.clip(np.add(base, blend), 0.0, 1.0)
 
 
 def two_band_blend(im1, im2):
     assert im1.shape == im2.shape
 
-    overlap = overlap(im1, im2)
-    mask = filters.gauss_blur(overlap, kernel_size=100, sigma=30)
+    overlap = overlap_mask(im1, im2)
+    base = (1 - overlap) * (im1 + im2)
 
-    low1 = filters.gauss_blur(im1)
-    low2 = filters.gauss_blur(im2)
-    low = alpha_blend(low1, low2, mask=mask)
+    mask_soft = filters.gauss_blur(overlap)
 
-    high1 = filters.unsharp_mask(im1)
-    high2 = filters.unsharp_mask(im2)
-    high = high1 + high2
+    low1 = filters.gauss_blur(im1, display=True)
+    low2 = filters.gauss_blur(im2, display=True)
 
-    return np.add(low, high)
+    low = mask_soft * (low1 * 0.5 + low2 * 0.5)
+
+    high1 = im1 - low1
+    high2 = im2 - low2
+    high = overlap * (high1 + high2)
+    
+    result = low + high + base
+    return np.clip(result, 0.0, 1.0)
 
 
 def blend(im1, im2, method="two-band"):
@@ -148,5 +152,5 @@ def stitch(im1, im2, im1_pts, im2_pts):
     """ Stictch two warped images. All inputs should be warped. """
 
     align1, align2 = align(im1, im2, im1_pts, im2_pts)
-    mosaic = alpha_blend(im1, im2, mask=overlap(align1, align2))
+    mosaic = alpha_blend(im1, im2)
     return mosaic
