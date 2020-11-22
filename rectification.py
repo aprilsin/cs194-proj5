@@ -91,9 +91,16 @@ def overlap(im1, im2):
 
 def alpha_blend(im1, im2):
     mask_hard = overlap(im1, im2)
-    # mask_soft = filters.gauss_blur(mask_hard, kernel_size=100, sigma=30)
+    mask_soft = filters.gauss_blur(mask_hard, kernel_size=50, sigma=20)
     base = (1 - mask_hard) * (im1 + im2)
-    blend = mask_hard * (im1 * 0.5 + im2 * 0.5)
+    blend = mask_soft * (im1 * 0.5 + im2 * 0.5)
+    return np.clip(np.add(base, blend), 0.0, 1.0)
+
+
+def average_blend(im1, im2):
+    mask = overlap(im1, im2)
+    base = (1 - mask) * (im1 + im2)
+    blend = mask * (im1 * 0.5 + im2 * 0.5)
     return np.clip(np.add(base, blend), 0.0, 1.0)
 
 
