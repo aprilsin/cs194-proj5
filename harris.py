@@ -49,7 +49,7 @@ def dist2(x, c):
 
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
-    assert (dimx == dimc, "Data dimension does not match dimension of centers")
+    assert dimx == dimc, "Data dimension does not match dimension of centers"
 
     return (
         (np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)).T
