@@ -161,85 +161,101 @@ def fill_holes(warped, src_img, h_matrix):
 def bounding_box(img, H):
     """ Return the corners of the projected image in H, W domain """
     h, w, c = img.shape
-    corners_hw = [
+
+    x, y = w, h
+    corners = [
         [0, 0],
-        [0, w - 1],
-        [h - 1, w - 1],
-        [h - 1, 0],
+        [0, y - 1],
+        [x - 1, y - 1],
+        [x - 1, 0],
     ]  # in this order for polygon
-    corners_xy = [[c, r] for r, c in corners_hw]  # x, y = c, r
 
-    corners = [[x, y, 1] for x, y in corners_xy]
-    corners = np.array(corners).T  # so that each column is [x, y, 1]
+    corners_3D = np.array([[x, y, 1] for x, y in corners])
 
-    bounds = H @ corners
+    target_corners = H @ corners_3D.T  # so that each column is [x, y, 1]
+    target_corners /= target_corners[2]  # fix w, scaling due to transformation
+    target_corners = np.round(target_corners).astype(
+        np.int64
+    )  # make sure indices are integers
 
-    bounds /= bounds[2]  # fix w, scaling due to transformation
-    bounds = bounds.T[:, :2]  # reshape into the form [[x1, y1], [x2, y2]]
+    target_x, target_y = target_corners[0, :], target_corners[1, :]
 
-    # make sure indices are integers
-    bounds = np.round(bounds).astype(np.int64)
+    warp_h, warp_w = abs(target_y.max() - target_y.min()), abs(
+        target_x.max() - target_x.min()
+    )
+    warp_h, warp_w = int(np.ceil(warp_h)), int(
+        np.ceil(warp_w)
+    )  # shape needs to be integer
+    target_rr, target_cc = sk.draw.polygon(
+        r=target_y - target_y.min(), c=target_x - target_x.min(), shape=(warp_h, warp_w)
+    )  # minus min value to shift indices to zero-indexed
 
-    # shift indices to zero-indexed
-    x_shift = -bounds[:, 0].min()
-    y_shift = -bounds[:, 1].min()
+    box = np.zeros((warp_h, warp_w, 3))
+    box[target_rr, target_cc] = 1
+    x_shift, y_shift = -target_x.min(), -target_y.min()
 
-    # bounds[:, 0] += x_shift
-    # bounds[:, 1] += y_shift
-    bounds = np.flip(bounds, axis=1)  # flip x, y to r, c
-
-    return bounds, x_shift, y_shift
+    return box, x_shift, y_shift
 
 
 def inverse_warp(img, h_matrix) -> np.ndarray:
     assert h_matrix.shape == (3, 3)
 
+    # initialize empty warp canvas
     h, w, c = img.shape
     H, W = range(h), range(w)
+    x, y = w, h
 
-    # initialize warped img matrix
-    box, x_shift, y_shift = bounding_box(img, h_matrix)
-    row_shift, col_shift = y_shift, x_shift
+    corners = [
+        [0, 0],
+        [0, y - 1],
+        [x - 1, y - 1],
+        [x - 1, 0],
+    ]  # in this order for polygon
+    corners_3D = np.array([[x, y, 1] for x, y in corners])
 
-    bound_rows, bound_cols = box[:, 0], box[:, 1]
-    warp_h, warp_w = bound_rows.max() + 1, bound_cols.max() + 1
-    # + 1 since the bounding box needs to be a valid index
+    target_corners = h_matrix @ corners_3D.T  # so that each column is [x, y, 1]
+    target_corners /= target_corners[2]  # fix w, scaling due to transformation
+    target_corners = np.round(target_corners).astype(
+        np.int64
+    )  # make sure indices are integers
 
-    hr, wr = 1, 1
-    warp_h, warp_w = int(np.ceil(warp_h * hr)), int(np.ceil(warp_w * wr))
-    warped = np.zeros((warp_h, warp_w, c))
+    target_x, target_y = target_corners[0, :], target_corners[1, :]
+
+    warp_h, warp_w = abs(target_y.max() - target_y.min()), abs(
+        target_x.max() - target_x.min()
+    )
+    warp_h, warp_w = int(np.ceil(warp_h)), int(
+        np.ceil(warp_w)
+    )  # shape needs to be integer
+    target_rr, target_cc = sk.draw.polygon(
+        r=target_y - target_y.min(), c=target_x - target_x.min(), shape=(warp_h, warp_w)
+    )  # minus min value to shift indices to zero-indexed
+
+    warped = np.zeros((warp_h, warp_w, 3))
+    x_shift, y_shift = -target_x.min(), -target_y.min()
 
     # compute target coordinates
     print("====target====")
-    target_rr, target_cc = sk.draw.polygon(
-        bound_rows * hr, bound_cols * wr, shape=(warp_h, warp_w)
-    )
+    print(warped.shape)
+    print(target_rr.min(), target_cc.min())
+    print(target_rr.max(), target_cc.max())
 
     # reverse shifting to get the original trasformed values
-    target_rr -= row_shift
-    target_cc -= col_shift
-
-    print(warped.shape)
+    target_rr -= y_shift
+    target_cc -= x_shift
     print(target_rr.min(), target_cc.min())
     print(target_rr.max(), target_cc.max())
 
     # compute source coordinates
     print("=====src=====")
-
     num_pts = len(target_rr)
     target_pts = np.vstack((target_cc, target_rr, np.ones((1, num_pts))))
 
     src_pts = np.linalg.inv(h_matrix) @ target_pts
-    src_cc, src_rr = src_pts.T[:, 0], src_pts.T[:, 1]
+    src_pts /= src_pts[2]
 
-    # make sure indices are integers
-    src_rr = np.int32(np.round(src_rr))
-    src_cc = np.int32(np.round(src_cc))
-    # shift indices to zero-indexed
-    # src_rr += row_shift
-    # src_cc += col_shift
-    src_rr += -src_rr.min()
-    src_cc += -src_cc.min()
+    src_x, src_y = src_pts[0, :], src_pts[1, :]
+    src_rr, src_cc = src_x, src_y
 
     print(img.shape)
     print(src_rr.min(), src_cc.min())
@@ -247,10 +263,13 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
 
     # interpolate
     print("=====interpolate=====")
+    target_rr += y_shift
+    target_cc += x_shift
     interp_funcs = [
         interpolate.RectBivariateSpline(H, W, img[:, :, c]) for c in range(3)
     ]
     for i, f in enumerate(interp_funcs):
         warped[target_rr, target_cc, i] = f.ev(xi=src_cc, yi=src_rr)
 
-    return warped, [col_shift, row_shift]
+    # warped = np.roll(warped, (x_shift, y_shift, 0))
+    return warped, [x_shift, y_shift]
