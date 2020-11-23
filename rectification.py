@@ -49,28 +49,32 @@ def match_shift(im1, im2, pts1, pts2):
     p2_w, p2_h = pts2[:, 0].max(), pts2[:, 1].max()
 
     im1_pad, im2_pad = [[0, 0], [0, 0], [0, 0]], [[0, 0], [0, 0], [0, 0]]
-
+    shift1, shift2 = [0, 0], [0, 0]
     h_diff, w_diff = abs(p1_h - p2_h), abs(p1_w - p2_w)
     if p1_h < p2_h:
         im1_pad[0][0] = h_diff  # pad before
         pts1[:, 1] += h_diff
+        shift1[1] += h_diff
     else:
         im2_pad[0][0] = h_diff  # pad before
         pts2[:, 1] += h_diff
+        shift2[1] += h_diff
 
     if p1_w < p2_w:
         im1_pad[1][0] = w_diff  # pad before
         pts1[:, 0] += w_diff
+        shift1[0] += w_diff
     else:
         im2_pad[1][0] = w_diff  # pad before
         pts2[:, 0] += w_diff
+        shift2[0] += w_diff
 
     im1_pad = tuple((before, after) for before, after in im1_pad)
     im2_pad = tuple((before, after) for before, after in im2_pad)
     im1_shifted = np.pad(im1, im1_pad)
     im2_shifted = np.pad(im2, im2_pad)
 
-    return im1_shifted, im2_shifted, pts1, pts2
+    return im1_shifted, im2_shifted, pts1, pts2, shift1, shift2
 
 
 def match_shape(im1, im2, pts1, pts2):
@@ -109,10 +113,10 @@ def align(warped_im1, warped_im2, warped_im1_pts, warped_im2_pts):
     Input points should be standardized. (using the same coordinate system / warped)
     """
     im1, im2, pts1, pts2 = warped_im1, warped_im2, warped_im1_pts, warped_im2_pts
-    im1, im2, pts1, pts2 = match_shift(im1, im2, pts1, pts2)
+    im1, im2, pts1, pts2, shift1, shift2 = match_shift(im1, im2, pts1, pts2)
     im1, im2, pts1, pts2 = match_shape(im1, im2, pts1, pts2)
 
-    return im1, im2, pts1, pts2
+    return im1, im2, pts1, pts2, shift1, shift2
 
 
 def overlap_mask(im1, im2):

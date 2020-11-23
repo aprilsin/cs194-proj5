@@ -9,7 +9,7 @@ assert OUTDIR_2.exists()
 
 NUM_PTS = 8
 
-LOAD = True
+LOAD = False
 SAVE = False
 DEBUG = False
 

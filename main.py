@@ -34,7 +34,7 @@ parser.add_argument(
     dest="save_data",
     default=False,
     action="store_true",
-    help="Whether intermediate data will be saved.",
+    help="Save intermediate data.",
 )
 parser.add_argument(
     "-l",
@@ -42,7 +42,15 @@ parser.add_argument(
     dest="load_data",
     default=False,
     action="store_true",
-    help="Whether intermediate data will be saved.",
+    help="Load points from pickle files.",
+)
+parser.add_argument(
+    "-d",
+    "--debug",
+    dest="debug",
+    default=False,
+    action="store_true",
+    help="Show debugging print statements.",
 )
 
 args = parser.parse_args()
@@ -50,6 +58,7 @@ args.images = [Path(x) for x in args.images]
 
 SAVE = args.save_data
 LOAD = args.load_data
+DEBUG = args.debug
 
 
 def manual_stitch_plane():
@@ -143,29 +152,28 @@ def manual_stitch_direct():
 
     # warp image 1
     print("Warp image 1 to image 2")
-    H1 = homography.homo_matrix(pts1, pts2)
+    H1 = homography.homo_matrix(pts1, pts2a)
     warp1, shift1 = homography.inverse_warp(im1, H1)
     warp1_pts = homography.warp_pts(pts1, H1, shift1)
 
     # no need to warp image 2
-    warp2, warp2_pts = im2, pts2
+    warp2, warp2_pts = im2, pts2a
 
     print("Align and blend image 1 and 2")
-    aligned1, aligned2, _, blend_pts = rectification.align(
+    aligned1, aligned2, _, _, _, shift2 = rectification.align(
         warp1, warp2, warp1_pts, warp2_pts
     )
     blend_12 = rectification.blend(aligned1, aligned2, method=BLEND_METHOD)
 
     ### merge im2 and im3 ###
     print("Warp image 3 to image 2")
-    H3 = homography.homo_matrix(pts3, blend_pts)
+    pts2b += shift2
+    H3 = homography.homo_matrix(pts3, pts2b)
     warp3, shift3 = homography.inverse_warp(im3, H3)
     warp3_pts = homography.warp_pts(pts3, H3, shift3)
 
     print("Align and blend with image 3")
-    aligned12, aligned3, _, _ = rectification.align(
-        blend_12, warp3, blend_pts, warp3_pts
-    )
+    aligned12, aligned3, *_ = rectification.align(blend_12, warp3, pts2b, warp3_pts)
     blend_123 = rectification.blend(aligned12, aligned3, method=BLEND_METHOD)
 
     if SAVE:
