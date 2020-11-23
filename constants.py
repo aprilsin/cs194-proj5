@@ -13,6 +13,8 @@ assert OUTDIR_2.exists()
 DEFAULT_KERNEL = 50
 DEFAULT_SIGMA = 15
 
+LOAD = False
+SAVE = True
 DEBUG = False
 
 BLEND_METHOD = "average"
