@@ -48,7 +48,7 @@ def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarr
                 (x - 1, y - 1),
             ]
         )
-    assert len(points) == num_pts
+    assert len(points) == num_pts, len(points)
     print(f"Picked {num_pts} points successfully.")
     return np.array(points)
 

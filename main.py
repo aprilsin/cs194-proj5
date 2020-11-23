@@ -104,7 +104,8 @@ def manual_stitch_direct():
     h_matrix1 = homography.homo_matrix(pts1, im2_pts)
     warp1, shift_pts1 = homography.inverse_warp(im1, h_matrix1)
     warp_pts1 = homography.warp_pts(pts1, h_matrix1, shift_pts1)
-    blended_12 = rectification.stitch(warp1, im2, warp_pts1, im2_pts)
+    aligned1, aligned2 = rectification.align(warp1, im2, warp_pts1, im2_pts)
+    blended12 = rectification.average_blend(aligned1, aligned2)
 
     # merge im2 and im3
     blended_pts = utils.pick_points(blended_12, 4)
