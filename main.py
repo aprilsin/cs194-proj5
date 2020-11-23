@@ -99,25 +99,22 @@ def manual_stitch_direct():
     im1, im2, im3 = imgs
 
     # merge im1 and im2
-    im1_pts = utils.pick_points(im1, 4)
-    im2_pts = utils.pick_points(im2, 4)
-
-    # warp image 1
-    h_matrix1 = homography.homo_matrix(im1_pts, im2_pts)
+    pts1 = utils.pick_points(im1, 4)
+    pts2 = utils.pick_points(im2, 4)
+    h_matrix1 = homography.homo_matrix(pts1, im2_pts)
     warp1, shift_pts1 = homography.inverse_warp(im1, h_matrix1)
-    warp_pts1 = homography.warp_pts(im1_pts, h_matrix1, shift_pts1)
+    warp_pts1 = homography.warp_pts(pts1, h_matrix1, shift_pts1)
+    blended_12 = rectification.stitch(warp1, im2, warp_pts1, im2_pts)
 
-    # warp image 2
-    im2_pts = utils.pick_points(im2, 4)
+    # merge im2 and im3
+    blended_pts = utils.pick_points(blended_12, 4)
     im3_pts = utils.pick_points(im3, 4)
-
     h_matrix3 = homography.homo_matrix(im3_pts, im2_pts)
     warp3, shift_pts3 = homography.inverse_warp(im3, h_matrix3)
     warp_pts3 = homography.warp_pts(im2_pts, h_matrix3, shift_pts3)
 
-    aligned1, aligned2 = rectification.align(warp1, im2, warp_pts1, warp_pts2)
-    blended = rectification.two_band_blend(aligned1, aligned2)
-
+    blended_23 = rectification.stitch(warp3, blended_12, warp_pts3, im2_pts)
+    
     mosaic_name = OUTDIR / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, blended)
     pass

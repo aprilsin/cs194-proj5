@@ -38,6 +38,38 @@ def match_shift(im1, im2, pts1, pts2):
 
     return im1_shifted, im2_shifted
 
+def match_shift(im1, im2, pts1, pts2):
+    pts1 = np.int32(np.round(pts1))
+    pts2 = np.int32(np.round(pts2))
+    aligned_pts1, aligned_pts2 = pts1.copy(), pts2.copy()
+
+    # w, h = x, y
+    p1_w, p1_h = pts1[:, 0].max(), pts1[:, 1].max()
+    p2_w, p2_h = pts2[:, 0].max(), pts2[:, 1].max()
+
+    im1_pad, im2_pad = [[0, 0], [0, 0], [0, 0]], [[0, 0], [0, 0], [0, 0]]
+
+    h_diff, w_diff = abs(p1_h - p2_h), abs(p1_w - p2_w)
+    if p1_h < p2_h:
+        im1_pad[0][0] = h_diff  # pad before
+        #         im2_pad[0][1] = h_diff  # pad after
+    else:
+        im2_pad[0][0] = h_diff  # pad before
+        #         im1_pad[0][1] = h_diff  # pad after
+
+    if p1_w < p2_w:
+        im1_pad[1][0] = w_diff  # pad before
+        #         im2_pad[1][1] = w_diff  # pad after
+    else:
+        im2_pad[1][0] = w_diff  # pad before
+        #         im1_pad[1][1] = w_diff  # pad after
+
+    im1_pad = tuple((before, after) for before, after in im1_pad)
+    im2_pad = tuple((before, after) for before, after in im2_pad)
+    im1_shifted = np.pad(im1, im1_pad)
+    im2_shifted = np.pad(im2, im2_pad)
+
+    return im1_shifted, im2_shifted
 
 def match_shape(im1, im2):
     h1, w1, c1 = im1.shape
