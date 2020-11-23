@@ -96,29 +96,34 @@ def manual_stitch_direct():
             )
     im1, im2, im3 = imgs
 
-    # merge im1 and im2
+    ### merge im1 and im2 ###
     pts1 = utils.pick_points(im1, 4)
     pts2 = utils.pick_points(im2, 4)
-    h_matrix1 = homography.homo_matrix(pts1, im2_pts)
-    warp1, shift_pts1 = homography.inverse_warp(im1, h_matrix1)
-    warp_pts1 = homography.warp_pts(pts1, h_matrix1, shift_pts1)
-    aligned1, aligned2, align_pts1, align_pts2 = rectification.align(
-        warp1, im2, warp_pts1, im2_pts
+
+    H1 = homography.homo_matrix(pts1, pts2)
+    warp1, shift1 = homography.inverse_warp(im1, H1)
+    warp_pts1 = homography.warp_pts(pts1, H1, shift1)
+
+    warp2 = im1  # no need to warp image 2
+    warp2_pts = im2_pts
+
+    aligned1, aligned2, pts1_a, pts2_a = rectification.align(
+        warp1, im2, warp2, warp2_pts
     )
     blended12 = rectification.average_blend(aligned1, aligned2)
 
-    # merge im2 and im3
-    blended_pts = utils.pick_points(blended_12, 4)
-    im3_pts = utils.pick_points(im3, 4)
-    h_matrix3 = homography.homo_matrix(im3_pts, im2_pts)
-    warp3, shift_pts3 = homography.inverse_warp(im3, h_matrix3)
-    warp_pts3 = homography.warp_pts(im2_pts, h_matrix3, shift_pts3)
+    ### merge im2 and im3 ###
+    pts3 = utils.pick_points(im3, 4)
 
-    blended_23 = rectification.stitch(warp3, blended_12, warp_pts3, im2_pts)
+    H3 = homography.homo_matrix(pts3, pts2_a)
+    warp3, shift3 = homography.inverse_warp(im3, H3)
+    warp_pts3 = homography.warp_pts(im2_pts, H3, shift3)
+
+    blended_123 = rectification.stitch(warp3, blended_12, warp_pts3, im2_pts)
 
     mosaic_name = OUTDIR_1 / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, blended)
-    pass
+    return
 
 
 def auto_stitching():
@@ -135,7 +140,7 @@ if __name__ == "__main__":
     )
 
     # set up file names
-    (DATA / name).mkdir(parents=False, exist_ok=True)
+    # (DATA / name).mkdir(parents=False, exist_ok=True)
 
     args.images = [Path(x) for x in args.images]
     if args.detection == "manual":
