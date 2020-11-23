@@ -1,2 +1,8 @@
 DEFAULT_KERNEL = 50
 DEFAULT_SIGMA = 15
+
+DEBUG = False
+
+BLEND_METHOD = "average"
+# BLEND_METHOD = "two-band"
+# BLEND_METHOD = "alpha"

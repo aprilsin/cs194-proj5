@@ -4,9 +4,11 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage as sk
+from constants import *
 
 # import skimage.io as io
 from scipy import interpolate
+
 
 def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
     """Returns a homographic transformation matrix from ptsA to ptsB"""
@@ -85,17 +87,19 @@ def forward_warp(img, h_matrix, fill=True) -> np.ndarray:
     warped = empty_warp(img, h_matrix)
 
     # Compute Source Coordinates
-    print("=====src=====")
+    if DEBUG:
+        print("=====src=====")
     # coordinates = np.meshgrid(H,W) # for each pixel
     coordinates = np.array(list(itertools.product(H, W)))
     src_rr, src_cc = coordinates[:, 0], coordinates[:, 1]
-
-    print(img.shape)
-    print(src_rr.min(), src_cc.min())
-    print(src_rr.max(), src_cc.max())
+    if DEBUG:
+        print(img.shape)
+        print(src_rr.min(), src_cc.min())
+        print(src_rr.max(), src_cc.max())
 
     # Compute Target Coordinates
-    print("====target====")
+    if DEBUG:
+        print("====target====")
     pts_3D = [[c, r, 1] for r, c in coordinates]  # x, y = c, r
     pts_3D = np.array(pts_3D).T  # so that each column is [x, y, 1]
 
@@ -113,16 +117,18 @@ def forward_warp(img, h_matrix, fill=True) -> np.ndarray:
     target_rr += row_shift
     target_cc += col_shift
 
-    print(warped.shape)
-    print(target_rr.min(), target_cc.min())
-    print(target_rr.max(), target_cc.max())
+    if DEBUG:
+        print(warped.shape)
+        print(target_rr.min(), target_cc.min())
+        print(target_rr.max(), target_cc.max())
 
     # make sure indicies are in-bounds
     target_rr = np.clip(target_rr, 0, warped.shape[0] - 1)
     target_cc = np.clip(target_cc, 0, warped.shape[1] - 1)
 
     # Do interpolation
-    print("=====interpolate=====")
+    if DEBUG:
+        print("=====interpolate=====")
     interp_funcs = [
         interpolate.RectBivariateSpline(H, W, img[:, :, c]) for c in range(ch)
     ]
@@ -232,19 +238,22 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     x_shift, y_shift = -target_x.min(), -target_y.min()
 
     # compute target coordinates
-    print("====target====")
-    print(warped.shape)
-    print(target_rr.min(), target_cc.min())
-    print(target_rr.max(), target_cc.max())
+    if DEBUG:
+        print("====target====")
+        print(warped.shape)
+        print(target_rr.min(), target_cc.min())
+        print(target_rr.max(), target_cc.max())
 
     # reverse shifting to get the original trasformed values
     target_rr -= y_shift
     target_cc -= x_shift
-    print(target_rr.min(), target_cc.min())
-    print(target_rr.max(), target_cc.max())
+    if DEBUG:
+        print(target_rr.min(), target_cc.min())
+        print(target_rr.max(), target_cc.max())
 
     # compute source coordinates
-    print("=====src=====")
+    if DEBUG:
+        print("=====src=====")
     num_pts = len(target_rr)
     target_pts = np.vstack((target_cc, target_rr, np.ones((1, num_pts))))
 
@@ -253,13 +262,14 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
 
     src_x, src_y = src_pts[0, :], src_pts[1, :]
     src_rr, src_cc = src_y, src_x
-
-    print(img.shape)
-    print(src_rr.min(), src_cc.min())
-    print(src_rr.max(), src_cc.max())
+    if DEBUG:
+        print(img.shape)
+        print(src_rr.min(), src_cc.min())
+        print(src_rr.max(), src_cc.max())
 
     # interpolate
-    print("=====interpolate=====")
+    if DEBUG:
+        print("=====interpolate=====")
 
     # use zero indexed for interpolation
     target_rr += y_shift

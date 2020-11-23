@@ -2,6 +2,7 @@ import numpy as np
 from scipy import signal
 
 import filters
+from constants import *
 
 
 def match_shift(im1, im2, pts1, pts2):
@@ -88,8 +89,10 @@ def overlap_mask(im1, im2):
     tmp2 = np.where(im2 != 0, True, False)
     return (tmp1 & tmp2).astype(int).astype(np.float64)
 
+
 def alpha_blend_mask(img, blend_window):
     pass
+
 
 def alpha_blend(im1, im2):
     mask_hard = overlap_mask(im1, im2)
@@ -127,10 +130,14 @@ def two_band_blend(im1, im2):
     return np.clip(result, 0.0, 1.0)
 
 
-def blend(im1, im2, method="two-band"):
+def blend(im1, im2, method=BLEND_METHOD):
     """ Blend two images together """
+    if method == "average":
+        return average_blend(im1, im2)
     if method == "two-band":
         return two_band_blend(im1, im2)
+    if method == "alpha-blend":
+        return alpha_blend(im1, im2)
     else:
         return None
 
@@ -146,7 +153,6 @@ def blend_channel(im1_Lstack, im2_Lstack, region_stack, mask):
         blended.append(curr_level)
     blended = np.array(blended)
     result = np.sum(blended, axis=0)
-    print(result.shape)
     return result
 
 
