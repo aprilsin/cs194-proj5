@@ -1,8 +1,6 @@
 import argparse
-import sys
 import os
-import homography, rectification
-from pathlib import Path
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -115,7 +113,7 @@ def manual_stitch_direct():
     warp_pts3 = homography.warp_pts(im2_pts, h_matrix3, shift_pts3)
 
     blended_23 = rectification.stitch(warp3, blended_12, warp_pts3, im2_pts)
-    
+
     mosaic_name = OUTDIR / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, blended)
     pass
