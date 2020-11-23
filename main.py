@@ -117,9 +117,10 @@ def manual_stitch_direct():
         if SAVE:
             print("Saving points")
             pts1 = utils.save_points(pts1, args.images[0])
-            im2_stem = args.images[1].stem
-            pts2a = utils.save_points(pts2a, args.images[1].with_stem(im2_stem + "a"))
-            pts2b = utils.save_points(pts2b, args.images[1].with_stem(im2_stem + "b"))
+            name_a = args.images[1].stem + "a" + args.images[1].suffix
+            name_b = args.images[1].stem + "b" + args.images[1].suffix
+            pts2a = utils.save_points(pts2a, args.images[1].parent / name_a)
+            pts2b = utils.save_points(pts2b, args.images[1].parent / name_b)
             pts3 = utils.save_points(pts3, args.images[2])
 
     h, w, c = imgs[0].shape
