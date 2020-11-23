@@ -21,7 +21,10 @@ def read_img(x: ToImgArray, gray=False) -> np.ndarray:
     elif isinstance(x, (str, Path, os.PathLike)):
         x = Path(x)
         if x.suffix in (".jpeg", ".jpg"):
-            img = io.imread(x)
+            if gray:
+                img = io.imread(x, as_gray=True)
+            else:
+                img = io.imread(x)
             img = img_as_float(img)
             return img
         else:
@@ -76,7 +79,10 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     Displays the keypoints of an image
     """
     plt.figure()
-    plt.imshow(img)
+    if img.ndim == 2:
+        plt.imshow(img, cmap="gray")
+    else:
+        plt.imshow(img)
     plt.scatter(points[:, 0], points[:, 1], marker="o", color="b", s=30)
     plt.show()
 
@@ -92,6 +98,7 @@ def show_two(im1, im2):
 # handle file namings
 def get_fname(name: str, i):
     pass
+
 
 def to_gray(img: ToImgArray):
     img = read_img(img)

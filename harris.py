@@ -2,7 +2,7 @@ import numpy as np
 from skimage.feature import corner_harris, corner_peaks
 
 
-def get_harris_corners(im, edge_discard=20):
+def get_corners(im, edge_discard=20):
     """
     This function takes a b&w image and an optional amount to discard
     on the edge (default is 5 pixels), and finds all harris corners
