@@ -92,3 +92,10 @@ def show_two(im1, im2):
 # handle file namings
 def get_fname(name: str, i):
     pass
+
+def to_gray(img: ToImgArray):
+    img = read_img(img)
+    if img.ndim == 3:
+        R, G, B = img
+        return (0.3 * R) + (0.59 * G) + (0.11 * B)
+    return img

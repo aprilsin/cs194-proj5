@@ -1,12 +1,13 @@
-import filters
+import filters, harris
 
 
 def detect_corners(img):
     # num_levels = 5
     # g_stack = filters.gaussian_stack(img)
     # for level in g_stack:
+    assert img.ndim == 2, img.shape
     blurred = filters.gauss_blur(img)
-    gradient_mag, gradient_angles = filters.getGradient(img)
+    harris_stength, coords = harris.get_harris_corners(blurred)
 
 
 def corner_strength():

@@ -162,7 +162,7 @@ def two_band_blend(im1, im2):
     return np.clip(result, 0.0, 1.0)
 
 
-def blend(im1, im2, method=BLEND_METHOD):
+def blend(im1, im2, method):
     """ Blend two images together """
     if method == "average":
         return average_blend(im1, im2)
@@ -186,10 +186,3 @@ def blend_channel(im1_Lstack, im2_Lstack, region_stack, mask):
     blended = np.array(blended)
     result = np.sum(blended, axis=0)
     return result
-
-
-def stitch(im1, im2, im1_pts, im2_pts):
-    """ Stictch two warped images. All inputs should be warped. """
-    align1, align2, pts1, pts2 = align(im1, im2, im1_pts, im2_pts)
-    mosaic = alpha_blend(align1, align2)
-    return mosaic
