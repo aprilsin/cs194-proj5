@@ -102,7 +102,9 @@ def manual_stitch_direct():
     h_matrix1 = homography.homo_matrix(pts1, im2_pts)
     warp1, shift_pts1 = homography.inverse_warp(im1, h_matrix1)
     warp_pts1 = homography.warp_pts(pts1, h_matrix1, shift_pts1)
-    aligned1, aligned2 = rectification.align(warp1, im2, warp_pts1, im2_pts)
+    aligned1, aligned2, align_pts1, align_pts2 = rectification.align(
+        warp1, im2, warp_pts1, im2_pts
+    )
     blended12 = rectification.average_blend(aligned1, aligned2)
 
     # merge im2 and im3
@@ -114,7 +116,7 @@ def manual_stitch_direct():
 
     blended_23 = rectification.stitch(warp3, blended_12, warp_pts3, im2_pts)
 
-    mosaic_name = OUTDIR / (name + "_mosaic.jpg")
+    mosaic_name = OUTDIR_1 / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, blended)
     pass
 
@@ -133,10 +135,6 @@ if __name__ == "__main__":
     )
 
     # set up file names
-    DATA = Path("data")
-    OUTDIR = Path("output")
-    assert DATA.exists()
-    assert OUTDIR.exists()
     (DATA / name).mkdir(parents=False, exist_ok=True)
 
     args.images = [Path(x) for x in args.images]
