@@ -1,4 +1,12 @@
-.ipynb_checkpoints/
+# Python
 __pycache__/
+.ipynb_checkpoints/
+
+# VS Code
 .vscode/
+
+# virtual environment
+env/
+
+# temporary files
 tmp.*
