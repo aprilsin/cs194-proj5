@@ -1,6 +1,5 @@
 import itertools
 
-import harris
 import numpy as np
 from skimage.feature import corner_harris, corner_peaks
 
