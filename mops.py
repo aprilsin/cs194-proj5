@@ -24,7 +24,7 @@ def get_corners(im, edge_discard=20):
 
     # find harris corners
     h = corner_harris(im, method="eps", sigma=1)
-    coords = corner_peaks(h, min_distance=2, indices=True, threshold_rel=0)
+    coords = corner_peaks(h, min_distance=8, indices=True, threshold_rel=0)
 
     # discard points on edge
     edge = edge_discard  # pixels
@@ -45,8 +45,17 @@ def detect_corners(img):
     # for level in g_stack:
     assert img.ndim == 3, img.shape
     blurred = filters.gauss_blur(img)
-    harris_strengths, coords = harris.get_corners(utils.to_gray(blurred))
+    harris_strengths, coords = get_corners(utils.to_gray(blurred))
     return harris_strengths, coords
+
+
+def anms(detected_corners, corners_strengths):
+    keep = set()
+    NUM_CORNERS = 500  # want to keep the best 500 corners
+    while len(keep) < NUM_CORNERS:
+        strongest_corner = np.argmax(strengths)
+        keep.add(strongest_corner)
+    return np.array(list(keep))
 
 
 def dist2(x, c):
@@ -55,10 +64,10 @@ def dist2(x, c):
 
     Description
     D = DIST2(X, C) takes two matrices of vectors and calculates the
-    squared Euclidean distance between them.  Both matrices must be of
+    squared Euclidean distance between them. Both matrices must be of
     the same column dimension.  If X has M rows and N columns, and C has
     L rows and N columns, then the result has M rows and L columns.  The
-    I, Jth entry is the  squared distance from the Ith row of X to the
+    I, Jth entry is the squared distance from the Ith row of X to the
     Jth row of C.
 
     Adapted from code by Christopher M Bishop and Ian T Nabney.
@@ -67,7 +76,7 @@ def dist2(x, c):
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"
-    sq_dist = ( # (x1, y1)^2 - (x2, y2)^2
+    sq_dist = (  # (x1, y1)^2 - (x2, y2)^2
         (np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)).T
         + np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
         - 2 * np.inner(x, c)
@@ -77,40 +86,6 @@ def dist2(x, c):
 
 def refine_matches():
     pass
-
-
-def ransac(matched_corners1, matched_corners2, epsilon):
-    assert len(matched_corners1) == len(matched_corners2), (
-        len(matched_corners1),
-        len(matched_corners2),
-    )
-
-    # select 4 points at random (4 points are needed to compute homography)
-    num_input_matches = len(matched_corners1)
-    max_inliers = 0
-    best_inliers1, best_inliners2 = [], []
-    for indicies in itertools.combinations(range(num_input_matches), 4):
-        # compute homography
-        corners1, corners2 = matched_corners1[indices], matched_corners2[indices]
-        h_matrix = homography.homo_matrix(corners1, corners2)
-        # compute inliers
-        predicted2 = homography.warp_pts(corners2, h_matrix)
-        dist = dist2(corners2, predicted2)
-        # count number of coordinates that are good matches
-        num_matches = np.cound_non_zero(dist < epsilon)
-        # save inliners if they are the largest set so far
-        if num_matches > max_inliers:
-            best_inliers1, best_inliers2 = np.where(dist)
-
-    pass
-
-
-def match_features(im1_grids, im2_grids):
-    matched = []
-    for i, j in itertools.product(len(im1_grids), len(im2_grids)):
-        if np.equals(im1_grids[i], im2_grids[i]):
-            matched.append([i, j])
-    return matched
 
 
 def get_patches(img, corners):
@@ -125,3 +100,44 @@ def get_patches(img, corners):
         patch /= np.std(patch)
         patches.append(patch)
     return patches
+
+
+def match_features(detected_corners1, patches1, detected_corners2, patches2):
+    
+
+    return matched1, matcheds2
+
+
+def ransac(matched_corners1, matched_corners2, epsilon):
+    assert len(matched_corners1) == len(matched_corners2), (
+        len(matched_corners1),
+        len(matched_corners2),
+    )
+
+    num_input_matches = len(matched_corners1)
+    max_inliers = 0
+    best_inliers1, best_inliners2 = [], []
+
+    # select 4 points at random (4 points are needed to compute homography)
+    for indicies in itertools.combinations(range(num_input_matches), 4):
+        # compute homography
+        corners1, corners2 = matched_corners1[indices], matched_corners2[indices]
+        h_matrix = homography.homo_matrix(corners1, corners2)
+
+        # compute inliers
+        predicted2 = homography.warp_pts(corners2, h_matrix)
+        dist = dist2(corners2, predicted2)
+
+        # count number of coordinates that are good matches
+        matches = np.where(dist < epsilon)
+        num_matches = np.cound_non_zero(matches)
+
+        # save inliners if they are the largest set so far
+        if num_matches > max_inliers:
+            best_inliers1, best_inliers2 = (
+                matched_corners1[matches[:, 0]],
+                matched_corners2[matches[:, 1]],
+            )
+            max_inliers = num_matches
+
+    return best_inliers1, best_inliers2
