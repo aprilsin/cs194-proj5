@@ -63,7 +63,7 @@ DEBUG = args.debug
 
 def manual_stitch_plane():
     i, j = [im_name.stem[-1] for im_name in args.images]
-    imgs = [utils.read_img(im) for im in args.images]
+    imgs = [utils.read_img(im, resize=False) for im in args.images]
     pts = [utils.pick_points(im, NUM_PTS) for im in imgs]
 
     h, w, c = imgs[0].shape
@@ -103,7 +103,7 @@ def manual_stitch_plane():
 
 
 def manual_stitch_direct():
-    imgs = [utils.read_img(im) for im in args.images]
+    imgs = [utils.read_img(im, resize=False) for im in args.images]
 
     if LOAD:
         try:

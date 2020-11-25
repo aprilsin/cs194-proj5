@@ -15,9 +15,9 @@ from skimage.util import img_as_float, img_as_ubyte
 ToImgArray = Union[np.ndarray, str, Path, os.PathLike]
 
 
-def read_img(x: ToImgArray, gray=False) -> np.ndarray:
+def read_img(x: ToImgArray, resize=True, gray=False) -> np.ndarray:
     if isinstance(x, np.ndarray):
-        return img_as_float(x).clip(0, 1)
+        img = img_as_float(x).clip(0, 1)
     elif isinstance(x, (str, Path, os.PathLike)):
         x = Path(x)
         if x.suffix in (".jpeg", ".jpg"):
@@ -26,10 +26,17 @@ def read_img(x: ToImgArray, gray=False) -> np.ndarray:
             else:
                 img = io.imread(x)
             img = img_as_float(img)
-            return img
         else:
             raise ValueError(f"Didn't expect type {type(x)}")
-
+    if resize:
+        # resize image if too large    
+        num_pixels = 1600 * 1600
+        h, w = img.shape[0], img.shape[1]
+        r = int(h * w / num_pixels)
+        if h * w > num_pixels and r > 1:
+            return sk.transform.resize(
+                    img, (img.shape[0] // r, img.shape[1] // r), anti_aliasing=True)
+    return img
 
 def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarray:
     """
