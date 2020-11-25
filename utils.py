@@ -53,7 +53,7 @@ def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarr
         )
     assert len(points) == num_pts, len(points)
     print(f"Picked {num_pts} points successfully.")
-    return np.array(points)
+    return np.array(points) # in (x, y) format
 
 
 def save_points(points: np.ndarray, name: os.PathLike) -> None:
@@ -83,7 +83,7 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
         plt.imshow(img, cmap="gray")
     else:
         plt.imshow(img)
-    plt.scatter(points[:, 0], points[:, 1], marker="o", color="b", s=30)
+    plt.scatter(x=points[:, 0], y=points[:, 1], marker="o", color="b", s=30)
     plt.show()
 
 
