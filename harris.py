@@ -29,7 +29,8 @@ def get_corners(im, edge_discard=20):
         & (coords[:, 1] < im.shape[1] - edge)
     )
 
-    return h, np.flip(coords[mask], axis=1) # [x, y] = [c, r]
+    # return h, np.flip(coords[mask], axis=1) # [x, y] = [c, r]
+    return h, coords
 
 
 def dist2(x, c):

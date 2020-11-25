@@ -77,6 +77,7 @@ def load_points(name: os.PathLike) -> np.ndarray:
 def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     """
     Displays the keypoints of an image
+    points are in (x, y) format
     """
     plt.figure()
     if img.ndim == 2:
@@ -84,6 +85,19 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     else:
         plt.imshow(img)
     plt.scatter(x=points[:, 0], y=points[:, 1], marker="o", color="b", s=30)
+    plt.show()
+
+def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
+    """
+    Displays the keypoints of an image
+    points are in (r, c) format
+    """
+    plt.figure()
+    if img.ndim == 2:
+        plt.imshow(img, cmap="gray")
+    else:
+        plt.imshow(img)
+    plt.scatter(x=points[:, 1], y=points[:, 0], marker="o", color="b", s=30)
     plt.show()
 
 
@@ -103,6 +117,6 @@ def get_fname(name: str, i):
 def to_gray(img: ToImgArray):
     img = read_img(img)
     if img.ndim == 3:
-        R, G, B = img
+        R, G, B = img[:, :, 0], img[:, :, 1], img[:, :, 2]
         return (0.3 * R) + (0.59 * G) + (0.11 * B)
     return img

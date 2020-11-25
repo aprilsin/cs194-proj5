@@ -6,7 +6,6 @@ import filters
 import harris
 import utils
 
-
 def detect_corners(img):
     # num_levels = 5
     # g_stack = filters.gaussian_stack(img)
@@ -25,6 +24,15 @@ def match_features(im1_grids, im2_grids):
     return matched
 
 
-def standardize():
+def get_patches(img, corners):
     """make all detected corner an 8x8 grid"""
-    pass
+    patches = []
+    for (r, c) in corners:
+        patch = img[r-20:r+20, c-20:c+20]
+        # downsample
+        patch = skimage.transform.resize(patch, (8, 8))
+        # normalize
+        patch -= mean(patch)
+        patch /= np.std(patch)
+        patches.append(patch)
+    return patches
