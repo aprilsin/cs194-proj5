@@ -23,7 +23,7 @@ def get_corners(im, edge_discard=20):
     assert edge_discard >= 20
 
     # find harris corners
-    h = corner_harris(im, method="eps", sigma=1)
+    h_strength = corner_harris(im, method="eps", sigma=1)
     coords = corner_peaks(h, min_distance=8, indices=True, threshold_rel=0)
 
     # discard points on edge
@@ -36,7 +36,7 @@ def get_corners(im, edge_discard=20):
     )
 
     # return h, np.flip(coords[mask], axis=1) # [x, y] = [c, r]
-    return h, coords
+    return coords[mask], h_strength
 
 
 def detect_corners(img):
@@ -50,10 +50,16 @@ def detect_corners(img):
 
 
 def anms(detected_corners, corners_strengths):
+    mask = np.full(shape=corners_strengths.shape, fill_value=-float("inf"))
+    NUM_GLOBAL = 10
+    indices = (-corners_strengths).argsort()[:NUM_GLOBAL]
+    mask[detected_corners[:, 0], detected_corners[:, 1]] = corners_strengths[
+        detected_corners[:, 0], detected_corners[:, 1]
+    ]
     keep = set()
     NUM_CORNERS = 500  # want to keep the best 500 corners
     while len(keep) < NUM_CORNERS:
-        strongest_corner = np.argmax(strengths)
+        strongest_corner = np.argmax(corners_strengths)
         keep.add(strongest_corner)
     return np.array(list(keep))
 
@@ -103,7 +109,6 @@ def get_patches(img, corners):
 
 
 def match_features(detected_corners1, patches1, detected_corners2, patches2):
-    
 
     return matched1, matcheds2
 
