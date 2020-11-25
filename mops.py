@@ -6,6 +6,7 @@ import filters
 import harris
 import utils
 
+
 def detect_corners(img):
     # num_levels = 5
     # g_stack = filters.gaussian_stack(img)
@@ -28,7 +29,7 @@ def get_patches(img, corners):
     """make all detected corner an 8x8 grid"""
     patches = []
     for (r, c) in corners:
-        patch = img[r-20:r+20, c-20:c+20]
+        patch = img[r - 20 : r + 20, c - 20 : c + 20]
         # downsample
         patch = skimage.transform.resize(patch, (8, 8))
         # normalize

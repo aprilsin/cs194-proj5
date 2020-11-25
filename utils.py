@@ -29,14 +29,16 @@ def read_img(x: ToImgArray, resize=True, gray=False) -> np.ndarray:
         else:
             raise ValueError(f"Didn't expect type {type(x)}")
     if resize:
-        # resize image if too large    
+        # resize image if too large
         num_pixels = 1600 * 1600
         h, w = img.shape[0], img.shape[1]
         r = int(h * w / num_pixels)
         if h * w > num_pixels and r > 1:
             return sk.transform.resize(
-                    img, (img.shape[0] // r, img.shape[1] // r), anti_aliasing=True)
+                img, (img.shape[0] // r, img.shape[1] // r), anti_aliasing=True
+            )
     return img
+
 
 def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarray:
     """
@@ -60,7 +62,7 @@ def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarr
         )
     assert len(points) == num_pts, len(points)
     print(f"Picked {num_pts} points successfully.")
-    return np.array(points) # in (x, y) format
+    return np.array(points)  # in (x, y) format
 
 
 def save_points(points: np.ndarray, name: os.PathLike) -> None:
@@ -93,6 +95,7 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
         plt.imshow(img)
     plt.scatter(x=points[:, 0], y=points[:, 1], marker="o", color="b", s=30)
     plt.show()
+
 
 def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
     """

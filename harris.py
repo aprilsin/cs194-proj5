@@ -57,4 +57,3 @@ def dist2(x, c):
         + np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
         - 2 * np.inner(x, c)
     )
-
