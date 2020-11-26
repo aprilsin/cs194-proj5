@@ -50,29 +50,10 @@ def gaussian_filter(kernel_size=DEFAULT_KERNEL, sigma=DEFAULT_SIGMA, display=Fal
 
 def gauss_blur(im, kernel_size=DEFAULT_KERNEL, sigma=DEFAULT_SIGMA, display=False):
     """ blurrs an image"""
-    assert np.ndim(im) == 3
-
-    blur_channels = []
+    assert np.ndim(im) == 2
     gauss_filter = gaussian_filter(kernel_size, sigma)
-
-    for ch in range(3):
-        channel = im[:, :, ch]
-        low_freq = signal.convolve2d(channel, gauss_filter, mode="same")
-        blur_channels.append(low_freq)
-
-    result = np.stack(blur_channels, axis=-1)
-
-    if display:
-        fig = plt.figure(figsize=(12, 12))
-        p1 = fig.add_subplot(1, 2, 1)
-        p1.imshow(im)
-        p1.set_title("input")
-        p2 = fig.add_subplot(1, 2, 2)
-        p2.imshow(result)
-        p2.set_title("blurred")
-        pass
-
-    return result
+    blurred = signal.convolve2d(im, gauss_filter, mode="same")
+    return blurred
 
 
 def unsharp_mask(im, kernel_size=15, sigma=3, display=False):

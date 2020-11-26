@@ -35,7 +35,7 @@ class Feature:
 
 def get_corners(im, edge_discard=20) -> list:
     """
-    Finds all harris corners in the image. Harris corners near the edge are discarded and the coordinates of the remaining corners are returned.
+    Returns a list of harris corners of img as Corner objects. Harris corners near the edge are discarded and the coordinates of the remaining corners are returned.
 
     Args:
     im -- b&w image
@@ -44,9 +44,14 @@ def get_corners(im, edge_discard=20) -> list:
     Output:
     corners -- a list of Corner instances
     """
-
+    assert im.ndim == 2, im.shape
     assert edge_discard >= 20
-
+    im = filters.gauss_blur(im)
+    
+    # num_levels = 5
+    # g_stack = filters.gaussian_stack(img)
+    # for level in g_stack:
+    
     # find harris corners
     h_strengths = corner_harris(im, method="eps", sigma=1)
     coords = corner_peaks(h_strengths, min_distance=8, indices=True, threshold_rel=0)
@@ -61,19 +66,6 @@ def get_corners(im, edge_discard=20) -> list:
     )
 
     corners = [Corner(c, h_strengths[c[0], c[1]]) for c in coords[mask]]
-    return corners
-
-
-def detect_corners(img) -> list:
-    """
-    Returns a list of detected corners of img as Corner objects.
-    """
-    assert img.ndim == 3, img.shape
-    # num_levels = 5
-    # g_stack = filters.gaussian_stack(img)
-    # for level in g_stack:
-    blurred = filters.gauss_blur(img)
-    corners = get_corners(utils.to_gray(blurred))
     return corners
 
 
@@ -109,7 +101,7 @@ def dist2(x, c) -> np.ndarray:
 
 
 def anms(detected_corners) -> list:
-    assert type(detect_corners) == list, type(detect_corners)
+    assert type(detected_corners) == list, type(detected_corners)
 
     # initialize
     NUM_KEEP = 200  # want to keep the best 200 corners
@@ -120,7 +112,7 @@ def anms(detected_corners) -> list:
         if r == 0 and len(keep) == 0:  # get global maximum
             strongest_corner = np.argmax(detected_corners)
             keep.add(strongest_corner)
-            detect_corners.remove(strongest_corner)
+            detected_corners.remove(strongest_corner)
         else:
             centers = list(keep)
             sq_dist = dist2(centers, detect_corners)
