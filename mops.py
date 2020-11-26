@@ -91,24 +91,6 @@ def dist2(x, c):
     return sq_dist
 
 
-def vectorize(patch):
-    assert patch.shape == (8, 8), patch.shape
-    return np.reshape(patch, (1, 64))
-
-
-def normalize(mat):
-    return np.mean(mat) / np.std(mat)
-
-
-def dist_patches(patch1, patch2):
-    """
-    patch1 and patch2 are 8x8 grids.
-    """
-    v1 = vectorize(patch1)
-    v2 = vectorize(patch2)
-    pass
-
-
 def anms(detected_corners, corners_strengths):
     mask = np.full(shape=corners_strengths.shape, fill_value=-float("inf"))
     NUM_GLOBAL = 10
@@ -121,9 +103,18 @@ def anms(detected_corners, corners_strengths):
     r = 0  # initialize suppression radius
     NUM_KEEP = 100  # want to keep the best 500 corners
     while len(keep) < NUM_KEEP:
-        strongest_corner = np.argmax(corners_strengths)
+        strongest_corner = np.argmax(corners_strengths)  # TODO
         keep.add(strongest_corner)
     return np.array(list(keep))
+
+
+def vectorize(patch):
+    assert patch.shape == (8, 8), patch.shape
+    return np.reshape(patch, (1, 64))
+
+
+def normalize(mat):
+    return (mat - np.mean(mat)) / np.std(mat)
 
 
 def refine_matches():
@@ -133,28 +124,35 @@ def refine_matches():
 def get_patches(img, corners) -> np.ndarray:
     """make all detected corner an 8x8 grid"""
     img = filters.gauss_blur(img)
-    img = utils.to_gray(img)
+    img = utils.to_gray(img)  # TODO make it work with colored patches
+
     patches = []
     for (r, c) in corners:
         patch = img[r - 20 : r + 20, c - 20 : c + 20]  # get a 40x40 patch
-        # downsample
-        # patch = skimage.transform.resize(patch, (8, 8))
-        patch = patch[::5, ::5, :]  # take every 5th pixel
-        # normalize
-        patch = vectorize(patch)
-        patch = normalize(patch)
+
+        # patch = skimage.transform.resize(patch, (8, 8))  # downsample
+        patch = patch[::5, ::5, :]  # downsample by taking every 5th pixel
+
+        patch = normalize(patch)  # normalize
+
         patches.append(patch)
+
     return np.array(patches)
 
 
-def match_features(detected_corners1, detected_corners2, patches1, patches2):
-    #     features1 = list(zip(corners1, patches1))
-    #     features2 = list(zip(corners2, patches2))
+def dist_patches(patch1, patch2):
+    """
+    patch1 and patch2 are 8x8 grids.
+    """
+    assert patch1.shape == patch2.shape == (8, 8), (patch1.shape, patch2.shape)
+    patch1 = np.reshape(patch1, (1, 64))
+    patch2 = np.reshape(patch2, (1, 64))
+    return np.sum((patch1 - patch2) ** 2)  # sum squared distance
+
+
+def match_features(features1, features2):
     combos = list(itertools.product(features1, features2))
-    ssd = dist2(
-        [corners for corners, patches in features1],
-        [corners for corners, patches in features2],
-    )
+    
     return matched1, matcheds2
 
 
