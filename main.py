@@ -218,7 +218,6 @@ def auto_stitch():
     matched1, matched2 = matching.ransac(features1, features2)
 
     # TODO plot and save results
-
     return
 
 

@@ -11,7 +11,8 @@ from constants import *
 
 def match_features(features1, features2):
     combos = list(itertools.product(features1, features2))
-    # TODO
+    ssd = [utils.dist_patches(f1.patch, f2.patch) for f1, f2 in combos]
+    
     matched1, matched2 = features1, features2
     return matched1, matched2
 

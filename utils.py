@@ -130,3 +130,54 @@ def to_gray(img: ToImgArray):
         R, G, B = img[:, :, 0], img[:, :, 1], img[:, :, 2]
         return (0.3 * R) + (0.59 * G) + (0.11 * B)
     return img
+
+
+def vectorize(mat):
+    assert mat.ndim == 2
+    h, w = mat.shape
+    return np.reshape(mat, (1, h * w))
+
+
+def normalize(mat):
+    return (mat - np.mean(mat)) / np.std(mat)
+
+
+def dist2(x: list, c: list) -> np.ndarray:
+    """
+    dist2  Calculates squared distance between two sets of points in polar coordinates.
+
+    Input:
+    - Takes two matrices of vectors and calculates the squared Euclidean distance between them.
+    - Both matrices must be of the same column dimension.
+
+    Output:
+    - If X has M rows and N columns, and C has L rows and N columns, then the result has M rows and L columns.  The I, Jth entry is the squared distance from the Ith row of X to the Jth row of C.
+
+    Adapted from code by Christopher M Bishop and Ian T Nabney.
+    """
+
+    ndata, dimx = x.shape
+    ncenters, dimc = c.shape
+    assert dimx == dimc, "Data dimension does not match dimension of centers"
+
+    # dist^2 = r^2 + s^2 - 2*rs*cos(theta-phi)
+    # dist^2 = r^2 + s^2 - 2*inner-product
+    r_sq = np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)
+    s_sq = np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
+
+    sq_dist = (
+        (np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)).T
+        + np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
+        - 2 * np.inner(x, c)
+    )
+    return sq_dist
+
+
+def dist_patches(patch1, patch2):
+    """
+    patch1 and patch2 are 8x8 grids.
+    """
+    assert patch1.shape == patch2.shape == (8, 8), (patch1.shape, patch2.shape)
+    patch1 = np.reshape(patch1, (1, 64))
+    patch2 = np.reshape(patch2, (1, 64))
+    return np.sum((patch1 - patch2) ** 2)  # sum squared distance
