@@ -61,3 +61,22 @@ class Corner:
 class Feature:
     coord: np.ndarray  # shape = (2,  )
     patch: np.ndarray  # shape = (8, 8)
+
+
+# TODO
+# combine the two data classes?
+# ignore compare functions, manually implement them
+
+
+class Tmp:
+    def __init__(self, coord, strength, patch=None):
+        # assert coord.ndim == 2, coord
+        # assert len(coord) == 2, coord
+        assert type(strength) == np.float64, type(strength)
+        self.coord = coord
+        self.strength = strength
+        if patch is None:
+            self.patch = np.zeros((8, 8))  # one patch is 8x8
+        else:
+            assert patch.shape == (8, 8), patch.shape
+            self.patch = patch

@@ -11,8 +11,9 @@ from constants import *
 
 def match_features(features1, features2):
     combos = list(itertools.product(features1, features2))
-
-    return matched1, matcheds2
+    # TODO
+    matched1, matched2 = features1, features2
+    return matched1, matched2
 
 
 def ransac(matched_corners1, matched_corners2, epsilon):
@@ -26,14 +27,17 @@ def ransac(matched_corners1, matched_corners2, epsilon):
     best_inliers1, best_inliners2 = [], []
 
     # select 4 points at random (4 points are needed to compute homography)
-    for indicies in itertools.combinations(range(num_input_matches), 4):
+    for indices in itertools.combinations(range(num_input_matches), 4):
         # compute homography
         corners1, corners2 = matched_corners1[indices], matched_corners2[indices]
         h_matrix = homography.homo_matrix(corners1, corners2)
 
         # compute inliers
         predicted2 = homography.warp_pts(corners2, h_matrix)
-        dist = dist2(corners2, predicted2)
+
+        import detector
+
+        dist = detector.dist2(corners2, predicted2)  # TODO fix ssd
 
         # count number of coordinates that are good matches
         matches = np.where(dist < epsilon)

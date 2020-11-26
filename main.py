@@ -12,6 +12,7 @@ import filters
 import homography
 import rectification
 import utils
+import detector, descriptor, matching
 from constants import *
 
 # class ToPath(argparse.Action):
@@ -22,7 +23,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "detection",
     type=str,
-    choices=["manual", "auto", "debug"],
+    choices=["manual", "auto"],
     default="manual",
     help="Choose manual or auto stitching",
 )
@@ -189,11 +190,36 @@ def manual_stitch_direct():
 
 
 def auto_stitch():
-    pass
+    im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in args.images]
 
+    # detect corners
+    strength1, coords1 = detector.get_corners(im1)
+    strength2, coords2 = detector.get_corners(im2)
+    strength1, coords1 = detector.anms(strength1, coords1)
+    strength2, coords2 = detector.anms(strength2, coords2)
+    # corners1 = [Corner(c, strength1[c]) for c in coords1] $ TODO
+    # corners2 = [Corner(c, strength2[c]) for c in coords2]
+    # corners1 = [Tmp(c, strength1[c]) for c in coords1]
+    # corners2 = [Tmp(c, strength2[c]) for c in coords2]
+    corners1 = coords1
+    corners2 = coords2
+    assert len(corners1) == len(corners2)
 
-def debug():
-    pass
+    # describe features with patches
+    patches1 = descriptor.get_patches(im1, corners1)
+    patches2 = descriptor.get_patches(im2, corners2)
+
+    # match patches
+    features1 = patches1  # TODO
+    features2 = patches2
+    features1, features2 = matching.match_features(features1, features2)
+
+    # find best matches / inliers
+    matched1, matched2 = matching.ransac(features1, features2)
+
+    # TODO plot and save results
+
+    return
 
 
 if __name__ == "__main__":
@@ -222,9 +248,6 @@ detection: {args.detection}"""
     if args.detection == "auto":
         assert num_imgs == 2, num_imgs
         auto_stitch()
-        sys.exit()
-    if args.detection == "debug":
-        debug()
         sys.exit()
     else:
         raise ValueError()
