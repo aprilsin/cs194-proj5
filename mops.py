@@ -1,30 +1,41 @@
 import itertools
+from dataclasses import dataclass
 
 import numpy as np
+import skimage.transform
 from skimage.feature import corner_harris, corner_peaks
 
 import filters
 import homography
 import utils
 
+# from constants import NUM_KEEP
+
+
+@dataclass
+class Feature:
+    coord: np.ndarray  # shape = (2,  )
+    patch: np.ndarray  # shape = (8, 8)
+
 
 def get_corners(im, edge_discard=20):
     """
-    This function takes a b&w image and an optional amount to discard
-    on the edge (default is 5 pixels), and finds all harris corners
-    in the image. Harris corners near the edge are discarded and the
-    coordinates of the remaining corners are returned. A 2d array (h)
-    containing the h value of every pixel is also returned.
+    Finds all harris corners in the image. Harris corners near the edge are discarded and the coordinates of the remaining corners are returned.
 
-    h is the same shape as the original image, im.
-    coords is n x 2 (xs, ys).
+    Input:
+    Takes a b&w image and an optional amount to discard
+    on the edge (default is 5 pixels).
+
+    Output:
+    - a 2d array (h_strengths) of the same shape as the original image (im) containing the Harris corner strength of every pixel.
+    - coords is n x 2 (xs, ys).
     """
 
     assert edge_discard >= 20
 
     # find harris corners
-    h_strength = corner_harris(im, method="eps", sigma=1)
-    coords = corner_peaks(h, min_distance=8, indices=True, threshold_rel=0)
+    h_strengths = corner_harris(im, method="eps", sigma=1)
+    coords = corner_peaks(h_strengths, min_distance=8, indices=True, threshold_rel=0)
 
     # discard points on edge
     edge = edge_discard  # pixels
@@ -36,7 +47,7 @@ def get_corners(im, edge_discard=20):
     )
 
     # return h, np.flip(coords[mask], axis=1) # [x, y] = [c, r]
-    return coords[mask], h_strength
+    return coords[mask], h_strengths
 
 
 def detect_corners(img):
@@ -49,32 +60,16 @@ def detect_corners(img):
     return harris_strengths, coords
 
 
-def anms(detected_corners, corners_strengths):
-    mask = np.full(shape=corners_strengths.shape, fill_value=-float("inf"))
-    NUM_GLOBAL = 10
-    indices = (-corners_strengths).argsort()[:NUM_GLOBAL]
-    mask[detected_corners[:, 0], detected_corners[:, 1]] = corners_strengths[
-        detected_corners[:, 0], detected_corners[:, 1]
-    ]
-    keep = set()
-    NUM_CORNERS = 500  # want to keep the best 500 corners
-    while len(keep) < NUM_CORNERS:
-        strongest_corner = np.argmax(corners_strengths)
-        keep.add(strongest_corner)
-    return np.array(list(keep))
-
-
 def dist2(x, c):
     """
-    dist2  Calculates squared distance between two sets of points.
+    dist2  Calculates squared distance between two sets of points in polar coordinates.
 
-    Description
-    D = DIST2(X, C) takes two matrices of vectors and calculates the
-    squared Euclidean distance between them. Both matrices must be of
-    the same column dimension.  If X has M rows and N columns, and C has
-    L rows and N columns, then the result has M rows and L columns.  The
-    I, Jth entry is the squared distance from the Ith row of X to the
-    Jth row of C.
+    Input:
+    - Takes two matrices of vectors and calculates the squared Euclidean distance between them.
+    - Both matrices must be of the same column dimension.
+
+    Output:
+    - If X has M rows and N columns, and C has L rows and N columns, then the result has M rows and L columns.  The I, Jth entry is the squared distance from the Ith row of X to the Jth row of C.
 
     Adapted from code by Christopher M Bishop and Ian T Nabney.
     """
@@ -82,7 +77,13 @@ def dist2(x, c):
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"
-    sq_dist = (  # (x1, y1)^2 - (x2, y2)^2
+
+    # dist^2 = r^2 + s^2 - 2*rs*cos(theta-phi)
+    # dist^2 = r^2 + s^2 - 2*inner-product
+    r_sq = np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)
+    s_sq = np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
+
+    sq_dist = (
         (np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)).T
         + np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
         - 2 * np.inner(x, c)
@@ -90,26 +91,55 @@ def dist2(x, c):
     return sq_dist
 
 
+def dist_patches(patches1, patches2):
+    pass
+
+
+def anms(detected_corners, corners_strengths):
+    mask = np.full(shape=corners_strengths.shape, fill_value=-float("inf"))
+    NUM_GLOBAL = 10
+    indices = (-corners_strengths).argsort()[:NUM_GLOBAL]
+    mask[detected_corners[:, 0], detected_corners[:, 1]] = corners_strengths[
+        detected_corners[:, 0], detected_corners[:, 1]
+    ]
+
+    keep = set()
+    r = 0  # initialize suppression radius
+    NUM_KEEP = 100  # want to keep the best 500 corners
+    while len(keep) < NUM_KEEP:
+        strongest_corner = np.argmax(corners_strengths)
+        keep.add(strongest_corner)
+    return np.array(list(keep))
+
+
 def refine_matches():
     pass
 
 
-def get_patches(img, corners):
+def get_patches(img, corners) -> np.ndarray:
     """make all detected corner an 8x8 grid"""
+    img = filters.gauss_blur(img)
+    img = utils.to_gray(img)
     patches = []
     for (r, c) in corners:
         patch = img[r - 20 : r + 20, c - 20 : c + 20]
         # downsample
         patch = skimage.transform.resize(patch, (8, 8))
         # normalize
-        patch -= mean(patch)
+        patch -= np.mean(patch)
         patch /= np.std(patch)
         patches.append(patch)
-    return patches
+    return np.array(patches)
 
 
-def match_features(detected_corners1, patches1, detected_corners2, patches2):
-
+def match_features(detected_corners1, detected_corners2, patches1, patches2):
+    #     features1 = list(zip(corners1, patches1))
+    #     features2 = list(zip(corners2, patches2))
+    combos = list(itertools.product(features1, features2))
+    ssd = dist2(
+        [corners for corners, patches in features1],
+        [corners for corners, patches in features2],
+    )
     return matched1, matcheds2
 
 
