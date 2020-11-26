@@ -7,8 +7,8 @@ DATA = Path("data")
 OUTDIR_1 = Path("output_part1")
 OUTDIR_2 = Path("output_part2")
 assert DATA.exists()
-mkdir(OUTDIR_1, exist_ok=True)
-mkdir(OUTDIR_2, exist_ok=True)
+OUTDIR_1.mkdir(exist_ok=True)
+OUTDIR_2.mkdir(exist_ok=True)
 # assert OUTDIR_1.exists()
 # assert OUTDIR_2.exists()
 
@@ -34,7 +34,7 @@ BLEND_METHOD = "average"
 #####################
 #      PART 2       #
 #####################
-MIN_HARRIS_STRENGTH = 0.1 # relative to max(image), i.e. most intense pixel of image
+MIN_HARRIS_STRENGTH = 0.1  # relative to max(image), i.e. most intense pixel of image
 NUM_KEEP = 500  # want to keep the best 500 corners
 MIN_RADIUS = 2
 MAX_RADIUS = 500  # TODO should be 1/4 th of img size
@@ -45,6 +45,8 @@ MAX_RADIUS = 500  # TODO should be 1/4 th of img size
 class Corner:
     coord: np.ndarray  # shape = (2,  )
     strength: float
+
+
 #     def __eq__(self, other):
 #         return self.strength == other.strength
 

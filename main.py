@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "detection",
     type=str,
-    choices=["manual", "auto"],
+    choices=["manual", "auto", "debug"],
     default="manual",
     help="Choose manual or auto stitching",
 )
@@ -192,6 +192,10 @@ def auto_stitch():
     pass
 
 
+def debug():
+    pass
+
+
 if __name__ == "__main__":
 
     num_imgs = len(args.images)
@@ -219,3 +223,8 @@ detection: {args.detection}"""
         assert num_imgs == 2, num_imgs
         auto_stitch()
         sys.exit()
+    if args.detection == "debug":
+        debug()
+        sys.exit()
+    else:
+        raise ValueError()
