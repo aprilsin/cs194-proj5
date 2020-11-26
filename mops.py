@@ -8,8 +8,21 @@ from skimage.feature import corner_harris, corner_peaks
 import filters
 import homography
 import utils
+from functools import total_ordering
 
 # from constants import NUM_KEEP
+
+
+@dataclass(order=True)
+class Corner:
+    coord: np.ndarray  # shape = (2,  )
+    strength: float
+
+    def __eq__(self, other):
+        return self.strength == other.strength
+
+    def __lt__(self, other):
+        return self.strength < other.strength
 
 
 @dataclass
@@ -45,9 +58,11 @@ def get_corners(im, edge_discard=20):
         & (coords[:, 1] > edge)
         & (coords[:, 1] < im.shape[1] - edge)
     )
-
+    coords = coords[mask]
+    corners = [Corner(c, h_strengths[c[0], c[1]]) for c in coords]
     # return h, np.flip(coords[mask], axis=1) # [x, y] = [c, r]
-    return coords[mask], h_strengths
+    # return coords[mask], h_strengths
+    return corners
 
 
 def detect_corners(img):
@@ -56,8 +71,8 @@ def detect_corners(img):
     # for level in g_stack:
     assert img.ndim == 3, img.shape
     blurred = filters.gauss_blur(img)
-    harris_strengths, coords = get_corners(utils.to_gray(blurred))
-    return harris_strengths, coords
+    corners = get_corners(utils.to_gray(blurred))
+    return corners
 
 
 def dist2(x, c):
@@ -91,19 +106,18 @@ def dist2(x, c):
     return sq_dist
 
 
-def anms(detected_corners, corners_strengths):
-    mask = np.full(shape=corners_strengths.shape, fill_value=-float("inf"))
-    NUM_GLOBAL = 10
-    indices = (-corners_strengths).argsort()[:NUM_GLOBAL]
-    mask[detected_corners[:, 0], detected_corners[:, 1]] = corners_strengths[
-        detected_corners[:, 0], detected_corners[:, 1]
-    ]
-
+def anms(detected_corners):
     keep = set()
     r = 0  # initialize suppression radius
     NUM_KEEP = 100  # want to keep the best 500 corners
     while len(keep) < NUM_KEEP:
-        strongest_corner = np.argmax(corners_strengths)  # TODO
+        if r == 0 and len(keep) == 0:  # get global maximum
+            strongest_corner = np.argmax(corners_strengths)  # TODO
+        else:
+            for corner in keep:
+                sq_dist = dist2(
+                    c,
+                )
         keep.add(strongest_corner)
     return np.array(list(keep))
 
@@ -152,7 +166,7 @@ def dist_patches(patch1, patch2):
 
 def match_features(features1, features2):
     combos = list(itertools.product(features1, features2))
-    
+
     return matched1, matcheds2
 
 
