@@ -91,7 +91,21 @@ def dist2(x, c):
     return sq_dist
 
 
-def dist_patches(patches1, patches2):
+def vectorize(patch):
+    assert patch.shape == (8, 8), patch.shape
+    return np.reshape(patch, (1, 64))
+
+
+def normalize(mat):
+    return np.mean(mat) / np.std(mat)
+
+
+def dist_patches(patch1, patch2):
+    """
+    patch1 and patch2 are 8x8 grids.
+    """
+    v1 = vectorize(patch1)
+    v2 = vectorize(patch2)
     pass
 
 
@@ -122,12 +136,13 @@ def get_patches(img, corners) -> np.ndarray:
     img = utils.to_gray(img)
     patches = []
     for (r, c) in corners:
-        patch = img[r - 20 : r + 20, c - 20 : c + 20]
+        patch = img[r - 20 : r + 20, c - 20 : c + 20]  # get a 40x40 patch
         # downsample
-        patch = skimage.transform.resize(patch, (8, 8))
+        # patch = skimage.transform.resize(patch, (8, 8))
+        patch = patch[::5, ::5, :]  # take every 5th pixel
         # normalize
-        patch -= np.mean(patch)
-        patch /= np.std(patch)
+        patch = vectorize(patch)
+        patch = normalize(patch)
         patches.append(patch)
     return np.array(patches)
 
