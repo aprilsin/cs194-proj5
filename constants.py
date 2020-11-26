@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
 import numpy as np
+import pandas as pd
 
 DATA = Path("data")
 OUTDIR_1 = Path("output_part1")
@@ -80,3 +81,7 @@ class Tmp:
         else:
             assert patch.shape == (8, 8), patch.shape
             self.patch = patch
+
+
+combinations = {coord:}
+features = {}
