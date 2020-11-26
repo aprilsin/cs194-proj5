@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import skimage.transform
-from skimage.feature import corner_harris, corner_peaks
+from skimage.feature import corner_harris, corner_peaks, peak_local_max
 
 import filters
 import homography
@@ -25,7 +25,9 @@ class Corner:
 
     def __lt__(self, other):
         return self.strength < other.strength
-
+    
+#     def __hash__(self):
+#         return hash(self.coord) ^ hash(self.strength)
 
 @dataclass
 class Feature:
@@ -54,7 +56,8 @@ def get_corners(im, edge_discard=20) -> list:
     
     # find harris corners
     h_strengths = corner_harris(im, method="eps", sigma=1)
-    coords = corner_peaks(h_strengths, min_distance=8, indices=True, threshold_rel=0)
+#     coords = corner_peaks(h_strengths, min_distance=20, indices=True, threshold_rel=0)
+    coords = peak_local_max(h_strengths, min_distance=20, indices=True)
 
     # discard points on edge
     edge = edge_discard  # pixels
@@ -66,10 +69,11 @@ def get_corners(im, edge_discard=20) -> list:
     )
 
     corners = [Corner(c, h_strengths[c[0], c[1]]) for c in coords[mask]]
+    corners.sort()
     return corners
 
 
-def dist2(x, c) -> np.ndarray:
+def dist2(x:list, c:list) -> np.ndarray:
     """
     dist2  Calculates squared distance between two sets of points in polar coordinates.
 
@@ -82,7 +86,8 @@ def dist2(x, c) -> np.ndarray:
 
     Adapted from code by Christopher M Bishop and Ian T Nabney.
     """
-
+    x, c = np.array([a.coord for a in x]), np.array([a.coord for a in c])
+    print(x)
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"
@@ -102,26 +107,29 @@ def dist2(x, c) -> np.ndarray:
 
 def anms(detected_corners) -> list:
     assert type(detected_corners) == list, type(detected_corners)
+    detected_corners.sort(reverse=True)
 
     # initialize
     NUM_KEEP = 200  # want to keep the best 200 corners
-    keep = set()
+    keep = []
     r = 0  # suppression radius
 
     while len(detected_corners) > 0 and len(keep) < NUM_KEEP:
         if r == 0 and len(keep) == 0:  # get global maximum
-            strongest_corner = np.argmax(detected_corners)
-            keep.add(strongest_corner)
+            strongest_corner = detected_corners[0]
+            print(strongest_corner)
+            keep.append(strongest_corner)
             detected_corners.remove(strongest_corner)
         else:
             centers = list(keep)
-            sq_dist = dist2(centers, detect_corners)
+            sq_dist = dist2(centers, detected_corners)
             mask = np.where(sq_dist <= r)
-            strongest_neighbors = np.argmax(sq_dist, axis=1)  # TODO check axis
-            
+            indices = np.argmax(sq_dist[mask])  # TODO check axis
+            strongest_neighbors = detected_corners[indices]
             keep.append(strongest_neighbors)
             for c in strongest_neighbors:
-                detect_corners.remove(c)
+                print(c)
+                detected_corners.remove(strongest_neighbors[c])
 
     assert len(keep) == NUM_KEEP
     return list(keep)
