@@ -9,11 +9,13 @@ import filters
 import homography
 import utils
 from functools import total_ordering
+from queue import PriorityQueue
 
 # from constants import NUM_KEEP
 
 
-@dataclass(order=True)
+@dataclass
+@total_ordering
 class Corner:
     coord: np.ndarray  # shape = (2,  )
     strength: float
@@ -31,17 +33,16 @@ class Feature:
     patch: np.ndarray  # shape = (8, 8)
 
 
-def get_corners(im, edge_discard=20):
+def get_corners(im, edge_discard=20) -> list:
     """
     Finds all harris corners in the image. Harris corners near the edge are discarded and the coordinates of the remaining corners are returned.
 
-    Input:
-    Takes a b&w image and an optional amount to discard
-    on the edge (default is 5 pixels).
+    Args:
+    im -- b&w image
+    edge_discard (optional) --  amount to discard on the edge (default 5 pixels)
 
     Output:
-    - a 2d array (h_strengths) of the same shape as the original image (im) containing the Harris corner strength of every pixel.
-    - coords is n x 2 (xs, ys).
+    corners -- a list of Corner instances
     """
 
     assert edge_discard >= 20
@@ -58,24 +59,25 @@ def get_corners(im, edge_discard=20):
         & (coords[:, 1] > edge)
         & (coords[:, 1] < im.shape[1] - edge)
     )
-    coords = coords[mask]
-    corners = [Corner(c, h_strengths[c[0], c[1]]) for c in coords]
-    # return h, np.flip(coords[mask], axis=1) # [x, y] = [c, r]
-    # return coords[mask], h_strengths
+
+    corners = [Corner(c, h_strengths[c[0], c[1]]) for c in coords[mask]]
     return corners
 
 
-def detect_corners(img):
+def detect_corners(img) -> list:
+    """
+    Returns a list of detected corners of img as Corner objects.
+    """
+    assert img.ndim == 3, img.shape
     # num_levels = 5
     # g_stack = filters.gaussian_stack(img)
     # for level in g_stack:
-    assert img.ndim == 3, img.shape
     blurred = filters.gauss_blur(img)
     corners = get_corners(utils.to_gray(blurred))
     return corners
 
 
-def dist2(x, c):
+def dist2(x, c) -> np.ndarray:
     """
     dist2  Calculates squared distance between two sets of points in polar coordinates.
 
@@ -106,20 +108,31 @@ def dist2(x, c):
     return sq_dist
 
 
-def anms(detected_corners):
+def anms(detected_corners) -> list:
+    assert type(detect_corners) == list, type(detect_corners)
+
+    # initialize
+    NUM_KEEP = 200  # want to keep the best 200 corners
     keep = set()
-    r = 0  # initialize suppression radius
-    NUM_KEEP = 100  # want to keep the best 500 corners
+    r = 0  # suppression radius
+
     while len(keep) < NUM_KEEP:
         if r == 0 and len(keep) == 0:  # get global maximum
-            strongest_corner = np.argmax(corners_strengths)  # TODO
+            strongest_corner = np.argmax(detected_corners)
+            keep.add(strongest_corner)
+            detect_corners.remove(strongest_corner)
         else:
-            for corner in keep:
-                sq_dist = dist2(
-                    c,
-                )
-        keep.add(strongest_corner)
-    return np.array(list(keep))
+            centers = list(keep)
+            sq_dist = dist2(centers, detect_corners)
+            mask = np.where(sq_dist <= r)
+            strongest_neighbors = np.argmax(sq_dist, axis=1)  # TODO check axis
+            
+            keep.append(strongest_neighbors)
+            for c in strongest_neighbors:
+                detect_corners.remove(c)
+
+    assert len(keep) == NUM_KEEP
+    return list(keep)
 
 
 def vectorize(patch):
