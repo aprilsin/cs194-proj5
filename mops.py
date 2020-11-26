@@ -108,7 +108,7 @@ def anms(detected_corners) -> list:
     keep = set()
     r = 0  # suppression radius
 
-    while len(keep) < NUM_KEEP:
+    while len(detected_corners) > 0 and len(keep) < NUM_KEEP:
         if r == 0 and len(keep) == 0:  # get global maximum
             strongest_corner = np.argmax(detected_corners)
             keep.add(strongest_corner)
