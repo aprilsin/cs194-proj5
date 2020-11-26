@@ -28,32 +28,19 @@ def get_harris(im, edge_discard=20) -> list:
     assert edge_discard >= 20
     im = filters.gauss_blur(im)
 
-    # num_levels = 5
-    # g_stack = filters.gaussian_stack(img)
-    # for level in g_stack:
-
     # find harris corners
-    h_strengths = corner_harris(im, method="eps", sigma=1)
-    #     coords = corner_peaks(h_strengths, min_distance=MIN_RADIUS, indices=True, threshold_rel=MIN_HARRIS_STRENGTH)
-    coords = peak_local_max(
-        h_strengths,
-        min_distance=MIN_RADIUS,
-        threshold_rel=MIN_HARRIS_STRENGTH,
-        indices=True,
-    )
+    h = corner_harris(im, method='eps', sigma=1)
+    coords = peak_local_max(h, min_distance=1, indices=True, threshold_rel=MIN_HARRIS_STRENGTH)
 
     # discard points on edge
     edge = edge_discard  # pixels
-    mask = (
-        (coords[:, 0] > edge)
-        & (coords[:, 0] < im.shape[0] - edge)
-        & (coords[:, 1] > edge)
-        & (coords[:, 1] < im.shape[1] - edge)
-    )
-
-    #     corners = [Corner(c, h_strengths[c[0], c[1]]) for c in coords[mask]]
-    #     corners.sort()
-    return h_strengths, coords[mask]
+    mask = (coords[:, 0] > edge) & \
+    (coords[:, 0] < im.shape[0] - edge) & \
+    (coords[:, 1] > edge) & \
+    (coords[:, 1] < im.shape[1] - edge)
+    
+    coords = coords[mask]
+    return h, coords
 
 
 def dist2(x: list, c: list) -> np.ndarray:
@@ -88,34 +75,32 @@ def dist2(x: list, c: list) -> np.ndarray:
     return sq_dist
 
 
-def anms(detected_corners, eps=0.9) -> list:
-    assert type(detected_corners) == list, type(detected_corners)
-    detected_corners.sort(reverse=True)
-    candidates = detected_corners
+def anms(h_strengths, coords, eps=0.9) -> list:
 
     # initialize
     keep = []
     r = MIN_RADIUS  # suppression radius
 
     # get global maximum
-    strongest_corner = detected_corners[0]
-    print(strongest_corner)
-    keep.append(strongest_corner)
-    detected_corners.remove(strongest_corner)
+    x = np.argmax(h_strengths)
+    index = np.unravel_index(x, h_strengths.shape)
+    print(x, index, h_strengths[index])
+#     keep.append(strongest_corner)
+#     detected_corners.remove(strongest_corner)
 
-    while len(keep) < NUM_KEEP and len(candidates) > 0 and r < MAX_RADIUS:
-        for center in keep:
-            sq_dist = dist2(centers, candidates)
-            mask = np.where(sq_dist <= r)
-            indices = np.argmax(sq_dist[mask])  # TODO check axis
-            best_candidate = candidates[indices]
-            keep.append(best_candidate)
-            for c in best_candidate:
-                print(c)
-                candidates.remove(best_candidate[c])
+#     while len(keep) < NUM_KEEP and len(candidates) > 0 and r < MAX_RADIUS:
+#         for center in keep:
+#             sq_dist = dist2(centers, candidates)
+#             mask = np.where(sq_dist <= r)
+#             indices = np.argmax(sq_dist[mask])  # TODO check axis
+#             best_candidate = candidates[indices]
+#             keep.append(best_candidate)
+#             for c in best_candidate:
+#                 print(c)
+#                 candidates.remove(best_candidate[c])
 
-    assert len(keep) == NUM_KEEP
-    return list(keep)
+#     assert len(keep) == NUM_KEEP
+    return h_strengths, coords
 
 
 def get_corners(img):

@@ -188,7 +188,7 @@ def manual_stitch_direct():
     return
 
 
-def auto_stitching():
+def auto_stitch():
     pass
 
 
@@ -203,9 +203,6 @@ stitching {num_imgs} images for {name}...
 detection: {args.detection}"""
     )
 
-    # set up file names
-    # (DATA / name).mkdir(parents=False, exist_ok=True)
-
     args.images = [Path(x) for x in args.images]
     if args.detection == "manual":
         if num_imgs == 2:  # warp images to a frontal plane
@@ -219,5 +216,6 @@ detection: {args.detection}"""
         else:
             raise ValueError(f"{num_imgs = }")
     if args.detection == "auto":
-        print("not implemented yet")
+        assert num_imgs == 2, num_imgs
+        auto_stitch()
         sys.exit()
