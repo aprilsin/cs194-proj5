@@ -178,24 +178,33 @@ def anms(strength, detected_coords, robust_factor=0.9):
             dists = np.sqrt(utils.dist2(coord, candidate_coords)).T
 
             # keep if candidate is outside of supression index
-            candidates = [i for i in range(len(dists)) if dists[i] > r]
-            if len(candidates) > 0:
-                print(f"{len(candidate_coords) = }")
-                print(f"{candidates = }")
-                print(f"{len(candidates)} will be removed from {len(all_candidates) = }")
-            for i in candidates:
+            contenders = [
+                candidate for i, candidate in enumerate(all_candidates) if dists[i] > r
+            ]
+            if len(contenders) > 0:
+                # print(f"{len(candidate_coords) = }")
+                # print(f"{contenders = }")
+                print(
+                    f"{len(contenders) = } possibly be removed from {len(all_candidates) = }"
+                )
+            for i in contenders:
                 candidate_coord = detected_coords[i]
                 if (
-                    strength[coord[1], coord[0]]
-                    < robust_factor * strength[candidate_coord[1], candidate_coord[0]]
+                    robust_factor * strength[coord[1], coord[0]]
+                    < strength[candidate_coord[1], candidate_coord[0]]
                 ):
                     if len(selected) >= constants.NUM_KEEP:
                         break  # TODO speedup: break out of two loops
                     else:
-                        print(f"selected {i}")
+                        # print(f"selected {i}")
                         selected.append(i)
                         all_candidates.remove(i)
-                        print(f"removed {i}")
+                        print(
+                            f"Found {len(selected)} out {constants.NUM_KEEP} points expected."
+                        )
+                        # print(f"removed {i}")
+        # if len(selected) >= constants.NUM_KEEP // 3:
+        # sys.exit()  # TODO remove me
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords, constants.NUM_KEEP)
