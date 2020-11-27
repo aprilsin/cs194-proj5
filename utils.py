@@ -209,8 +209,8 @@ def dist2(
 
     # dist^2 = r^2 + s^2 - 2*rs*cos(theta-phi)
     # dist^2 = r^2 + s^2 - 2*inner-product
-    r_sq = np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)
-    s_sq = np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
+    # r_sq = np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)
+    # s_sq = np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
 
     sq_dist = (
         (np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)).T

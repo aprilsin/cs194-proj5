@@ -217,19 +217,16 @@ def anms(strength, detected_coords, robust_factor=0.9):
     Everything in this function works with indices to detected_coords.
     Returns top NUM_KEEP points from detected_coords.
     """
-    detected = [
-        Corner(coord, strength[coord[1], coord[0]]) for coord in detected_coords
-    ]
 
     # sort by strength
     detected_coords = sorted(detected_coords, key=lambda i: strength[i[1], i[0]])
 
     selected = []
-    interest_indices = [*range(len(detected_coords))]
+    interest_indices = set(range(len(detected_coords)))
     r = constants.MAX_RADIUS  # initialize suppression radius to 'infinity'
 
     # add global maximum
-    selected = [0]
+    selected = {0}
     interest_indices.remove(0)
 
     for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
@@ -241,8 +238,17 @@ def anms(strength, detected_coords, robust_factor=0.9):
             # keep only if F(i) < robust_factor * F(j)
             fi_val = strength[coord_i[1], coord_i[0]]
             fj_vals = [strength[coord[1], coord[0]] for coord in coords_j]
-            keep = [coords_j[i] for i in range(len(interest_indices)) if fi_val < robust_factor * fj_vals[i]]
-            keep = min(keep)
+            coords_satisfy = [
+                coords_j[i]
+                for i in range(len(interest_indices))
+                if fi_val < robust_factor * fj_vals[i]
+            ]
+
+            # pick the minimum coord_j
+            keep = min(coords_satisfy, key=lambda i: dists[i])
+
+            selected.append(keep) # TODO this is wrong, need index
+
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords, constants.NUM_KEEP)
