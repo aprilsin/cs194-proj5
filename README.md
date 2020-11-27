@@ -7,8 +7,6 @@ This program can only stitch up to 10 images due to 0-9 for now.
 
 ### Instructions:
 
-To run the code, run `main.py`.
-
 ```
 usage: main.py [-h] [-s] [-l] [-d] {manual,auto} images [images ...]
 
