@@ -14,14 +14,19 @@ def match_features(coords1, patches1, coords2, patches2, threshold=DEFAULT_THRES
     assert len(coords1) == len(patches1) == NUM_KEEP, (len(coords1), len(patches1))
     assert len(coords2) == len(patches2) == NUM_KEEP, (len(coords2), len(patches2))
 
-    ssd = utils.dist2(patches1, patches2)
-    for i in range(NUM_KEEP):
-        pass
-    print(len(coords1), len(coords2))
-    print(ssd.shape)
-
     matched1, matched2 = [], []
-    mask = np.full(shape=(len(coords1), len(coords2)), fill_value=float("inf"))
+    ssd = utils.dist2(patches1, patches2)
+    is_candidate = np.full(shape=(len(coords1), len(coords2)), fill_value=True)
+
+    for i, j in itertools.product(range(NUM_KEEP), range(NUM_KEEP)):
+        best_match = None
+        best_match_dist = float("inf")
+        second_best_match = None
+        second_best_match_dist = float("inf")
+
+        dist = ssd[i, j]
+
+        pass
 
     # find best match
     best_match = np.unravel_index(np.argmin(ssd), ssd.shape)
