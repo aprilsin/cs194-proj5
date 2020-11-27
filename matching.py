@@ -14,32 +14,38 @@ def match_features(coords1, patches1, coords2, patches2, threshold=DEFAULT_THRES
     assert len(coords1) == len(patches1) == NUM_KEEP, (len(coords1), len(patches1))
     assert len(coords2) == len(patches2) == NUM_KEEP, (len(coords2), len(patches2))
 
-    matched1, matched2 = [], []
+    matched1_ind, matched2_ind = [], []
     ssd = utils.dist2(patches1, patches2)
     is_candidate = np.full(shape=(len(coords1), len(coords2)), fill_value=True)
 
-    for i, j in itertools.product(range(NUM_KEEP), range(NUM_KEEP)):
-        best_match = None
+    for i in range(NUM_KEEP):  # for each corner in image 1
+
+        best_match_ind = None
         best_match_dist = float("inf")
-        second_best_match = None
-        second_best_match_dist = float("inf")
+        second_match_ind = None
+        second_match_dist = float("inf")
 
-        dist = ssd[i, j]
+        for j in range(NUM_KEEP):  # for each corner in image 2
 
-        pass
+            dist = ssd[i, j]
 
-    # find best match
-    best_match = np.unravel_index(np.argmin(ssd), ssd.shape)
-    mask[best_match] = float("inf")
-    second_best_match = np.unravel_index(np.argmin(ssd), ssd.shape)
-    print(f"{second_best_match = }")
+            if dist < best_match_dist:
+                second_match_ind = best_match_ind
+                second_match_dist = best_match_dist
+                best_match_ind = j
+                best_match_dist = dist
 
-    sys.exit()
-    # combos = list(itertools.product(features1, features2))
-    # ssd = [utils.dist_patches(f1.patch, f2.patch) for f1, f2 in combos]
+            elif dist < second_match_dist:
+                second_match_dist = dist
+                second_match_ind = j
 
-    # matched1, matched2 = features1, features2
-    # return matched1, matched2
+        if best_match_dist / second_match_dist < threshold:
+            matched1_ind.append(i)
+            matched2_ind.append(j)
+
+    matched1 = [coords1[i] for i in matched1_ind]
+    matched2 = [coords2[i] for i in matched2_ind]
+    return matched1, matched2
 
 
 def ransac(matched_corners1, matched_corners2, epsilon):
@@ -63,7 +69,7 @@ def ransac(matched_corners1, matched_corners2, epsilon):
 
         import detector
 
-        dist = detector.dist2(corners2, predicted2)  # TODO fix ssd
+        dist = utils.dist2(corners2, predicted2)  # TODO fix ssd
 
         # count number of coordinates that are good matches
         matches = np.where(dist < epsilon)

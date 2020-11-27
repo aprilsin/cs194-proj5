@@ -222,11 +222,15 @@ def auto_stitch():
     print("====== CORNER MATCHING ======")
     matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
     result1, result2 = matching.ransac(
-        matched1, matched2
+        matched1, matched2, epsilon=0.2
     )  # find best matches / inliers
     print("Matched features.")
 
     # TODO plot and save results
+    fig1 = utils.plot_corners(im1, matched1)
+    fig2 = utils.plot_corners(im2, matched2)
+    plt.imsave(DATA / "tmp1.jpg", fig1)
+    plt.imsave(DATA / "tmp2.jpg", fig2)
     return
 
 
