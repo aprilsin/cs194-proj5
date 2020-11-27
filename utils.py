@@ -143,7 +143,9 @@ def normalize(mat):
     return (mat - np.mean(mat)) / np.std(mat)
 
 
-def dist2(x: list, c: list) -> np.ndarray:
+def dist2(
+    x: Union[list, tuple, np.ndarray], c: Union[list, tuple, np.ndarray]
+) -> np.ndarray:
     """
     dist2  Calculates squared distance between two sets of points.
 
@@ -156,6 +158,12 @@ def dist2(x: list, c: list) -> np.ndarray:
 
     Adapted from code by Christopher M Bishop and Ian T Nabney.
     """
+    if isinstance(x, (list, tuple)):
+        x = np.array(x)
+    if isinstance(c, (list, tuple)):
+        c = np.array(c)
+    assert isinstance(x, np.ndarray) and isinstance(c, np.ndarray), (type(x), type(c))
+
     print("inputs: ", x.shape, c.shape)
     ndata, dimx = x.shape
     ncenters, dimc = c.shape

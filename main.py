@@ -226,6 +226,7 @@ def auto_stitch():
     vectors2 = np.stack([p.flatten() for p in patches2])
     print(f"Computed descriptors of image 2.")
 
+    ssd = utils.dist2(vectors1, vectors2)
     sys.exit()
 
     # match patches

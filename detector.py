@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import skimage.transform
 from skimage.feature import corner_harris, corner_peaks, peak_local_max
-
+import sys  # TODO remove this
 import filters
 import homography
 import utils
@@ -51,26 +51,35 @@ def anms(h_strengths, coords, eps=0.9) -> list:
 
     # initialize
     keep = []
+    candidates = [(coord[0], coord[1]) for coord in coords]
     r = MIN_RADIUS  # suppression radius
 
     # get global maximum
-    x = np.argmax(h_strengths)
-    index = np.unravel_index(x, h_strengths.shape)
-    # print(x, index, h_strengths[index])
-    #     keep.append(strongest_corner)
-    #     detected_corners.remove(strongest_corner)
+    strongest_corner = None
+    strongest_strength = 0
+    for corner in candidates:
+        if h_strengths[corner] > strongest_strength:
+            strongest_corner = corner
+            strongest_strength = h_strengths[corner]
+    print(strongest_corner)
 
-    #     while len(keep) < NUM_KEEP and len(candidates) > 0 and r < MAX_RADIUS:
-    #         for center in keep:
-    #             sq_dist = dist2(centers, candidates)
-    #             mask = np.where(sq_dist <= r)
-    #             indices = np.argmax(sq_dist[mask])  # TODO check axis
-    #             best_candidate = candidates[indices]
-    #             keep.append(best_candidate)
-    #             for c in best_candidate:
-    #                 print(c)
-    #                 candidates.remove(best_candidate[c])
+    keep.append(strongest_corner)
+    candidates.remove(strongest_corner)
 
+    while len(keep) < NUM_KEEP and len(candidates) > 0 and r < MAX_RADIUS:
+        for center in keep:
+            sq_dist = utils.dist2([center], candidates)
+            mask = np.where(sq_dist <= r)
+            indices = np.unravel_index(
+                np.argmax(sq_dist[mask], sq_dist.shape)
+            )  # TODO check axis
+            best_candidate = candidates[indices]
+            keep.append(best_candidate)
+            for c in best_candidate:
+                print(c)
+                candidates.remove(best_candidate[c])
+
+    sys.exit()  # TODO remove this
     #     assert len(keep) == NUM_KEEP
     return h_strengths, coords[:NUM_KEEP]
 
