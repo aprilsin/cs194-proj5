@@ -61,27 +61,44 @@ def anms(h_strengths, coords, eps=0.9) -> list:
         if h_strengths[corner] > strongest_strength:
             strongest_corner = corner
             strongest_strength = h_strengths[corner]
-    print(strongest_corner)
 
     keep.append(strongest_corner)
     candidates.remove(strongest_corner)
 
     while len(keep) < NUM_KEEP and len(candidates) > 0 and r < MAX_RADIUS:
-        for center in keep:
-            sq_dist = utils.dist2([center], candidates)
-            mask = np.where(sq_dist <= r)
-            indices = np.unravel_index(
-                np.argmax(sq_dist[mask], sq_dist.shape)
-            )  # TODO check axis
-            best_candidate = candidates[indices]
-            keep.append(best_candidate)
-            for c in best_candidate:
-                print(c)
-                candidates.remove(best_candidate[c])
+        # compute ssd for all kept centers / coords
+        sq_dist = utils.dist2(keep, candidates)
+        # outlier rejection
+        mask = np.where(sq_dist <= r)
+        sq_dist = sq_dist[mask]
+        if len(sq_dist) == 0:
+            break
+        else:
+            nearest_neighbors = np.unravel_index(
+                np.argmin(sq_dist, axis=0), sq_dist.shape
+            )
+            # assert len(nearest_neighbors) == len(keep) # one nearest neighbor for each center?
+            print(nearest_neighbors)
+            keep.append(nearest_neighbors)
+            candidates.remove(nearest_neighbors)
+        # for center in keep:
+        #     sq_dist = utils.dist2(center, candidates)
+
+        #     # outlier rejection
+        #     mask = np.where(sq_dist <= r)
+        #     sq_dist = sq_dist[mask]
+        #     if len(sq_dist) == 0:
+        #         break
+        #     else:
+        #         nearest_neighbor = np.unravel_index(np.argmin(sq_dist), sq_dist.shape)
+        #         keep.append(nearest_neighbor)
+        #         candidates.remove(nearest_neighbor)
+        r += MIN_RADIUS
 
     sys.exit()  # TODO remove this
     #     assert len(keep) == NUM_KEEP
-    return h_strengths, coords[:NUM_KEEP]
+    # return h_strengths, coords[:NUM_KEEP]
+    return keep
 
 
 # def get_corners(img):

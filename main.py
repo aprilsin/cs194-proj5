@@ -194,31 +194,23 @@ def auto_stitch():
 
     # detect corners
     print("====== CORNER DETECTION ======")
-
     strength1, coords1 = detector.get_harris(im1)
-    # print(strength1.shape, coords1.shape)
-    print(f"Detected {len(coords1)} points from image 1.")
-
     strength2, coords2 = detector.get_harris(im2)
-    # print(strength2.shape, coords2.shape)
+    print(f"Detected {len(coords1)} points from image 1.")
     print(f"Detected {len(coords2)} points from image 2.")
 
+    print("====== ANMS ======")
     strength1, coords1 = detector.anms(strength1, coords1)
-    assert len(coords1) == NUM_KEEP, len(coords1)
-    print(f"Selected top {NUM_KEEP} points from image 1.")
-
     strength2, coords2 = detector.anms(strength2, coords2)
+    assert len(coords1) == NUM_KEEP, len(coords1)
     assert len(coords2) == NUM_KEEP, len(coords2)
+    print(f"Selected top {NUM_KEEP} points from image 1.")
     print(f"Selected top {NUM_KEEP} points from image 2.")
-    # corners1 = [Corner(c, strength1[c]) for c in coords1] $ TODO
-    # corners2 = [Corner(c, strength2[c]) for c in coords2]
-    # corners1 = [Tmp(c, strength1[c]) for c in coords1]
-    # corners2 = [Tmp(c, strength2[c]) for c in coords2]
-    corners1 = coords1
-    corners2 = coords2
 
     # describe features with patches
     print("====== CORNER DESCRIPTION ======")
+    corners1 = coords1
+    corners2 = coords2
     patches1 = descriptor.get_patches(im1, corners1)
     vectors1 = np.stack([p.flatten() for p in patches1])
     print(f"Computed descriptors of image 1.")
@@ -227,7 +219,6 @@ def auto_stitch():
     print(f"Computed descriptors of image 2.")
 
     ssd = utils.dist2(vectors1, vectors2)
-    sys.exit()
 
     # match patches
     print("====== CORNER MATCHING ======")

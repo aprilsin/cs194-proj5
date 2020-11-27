@@ -158,9 +158,12 @@ def dist2(
 
     Adapted from code by Christopher M Bishop and Ian T Nabney.
     """
-    if isinstance(x, (list, tuple)):
+    if isinstance(x, list):
         x = np.array(x)
-    if isinstance(c, (list, tuple)):
+    elif isinstance(x, tuple):
+        x = np.array([list(x)])
+        print(x, type(x))
+    if isinstance(c, list):
         c = np.array(c)
     assert isinstance(x, np.ndarray) and isinstance(c, np.ndarray), (type(x), type(c))
 
