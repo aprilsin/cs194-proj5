@@ -32,7 +32,11 @@ parser.add_argument(
     help="Choose manual or auto stitching",
 )
 # parser.add_argument("stitch", type=str, choices=["plane", "merge"])
-parser.add_argument("images", nargs="+")  # TODO: action=ToPath
+parser.add_argument(
+    "images",
+    nargs="+",
+    help="2 or 3 images to be stitched in entered in stitching order",
+)  # TODO: action=ToPath
 parser.add_argument(
     "-s",
     "--save",
