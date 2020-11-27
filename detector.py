@@ -55,7 +55,7 @@ def get_harris(im, edge_discard=20) -> list:
     return h, np.flip(coords, axis=-1)  # to get (x, y)
 
 
-# def anms(h_strengths, coords, eps=0.9) -> list:
+def anms_ignore(h_strengths, coords, eps=0.9) -> list:
     # initialize
     keep = []
     candidates = [
@@ -150,28 +150,45 @@ def anms_2(strength, coords):
     utils.assert_coords(selected_coords)
     return selected_coords
 
-def anms(strengths, coords):
+
+def anms(strength, detected_coords, robust_factor=0.9):
+    """
+    Everything in this function works with indices to detected_coords.
+    Returns top NUM_KEEP points from detected_coords.
+    """
+
     # sort by strength
-    coords = sorted(coords, key=lambda i : strengths[i[1], i[0]])
+    print(detected_coords[0], type(detected_coords[0]))
+    detected_coords = sorted(detected_coords, key=lambda i: strength[i[1], i[0]])
+    print(detected_coords[0], type(detected_coords[0]))
 
-    selected_indices = [0]
-    candidates = [(coord[0], coord[1]) for coord in coords]
-    dists = np.sqrt(utils.dist2(coords, coords)
+    selected = []
+    all_candidates = [*range(len(detected_coords))]
+    r = constants.MAX_RADIUS  # initialize suppression radius to infinity
 
-    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
-        for candidate_index in range(len(candidates)):
-            isGood = True
-            for good_index in selected_indices:
-                if dists[candidate_index, good_index] < r ** 2: # if too close
-                    isGood = False
-                    break
-            if isGood:
-                selected_indices.append(candidate_index)
-                if len(selected_indices) >= constants.NUM_KEEP:
-                    break
-        if len(selected_indices) >= constants.NUM_KEEP:
-            break
-    
-    selected_coords = np.array([coords[i] for i in selected_indices])
+    # add global maximum
+    selected = [0]
+    all_candidates.remove(0)
+
+    while len(selected) < constants.NUM_KEEP:
+        for selected_ind in selected:
+            coord = detected_coords[selected_ind]
+            candidates = [detected_coords[i] for i in all_candidates]
+            dists = np.sqrt(utils.dist2(coord, candidates)).T
+
+            # keep if candidate is outside of supression index
+            candidates = [i for i in range(len(dists)) if dists[i] > r]
+            candidates = [1, 2, 3]
+            for i in candidates:
+                print(i)
+                candidate_coord = detected_coords[i]
+                print(candidate_coord)
+                if (
+                    strength[coord[1], coord[0]]
+                    < robust_factor * strength[candidate_coord[1], candidate_coord[0]]
+                ):
+                    selected.append(i)
+
+    selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords)
     return

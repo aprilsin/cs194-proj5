@@ -85,9 +85,7 @@ def load_points(name: os.PathLike) -> np.ndarray:
     return pickle.load(open(pickle_name, "rb"))
 
 
-def plot_points(
-    img: np.ndarray, points: np.ndarray, markers=None, colors=None
-) -> None:
+def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None) -> None:
     """
     Displays the keypoints of an image
     points are in (x, y) format
@@ -113,8 +111,8 @@ def plot_points(
             s=30,
         )
 
-    if constants.SHOW:
-        plt.show()
+    # if constants.SHOW:
+    #     plt.show()
 
     return fig
 
@@ -189,12 +187,21 @@ def dist2(
         x = np.array(x)
     elif isinstance(x, tuple):
         x = np.array([list(x)])
+    elif isinstance(x, np.ndarray) and x.shape == (2,):
+        x = np.reshape(x, (1, 2))
+
     if isinstance(c, list):
         c = np.array(c)
+    elif isinstance(c, tuple):
+        x = np.array([list(c)])
+    elif isinstance(c, np.ndarray) and c.shape == (2,):
+        c = np.ndarray([c])
+
     assert isinstance(x, np.ndarray) and isinstance(c, np.ndarray), (type(x), type(c))
 
     if constants.DEBUG:
         print("inputs: ", x.shape, c.shape)
+        print(type(x), type(c))
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"
