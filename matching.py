@@ -53,7 +53,9 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
     matched1 = np.array([coords1[i] for i in matched1_ind])
     matched2 = np.array([coords2[i] for i in matched2_ind])
 
-    print(matched1[0], type(matched1[0]))
+    if constants.DEBUG:
+        print(matched1[0], type(matched1[0]))
+        
     assert len(matched1) == len(matched2)
     utils.assert_coords(matched1)
     utils.assert_coords(matched2)

@@ -201,9 +201,9 @@ def ssd_points(points1, points2):
 
 def assert_coords(coords):
     assert coords.ndim == 2, coords.shape
-    assert len(np.unique(coords, axis=0)) == len(
-        coords
-    ), f"Only {len(np.unique(coords))} unique items in {len(coords)} coordinates"
+    # assert len(np.unique(coords, axis=0)) == len(
+    #     coords
+    # ), f"Only {len(np.unique(coords))} unique items in {len(coords)} coordinates"
     return True
 
 

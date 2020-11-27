@@ -252,8 +252,6 @@ def define_corners(im1, im2):
     result1, result2 = matched1, matched2
     # result1, result2 = matching.ransac(matched1, matched2)
 
-    print()
-    print("====== CORRESPONDENCE RESULTS ======")
     print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
     # TODO plot and save results
@@ -289,7 +287,7 @@ def auto_stitch():
     im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in args.images]
     points1, points2 = define_corners(im1, im2)
 
-    im1, im2 = [utils.read_img(im1, im2, resize=True) for im in args.images]
+    im1, im2 = [utils.read_img(im, resize=True) for im in args.images]
     mosaic = stitch(im1, im2, points1, points2)
 
     mosaic_name = OUTDIR_2 / (name + "_mosaic.jpg")
