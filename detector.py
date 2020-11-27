@@ -180,7 +180,6 @@ def anms(strength, detected_coords, robust_factor=0.9):
 
             # keep if candidate is outside of supression index
             candidates = [i for i in range(len(dists)) if dists[i] > r]
-            candidates = [1, 2, 3]
             for i in candidates:
                 candidate_coord = detected_coords[i]
                 if (
@@ -195,4 +194,4 @@ def anms(strength, detected_coords, robust_factor=0.9):
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords)
-    return
+    return selected_coords
