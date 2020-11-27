@@ -151,7 +151,7 @@ def anms_2(strength, coords):
     return selected_coords
 
 
-def anms(strength, detected_coords, robust_factor=0.9):
+def anms_ignore_again(strength, detected_coords, robust_factor=0.9):
     """
     Everything in this function works with indices to detected_coords.
     Returns top NUM_KEEP points from detected_coords.
@@ -172,8 +172,8 @@ def anms(strength, detected_coords, robust_factor=0.9):
     #     len(selected) < constants.NUM_KEEP and r > constants.MIN_RADIUS
     # ):  # TODO can I do this???
     for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
-        for selected_ind in selected:
-            coord = detected_coords[selected_ind]
+        for detected in all_candidates:
+            coord = detected_coords[candidate]
             candidate_coords = [detected_coords[i] for i in all_candidates]
             dists = np.sqrt(utils.dist2(coord, candidate_coords)).T
 
@@ -190,8 +190,8 @@ def anms(strength, detected_coords, robust_factor=0.9):
             for i in contenders:
                 candidate_coord = detected_coords[i]
                 if (
-                    robust_factor * strength[coord[1], coord[0]]
-                    < strength[candidate_coord[1], candidate_coord[0]]
+                    strength[coord[1], coord[0]]
+                    < robust_factor * strength[candidate_coord[1], candidate_coord[0]]
                 ):
                     if len(selected) >= constants.NUM_KEEP:
                         break  # TODO speedup: break out of two loops
@@ -205,6 +205,28 @@ def anms(strength, detected_coords, robust_factor=0.9):
                         # print(f"removed {i}")
         # if len(selected) >= constants.NUM_KEEP // 3:
         # sys.exit()  # TODO remove me
+
+    selected_coords = np.array([detected_coords[i] for i in selected])
+    utils.assert_coords(selected_coords, constants.NUM_KEEP)
+    return selected_coords
+
+
+def anms(strength, detected_coords, robust_factor=0.9):
+    """
+    Everything in this function works with indices to detected_coords.
+    Returns top NUM_KEEP points from detected_coords.
+    """
+
+    # sort by strength
+    detected_coords = sorted(detected_coords, key=lambda i: strength[i[1], i[0]])
+
+    selected = []
+    all_candidates = [*range(len(detected_coords))]
+    r = constants.MAX_RADIUS  # initialize suppression radius to infinity
+
+    # add global maximum
+    selected = [0]
+    all_candidates.remove(0)
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords, constants.NUM_KEEP)
