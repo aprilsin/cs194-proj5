@@ -14,6 +14,7 @@ import constants
 import filters
 import homography
 import utils
+from constants import Corner
 
 
 def get_harris(im, edge_discard=20) -> list:
@@ -32,9 +33,9 @@ def get_harris(im, edge_discard=20) -> list:
     im = filters.gauss_blur(im)
 
     # find harris corners
-    h = corner_harris(im, method="eps", sigma=1)
+    h_strengths = corner_harris(im, method="eps", sigma=1)
     coords = corner_peaks(
-        h,
+        h_strengths,
         min_distance=constants.MIN_RADIUS,
         indices=True,
         threshold_rel=constants.HARRIS_STRENGTH_THRESHOLD,
@@ -52,7 +53,7 @@ def get_harris(im, edge_discard=20) -> list:
 
     # return h, coords
     utils.assert_coords(coords)
-    return h, np.flip(coords, axis=-1)  # to get (x, y)
+    return h_strengths, np.flip(coords, axis=-1)  # to get (x, y)
 
 
 def anms_ignore(h_strengths, coords, eps=0.9) -> list:
@@ -216,17 +217,32 @@ def anms(strength, detected_coords, robust_factor=0.9):
     Everything in this function works with indices to detected_coords.
     Returns top NUM_KEEP points from detected_coords.
     """
+    detected = [
+        Corner(coord, strength[coord[1], coord[0]]) for coord in detected_coords
+    ]
 
     # sort by strength
     detected_coords = sorted(detected_coords, key=lambda i: strength[i[1], i[0]])
 
     selected = []
-    all_candidates = [*range(len(detected_coords))]
-    r = constants.MAX_RADIUS  # initialize suppression radius to infinity
+    interest_indices = [*range(len(detected_coords))]
+    r = constants.MAX_RADIUS  # initialize suppression radius to 'infinity'
 
     # add global maximum
     selected = [0]
-    all_candidates.remove(0)
+    interest_indices.remove(0)
+
+    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
+        for index in interest_indices:
+            coord_i = detected_coords[index]
+            coords_j = np.array([detected_coords[i] for i in interest_indices])
+            dists = np.sqrt(utils.dist2(coord_i, coords_j))
+
+            # keep only if F(i) < robust_factor * F(j)
+            fi_val = strength[coord_i[1], coord_i[0]]
+            fj_vals = [strength[coord[1], coord[0]] for coord in coords_j]
+            keep = [coords_j[i] for i in range(len(interest_indices)) if fi_val < robust_factor * fj_vals[i]]
+            keep = min(keep)
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords, constants.NUM_KEEP)

@@ -57,3 +57,10 @@ RANSAC_THRESHOLD = 0.2
 
 colors = ["b", "g", "r", "c", "m", "y", "k", "w"]
 markers = ["o", ".", "+", "x", ">", "v", "^", "*", "D"]
+
+
+@dataclass
+def Corner():
+    coord: np.ndarray
+    strength: np.float64
+    patch: np.ndarray
