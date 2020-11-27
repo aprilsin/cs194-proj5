@@ -88,13 +88,14 @@ def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
     Displays the keypoints of an image
     points are in (x, y) format
     """
-    plt.figure()
+    fig = plt.figure()
     if img.ndim == 2:
         plt.imshow(img, cmap="gray")
     else:
         plt.imshow(img)
     plt.scatter(x=points[:, 0], y=points[:, 1], marker="o", color="b", s=30)
     plt.show()
+    return fig
 
 
 def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
@@ -102,13 +103,14 @@ def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
     Displays the keypoints of an image
     points are in (r, c) format
     """
-    plt.figure()
+    fig = plt.figure()
     if img.ndim == 2:
         plt.imshow(img, cmap="gray")
     else:
         plt.imshow(img)
     plt.scatter(x=points[:, 1], y=points[:, 0], marker="o", color="b", s=30)
     plt.show()
+    return fig
 
 
 def show_two(im1, im2):
@@ -117,6 +119,7 @@ def show_two(im1, im2):
     p1.imshow(im1)
     p2 = fig.add_subplot(1, 2, 2)
     p2.imshow(im2)
+    return fig
 
 
 # handle file namings
