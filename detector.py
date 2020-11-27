@@ -33,7 +33,7 @@ def get_harris(im, edge_discard=20) -> list:
     coords = peak_local_max(
         h, min_distance=1, indices=True, threshold_rel=MIN_HARRIS_STRENGTH
     )
-
+    print(type(coords), coords[0])
     # discard points on edge
     edge = edge_discard  # pixels
     mask = (
@@ -43,6 +43,7 @@ def get_harris(im, edge_discard=20) -> list:
         & (coords[:, 1] < im.shape[1] - edge)
     )
     coords = coords[mask]
+    print(np.array([0, 0]) in coords)
     # return h, coords
     return h, np.flip(coords, axis=-1)  # to get (x, y)
 
@@ -101,7 +102,7 @@ def anms(h_strengths, coords, eps=0.9) -> list:
 
 
 def anms_2(strength, coords):
-    selected = []
+    selected_indices = []
     candidates = [(coord[0], coord[1]) for coord in coords]
     dists = utils.dist2(coords, coords)
 
@@ -123,18 +124,18 @@ def anms_2(strength, coords):
             max_global_index = index
             max_global = strength[y, x]
 
-    selected = [max_global_index]
+    selected_indices = [max_global_index]
 
     # add nearest neighbors repeatedly
     for r in reversed(range(MIN_RADIUS, MAX_RADIUS)):
         for candidate_index in range(len(candidates)):
             isGood = True
-            for good_index in selected:
+            for good_index in selected_indices:
                 if dists[candidate_index, good_index] < r * r:
                     isGood = False
                     break
             if isGood:
-                selected.append(candidate_index)
+                selected_indices.append(candidate_index)
                 # print(
                 #     "Found "
                 #     + str(len(selected))
@@ -142,9 +143,9 @@ def anms_2(strength, coords):
                 #     + str(NUM_KEEP)
                 #     + " points expected."
                 # )
-                if len(selected) >= NUM_KEEP:
+                if len(selected_indices) >= NUM_KEEP:
                     break
-        if len(selected) >= NUM_KEEP:
+        if len(selected_indices) >= NUM_KEEP:
             break
 
     # figure, axis = plt.subplots(ncols=3)
@@ -157,9 +158,11 @@ def anms_2(strength, coords):
     #     axis[2].add_artist(marker)
 
     # plt.show()
-    selected = [np.unravel_index(i, strength.shape) for i in selected]
-    seleceted = np.flip(np.array(selected))
-    return selected
+
+    # selected = [np.unravel_index(i, strength.shape) for i in selected]
+    selected_coords = np.array([coords[i] for i in selected_indices])
+    assert selected_coords.shape == (NUM_KEEP, 2)
+    return selected_coords
 
 
 # def get_corners(img):
