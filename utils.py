@@ -134,8 +134,9 @@ def to_gray(img: ToImgArray):
 
 def vectorize(mat):
     assert mat.ndim == 2
-    h, w = mat.shape
-    return np.reshape(mat, (1, h * w))
+    # h, w = mat.shape
+    # return np.reshape(mat, (1, h * w))
+    return mat.flatten()
 
 
 def normalize(mat):
@@ -144,7 +145,7 @@ def normalize(mat):
 
 def dist2(x: list, c: list) -> np.ndarray:
     """
-    dist2  Calculates squared distance between two sets of points in polar coordinates.
+    dist2  Calculates squared distance between two sets of points.
 
     Input:
     - Takes two matrices of vectors and calculates the squared Euclidean distance between them.
@@ -155,7 +156,7 @@ def dist2(x: list, c: list) -> np.ndarray:
 
     Adapted from code by Christopher M Bishop and Ian T Nabney.
     """
-
+    print("inputs: ", x.shape, c.shape)
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"
@@ -173,11 +174,11 @@ def dist2(x: list, c: list) -> np.ndarray:
     return sq_dist
 
 
-def dist_patches(patch1, patch2):
-    """
-    patch1 and patch2 are 8x8 grids.
-    """
-    assert patch1.shape == patch2.shape == (8, 8), (patch1.shape, patch2.shape)
-    patch1 = np.reshape(patch1, (1, 64))
-    patch2 = np.reshape(patch2, (1, 64))
-    return np.sum((patch1 - patch2) ** 2)  # sum squared distance
+# def dist_patches(patch1, patch2):
+#     """
+#     patch1 and patch2 are 8x8 grids.
+#     """
+#     assert patch1.shape == patch2.shape == (8, 8), (patch1.shape, patch2.shape)
+#     patch1 = np.flatten(patch1)
+#     patch2 = np.flatten(patch2)
+#     return np.sum((patch1 - patch2) ** 2)  # sum squared distance

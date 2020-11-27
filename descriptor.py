@@ -21,7 +21,7 @@ def get_patches(img, corners) -> np.ndarray:
     patches = []
     for (r, c) in corners:
         patch = img[r - 20 : r + 20, c - 20 : c + 20]  # get a 40x40 patch
-        patch = patch[::5, ::5, :]  # downsample by taking every 5th pixel
+        patch = patch[::5, ::5]  # downsample by taking every 5th pixel
         patch = utils.normalize(patch)  # normalize
         patches.append(patch)
 

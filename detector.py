@@ -2,7 +2,7 @@ import itertools
 from dataclasses import dataclass
 from functools import total_ordering
 from queue import PriorityQueue
-
+import matplotlib.pyplot as plt
 import numpy as np
 import skimage.transform
 from skimage.feature import corner_harris, corner_peaks, peak_local_max
@@ -26,7 +26,7 @@ def get_harris(im, edge_discard=20) -> list:
     """
     assert im.ndim == 2, im.shape
     assert edge_discard >= 20
-    im = filters.gauss_blur(im)
+    # im = filters.gauss_blur(im)
 
     # find harris corners
     h = corner_harris(im, method="eps", sigma=1)
@@ -56,7 +56,7 @@ def anms(h_strengths, coords, eps=0.9) -> list:
     # get global maximum
     x = np.argmax(h_strengths)
     index = np.unravel_index(x, h_strengths.shape)
-    print(x, index, h_strengths[index])
+    # print(x, index, h_strengths[index])
     #     keep.append(strongest_corner)
     #     detected_corners.remove(strongest_corner)
 
@@ -72,7 +72,7 @@ def anms(h_strengths, coords, eps=0.9) -> list:
     #                 candidates.remove(best_candidate[c])
 
     #     assert len(keep) == NUM_KEEP
-    return h_strengths, coords
+    return h_strengths, coords[:NUM_KEEP]
 
 
 # def get_corners(img):

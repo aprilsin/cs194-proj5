@@ -83,5 +83,5 @@ class Tmp:
             self.patch = patch
 
 
-combinations = {coord:}
+combinations = {}
 features = {}

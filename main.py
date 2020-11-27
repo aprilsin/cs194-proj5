@@ -193,26 +193,49 @@ def auto_stitch():
     im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in args.images]
 
     # detect corners
-    strength1, coords1 = detector.get_corners(im1)
-    strength2, coords2 = detector.get_corners(im2)
+    print("====== CORNER DETECTION ======")
+
+    strength1, coords1 = detector.get_harris(im1)
+    # print(strength1.shape, coords1.shape)
+    print(f"Detected {len(coords1)} points from image 1.")
+
+    strength2, coords2 = detector.get_harris(im2)
+    # print(strength2.shape, coords2.shape)
+    print(f"Detected {len(coords2)} points from image 2.")
+
     strength1, coords1 = detector.anms(strength1, coords1)
+    assert len(coords1) == NUM_KEEP, len(coords1)
+    print(f"Selected top {NUM_KEEP} points from image 1.")
+
     strength2, coords2 = detector.anms(strength2, coords2)
+    assert len(coords2) == NUM_KEEP, len(coords2)
+    print(f"Selected top {NUM_KEEP} points from image 2.")
     # corners1 = [Corner(c, strength1[c]) for c in coords1] $ TODO
     # corners2 = [Corner(c, strength2[c]) for c in coords2]
     # corners1 = [Tmp(c, strength1[c]) for c in coords1]
     # corners2 = [Tmp(c, strength2[c]) for c in coords2]
     corners1 = coords1
     corners2 = coords2
-    assert len(corners1) == len(corners2)
 
     # describe features with patches
+    print("====== CORNER DESCRIPTION ======")
     patches1 = descriptor.get_patches(im1, corners1)
+    vectors1 = np.stack([p.flatten() for p in patches1])
+    print(f"Computed descriptors of image 1.")
     patches2 = descriptor.get_patches(im2, corners2)
+    vectors2 = np.stack([p.flatten() for p in patches2])
+    print(f"Computed descriptors of image 2.")
+
+    sys.exit()
 
     # match patches
-    features1 = patches1  # TODO
-    features2 = patches2
-    features1, features2 = matching.match_features(features1, features2)
+    print("====== CORNER MATCHING ======")
+    features1 = vectors1  # TODO
+    features2 = vectors2
+    features1, features2 = matching.match_features(
+        coords1, features1, coords2, features2
+    )
+    print("Matched features.")
 
     # find best matches / inliers
     matched1, matched2 = matching.ransac(features1, features2)
@@ -229,7 +252,8 @@ if __name__ == "__main__":
     print(
         f"""
 stitching {num_imgs} images for {name}...
-detection: {args.detection}"""
+detection: {args.detection}
+"""
     )
 
     args.images = [Path(x) for x in args.images]
