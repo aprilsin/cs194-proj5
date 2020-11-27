@@ -225,11 +225,13 @@ def ssd_points(points1, points2):
     return np.sum((points1 - points2) ** 2, axis=-1)
 
 
-def assert_coords(coords):
+def assert_coords(coords, num=None):
     assert coords.ndim == 2, coords.shape
     assert len(np.unique(coords, axis=0)) == len(
         coords
     ), f"Only {len(np.unique(coords))} unique items in {len(coords)} coordinates"
+    if num is not None:
+        assert len(coords) == num
     return True
 
 

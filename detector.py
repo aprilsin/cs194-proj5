@@ -147,7 +147,7 @@ def anms_2(strength, coords):
     ), f"expected {constants.NUM_KEEP} points but got {len(selected_indices)}"
 
     selected_coords = np.array([coords[i] for i in selected_indices])
-    utils.assert_coords(selected_coords)
+    utils.assert_coords(selected_coords, constants.NUM_KEEP)
     return selected_coords
 
 
@@ -193,5 +193,5 @@ def anms(strength, detected_coords, robust_factor=0.9):
         r -= 1
 
     selected_coords = np.array([detected_coords[i] for i in selected])
-    utils.assert_coords(selected_coords)
+    utils.assert_coords(selected_coords, constants.NUM_KEEP)
     return selected_coords
