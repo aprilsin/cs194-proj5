@@ -35,7 +35,7 @@ def get_harris(im, edge_discard=20) -> list:
     h = corner_harris(im, method="eps", sigma=1)
     coords = corner_peaks(
         h,
-        min_distance=2,
+        min_distance=constants.MIN_RADIUS,
         indices=True,
         threshold_rel=constants.HARRIS_STRENGTH_THRESHOLD,
     )
@@ -55,8 +55,7 @@ def get_harris(im, edge_discard=20) -> list:
     return h, np.flip(coords, axis=-1)  # to get (x, y)
 
 
-def anms(h_strengths, coords, eps=0.9) -> list:
-
+# def anms(h_strengths, coords, eps=0.9) -> list:
     # initialize
     keep = []
     candidates = [
@@ -150,3 +149,29 @@ def anms_2(strength, coords):
     selected_coords = np.array([coords[i] for i in selected_indices])
     utils.assert_coords(selected_coords)
     return selected_coords
+
+def anms(strengths, coords):
+    # sort by strength
+    coords = sorted(coords, key=lambda i : strengths[i[1], i[0]])
+
+    selected_indices = [0]
+    candidates = [(coord[0], coord[1]) for coord in coords]
+    dists = np.sqrt(utils.dist2(coords, coords)
+
+    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
+        for candidate_index in range(len(candidates)):
+            isGood = True
+            for good_index in selected_indices:
+                if dists[candidate_index, good_index] < r ** 2: # if too close
+                    isGood = False
+                    break
+            if isGood:
+                selected_indices.append(candidate_index)
+                if len(selected_indices) >= constants.NUM_KEEP:
+                    break
+        if len(selected_indices) >= constants.NUM_KEEP:
+            break
+    
+    selected_coords = np.array([coords[i] for i in selected_indices])
+    utils.assert_coords(selected_coords)
+    return

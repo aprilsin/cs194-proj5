@@ -174,7 +174,7 @@ def dist2(
     x: Union[list, tuple, np.ndarray], c: Union[list, tuple, np.ndarray]
 ) -> np.ndarray:
     """
-    dist2  Calculates squared distance between two sets of points.
+    dist2  Returns squared distance between two sets of points.
 
     Input:
     - Takes two matrices of vectors and calculates the squared Euclidean distance between them.

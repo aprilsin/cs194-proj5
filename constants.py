@@ -45,8 +45,8 @@ HARRIS_STRENGTH_THRESHOLD = (
 
 NUM_KEEP = 500  # want to keep the best 500 corners
 
-MIN_RADIUS = 2
-MAX_RADIUS = 500  # TODO should be 1/4 th of img size
+MIN_RADIUS = 1
+MAX_RADIUS = 1600  # TODO should be 1/4 th of img size
 
 MATCHING_THRESHOLD = 0.2
 
