@@ -11,13 +11,21 @@ from constants import *
 
 
 def match_features(coords1, patches1, coords2, patches2, threshold=DEFAULT_THRESHOLD):
+    assert len(coords1) == len(patches1) == NUM_KEEP, (len(coords1), len(patches1))
+    assert len(coords2) == len(patches2) == NUM_KEEP, (len(coords2), len(patches2))
+
     ssd = utils.dist2(patches1, patches2)
+    for i in range(NUM_KEEP):
+        pass
+    print(len(coords1), len(coords2))
+    print(ssd.shape)
+
+    matched1, matched2 = [], []
+    mask = np.full(shape=(len(coords1), len(coords2)), fill_value=float("inf"))
 
     # find best match
-    print(np.argmin(ssd))
     best_match = np.unravel_index(np.argmin(ssd), ssd.shape)
-    print(f"{best_match = }")
-    ssd[best_match] = float("inf")
+    mask[best_match] = float("inf")
     second_best_match = np.unravel_index(np.argmin(ssd), ssd.shape)
     print(f"{second_best_match = }")
 

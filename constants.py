@@ -39,7 +39,7 @@ BLEND_METHOD = "average"
 
 MIN_HARRIS_STRENGTH = 0.1  # relative to max(image), i.e. most intense pixel of image
 
-NUM_KEEP = 500  # want to keep the best 500 corners
+NUM_KEEP = 200  # want to keep the best 500 corners
 
 MIN_RADIUS = 2
 MAX_RADIUS = 500  # TODO should be 1/4 th of img size

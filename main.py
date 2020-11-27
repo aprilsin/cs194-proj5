@@ -220,7 +220,7 @@ def auto_stitch():
 
     # match patches
     print("====== CORNER MATCHING ======")
-    matched1, matched2 = matching.match_features(coords1, vectors1, coords2, vectors2)
+    matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
     result1, result2 = matching.ransac(
         matched1, matched2
     )  # find best matches / inliers

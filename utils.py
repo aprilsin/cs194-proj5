@@ -165,7 +165,6 @@ def dist2(
         x = np.array(x)
     elif isinstance(x, tuple):
         x = np.array([list(x)])
-        print(x, type(x))
     if isinstance(c, list):
         c = np.array(c)
     assert isinstance(x, np.ndarray) and isinstance(c, np.ndarray), (type(x), type(c))
