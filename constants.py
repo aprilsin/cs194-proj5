@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 

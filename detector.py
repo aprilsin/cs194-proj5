@@ -2,11 +2,12 @@ import itertools
 from dataclasses import dataclass
 from functools import total_ordering
 from queue import PriorityQueue
+
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage.transform
 from skimage.feature import corner_harris, corner_peaks, peak_local_max
-import sys  # TODO remove this
+
 import filters
 import homography
 import utils
@@ -106,15 +107,6 @@ def anms_2(strength, coords):
     candidates = [(coord[0], coord[1]) for coord in coords]
     dists = utils.dist2(coords, coords)
 
-    # find global maximum
-    # strongest_corner = None
-    # strongest_strength = float("-inf")
-    # # for corner in candidates:
-    # #     if strength[corner] > strongest_strength:
-    # #         strongest_corner = corner
-    # #         strongest_strength = strength[corner]
-    # # selected.append(strongest_corner)
-
     max_global = float("-inf")
     max_global_index = None
     for index in range(len(coords)):
@@ -136,13 +128,6 @@ def anms_2(strength, coords):
                     break
             if isGood:
                 selected_indices.append(candidate_index)
-                # print(
-                #     "Found "
-                #     + str(len(selected))
-                #     + " out of "
-                #     + str(NUM_KEEP)
-                #     + " points expected."
-                # )
                 if len(selected_indices) >= NUM_KEEP:
                     break
         if len(selected_indices) >= NUM_KEEP:
@@ -159,13 +144,6 @@ def anms_2(strength, coords):
 
     # plt.show()
 
-    # selected = [np.unravel_index(i, strength.shape) for i in selected]
     selected_coords = np.array([coords[i] for i in selected_indices])
     assert selected_coords.shape == (NUM_KEEP, 2)
     return selected_coords
-
-
-# def get_corners(img):
-#     h_strengths, coords = get_harris(img)
-#     corners = anms(h_strengths, coords)
-#     return corners

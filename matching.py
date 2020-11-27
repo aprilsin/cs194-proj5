@@ -1,8 +1,9 @@
 import itertools
+import sys  # TODO remove this
 
 import numpy as np
 import skimage.transform
-import sys  # TODO remove this
+
 import filters
 import homography
 import utils

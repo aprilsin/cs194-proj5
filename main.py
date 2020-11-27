@@ -8,11 +8,13 @@ import numpy as np
 import skimage as sk
 import skimage.io as io
 
+import descriptor
+import detector
 import filters
 import homography
+import matching
 import rectification
 import utils
-import detector, descriptor, matching
 from constants import *
 
 # class ToPath(argparse.Action):
