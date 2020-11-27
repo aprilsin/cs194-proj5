@@ -170,7 +170,9 @@ def anms(strength, detected_coords, robust_factor=0.9):
     selected = [0]
     all_candidates.remove(0)
 
-    while len(selected) < constants.NUM_KEEP:
+    while (
+        len(selected) < constants.NUM_KEEP and r > constants.MIN_RADIUS
+    ):  # TODO can I do this???
         for selected_ind in selected:
             coord = detected_coords[selected_ind]
             candidates = [detected_coords[i] for i in all_candidates]
@@ -187,7 +189,11 @@ def anms(strength, detected_coords, robust_factor=0.9):
                     strength[coord[1], coord[0]]
                     < robust_factor * strength[candidate_coord[1], candidate_coord[0]]
                 ):
-                    selected.append(i)
+                    if len(selected) < constants.NUM_KEEP:
+                        selected.append(i)
+                    else:
+                        break  # TODO need to break out of two loops
+        r -= 1
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords)
