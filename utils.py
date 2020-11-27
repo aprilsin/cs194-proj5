@@ -85,36 +85,54 @@ def load_points(name: os.PathLike) -> np.ndarray:
     return pickle.load(open(pickle_name, "rb"))
 
 
-def plot_points(img: np.ndarray, points: np.ndarray) -> None:
+def plot_points(
+    img: np.ndarray, points: np.ndarray, markers=None, colors=constants.colors
+) -> None:
     """
     Displays the keypoints of an image
     points are in (x, y) format
     """
     fig = plt.figure()
+
     if img.ndim == 2:
         plt.imshow(img, cmap="gray")
     else:
         plt.imshow(img)
-    plt.scatter(x=points[:, 0], y=points[:, 1], marker="o", color="b", s=30)
+
+    if colors is None:
+        colors = ["b"]
+    if markers is None:
+        markers = ["o"]
+
+    for i, point in enumerate(points):
+        plt.scatter(
+            x=point[0],
+            y=point[1],
+            marker=markers[i % len(markers)],
+            color=colors[i % len(colors)],
+            s=30,
+        )
+
     if constants.SHOW:
         plt.show()
+
     return fig
 
 
-def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
-    """
-    Displays the keypoints of an image
-    points are in (r, c) format
-    """
-    fig = plt.figure()
-    if img.ndim == 2:
-        plt.imshow(img, cmap="gray")
-    else:
-        plt.imshow(img)
-    plt.scatter(x=points[:, 1], y=points[:, 0], marker="o", color="b", s=30)
-    if constants.SHOW:
-        plt.show()
-    return fig
+# def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
+#     """
+#     Displays the keypoints of an image
+#     points are in (r, c) format
+#     """
+#     fig = plt.figure()
+#     if img.ndim == 2:
+#         plt.imshow(img, cmap="gray")
+#     else:
+#         plt.imshow(img)
+#     plt.scatter(x=points[:, 1], y=points[:, 0], marker="o", color="b", s=30)
+#     if constants.SHOW:
+#         plt.show()
+#     return fig
 
 
 def show_two(im1, im2):

@@ -143,7 +143,9 @@ def anms_2(strength, coords):
         if len(selected_indices) >= constants.NUM_KEEP:
             break
 
-    assert len(selected_indices) == constants.NUM_KEEP
+    assert (
+        len(selected_indices) == constants.NUM_KEEP
+    ), f"expected {constants.NUM_KEEP} points but got {len(selected_indices)}"
 
     selected_coords = np.array([coords[i] for i in selected_indices])
     utils.assert_coords(selected_coords)

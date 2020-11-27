@@ -10,7 +10,18 @@ import homography
 import utils
 from constants import MATCHING_THRESHOLD, RANSAC_THRESHOLD
 
+# def feature_match(desc_imA, desc_imB):
+#     results = {}
+#     for point_A, vector_A in desc_imA.items():
+#         dists = {}
+#         for point_B, vector_B in desc_imB.items():
+#             dists[point_B] = harris.dist2(vector_A, vector_B)[0][0]
+#         dists = sorted((value, key) for (key, value) in dists.items())
 
+#         if dists[0][0]/dists[1][0] < .3:
+#             results[point_A] = dists[0][1]
+#     return results
+    
 def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRESHOLD):
     assert len(coords1) == len(patches1) == constants.NUM_KEEP, (
         len(coords1),
@@ -55,7 +66,7 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
 
     if constants.DEBUG:
         print(matched1[0], type(matched1[0]))
-        
+
     assert len(matched1) == len(matched2)
     utils.assert_coords(matched1)
     utils.assert_coords(matched2)
@@ -107,7 +118,7 @@ def ransac(corners1, corners2, epsilon=RANSAC_THRESHOLD):
     assert len(best_inliers1) == len(best_inliers2)
     best_inliers1 = np.array(best_inliers1)
     best_inliers2 = np.array(best_inliers2)
-    
+
     utils.assert_coords(best_inliers1)
     utils.assert_coords(best_inliers2)
     return best_inliers1, best_inliers2

@@ -223,9 +223,9 @@ def define_corners(im1, im2):
     constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
 
     fig = utils.plot_points(im1, coords1)
-    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
+    plt.savefig(OUTDIR_2 / name + f"_detected_{time.time():.0f}.jpg")
     fig = utils.plot_points(im2, coords2)
-    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
+    plt.savefig(OUTDIR_2 / name + f"_detected_{time.time():.0f}.jpg")
 
     print("====== ANMS ======")
     corners1 = detector.anms_2(strength1, coords1)
@@ -234,6 +234,11 @@ def define_corners(im1, im2):
     assert len(corners2) == constants.NUM_KEEP, len(corners2)
     print(f"Selected top {constants.NUM_KEEP} points from image 1.")
     print(f"Selected top {constants.NUM_KEEP} points from image 2.")
+
+    fig = utils.plot_points(im1, corners1)
+    plt.savefig(OUTDIR_2 / name + f"_anms_{time.time():.0f}.jpg")
+    fig = utils.plot_points(im2, corners2)
+    plt.savefig(OUTDIR_2 / name + f"_anms_{time.time():.0f}.jpg")
 
     print("====== CORNER DESCRIPTION ======")
     patches1 = descriptor.get_patches(im1, corners1)
@@ -245,6 +250,7 @@ def define_corners(im1, im2):
 
     print("====== CORNER MATCHING ======")
     matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
+
     print(f"Found {len(matched1)} candidate coorespondences.")
 
     if len(matched1) < 4:

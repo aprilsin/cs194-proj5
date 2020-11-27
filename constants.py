@@ -28,7 +28,7 @@ SHOW = False
 
 # gaussian filter
 DEFAULT_KERNEL = 5
-DEFAULT_SIGMA = 1
+DEFAULT_SIGMA = 0.8
 
 BLEND_METHOD = "average"
 # BLEND_METHOD = "two-band"
@@ -54,3 +54,6 @@ MATCHING_THRESHOLD = 0.2
 NUM_SAMPLE_POINTS = 6
 
 RANSAC_THRESHOLD = 0.2
+
+colors = ["b", "g", "r", "c", "m", "y", "k", "w"]
+markers = ["o", ".", "+", "x", ">", "v", "^", "*", "D"]
