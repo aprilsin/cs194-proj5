@@ -8,6 +8,8 @@ import numpy as np
 import skimage as sk
 import skimage.io as io
 
+# import constants
+import constants
 import descriptor
 import detector
 import filters
@@ -15,7 +17,7 @@ import homography
 import matching
 import rectification
 import utils
-from constants import *
+from constants import DATA, LOAD, OUTDIR_1, OUTDIR_2, SAVE
 
 # class ToPath(argparse.Action):
 #     def __call__(self, parser, namespace, values, option_string=None)
@@ -53,21 +55,21 @@ parser.add_argument(
     dest="debug",
     default=False,
     action="store_true",
-    help="Show debugging print statements.",
+    help="Show constants.DEBUGging print statements.",
 )
 
 args = parser.parse_args()
 args.images = [Path(x) for x in args.images]
 
-SAVE = args.save_data
-LOAD = args.load_data
-DEBUG = args.debug
+constants.SAVE = args.save_data
+constants.LOAD = args.load_data
+constants.DEBUG = args.debug
 
 
 def manual_stitch_plane():
     i, j = [im_name.stem[-1] for im_name in args.images]
     imgs = [utils.read_img(im, resize=False) for im in args.images]
-    pts = [utils.pick_points(im, NUM_PTS) for im in imgs]
+    pts = [utils.pick_points(im, constants.NUM_PTS) for im in imgs]
 
     h, w, c = imgs[0].shape
     num_pixels = 1600 * 1600
@@ -121,10 +123,10 @@ def manual_stitch_direct():
         except:
             raise FileExistsError()
     else:
-        pts1 = utils.pick_points(args.images[0], NUM_PTS)
-        pts2a = utils.pick_points(args.images[1], NUM_PTS)
-        pts2b = utils.pick_points(args.images[1], NUM_PTS)
-        pts3 = utils.pick_points(args.images[2], NUM_PTS)
+        pts1 = utils.pick_points(args.images[0], constants.NUM_PTS)
+        pts2a = utils.pick_points(args.images[1], constants.NUM_PTS)
+        pts2b = utils.pick_points(args.images[1], constants.NUM_PTS)
+        pts3 = utils.pick_points(args.images[2], constants.NUM_PTS)
         pts = [pts1, pts2a, pts2b, pts3]
         if SAVE:
             print("Saving points")
@@ -201,8 +203,8 @@ def auto_stitch():
     print(f"Detected {len(coords1)} points from image 1.")
     print(f"Detected {len(coords2)} points from image 2.")
 
-    global NUM_KEEP
-    NUM_KEEP = min([NUM_KEEP, len(coords1), len(coords2)])
+    # global constants.NUM_KEEP
+    constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
 
     utils.plot_points(im1, coords1)
     utils.plot_points(im2, coords2)
@@ -210,10 +212,10 @@ def auto_stitch():
     print("====== ANMS ======")
     corners1 = detector.anms_2(strength1, coords1)
     corners2 = detector.anms_2(strength2, coords2)
-    assert len(corners1) == NUM_KEEP, len(corners1)
-    assert len(corners2) == NUM_KEEP, len(corners2)
-    print(f"Selected top {NUM_KEEP} points from image 1.")
-    print(f"Selected top {NUM_KEEP} points from image 2.")
+    assert len(corners1) == constants.NUM_KEEP, len(corners1)
+    assert len(corners2) == constants.NUM_KEEP, len(corners2)
+    print(f"Selected top {constants.NUM_KEEP} points from image 1.")
+    print(f"Selected top {constants.NUM_KEEP} points from image 2.")
 
     # describe features with patches
     print("====== CORNER DESCRIPTION ======")
@@ -229,7 +231,7 @@ def auto_stitch():
     matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
     print(f"Found {len(matched1)} candidate coorespondences.")
     # find best matches / inliers
-    result1, result2 = matching.ransac(matched1, matched2, epsilon=RANSAC_THRESHOLD)
+    result1, result2 = matching.ransac(matched1, matched2)
 
     print()
     print("====== RESULTS ======")

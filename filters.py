@@ -17,7 +17,7 @@ from PIL import Image, ImageOps
 from scipy import signal
 from skimage import img_as_float, img_as_ubyte
 
-from constants import *
+from constants import DEFAULT_KERNEL, DEFAULT_SIGMA
 
 
 def getGradient(im):

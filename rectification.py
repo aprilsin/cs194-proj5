@@ -1,8 +1,8 @@
 import numpy as np
 from scipy import signal
 
+import constants
 import filters
-from constants import *
 
 
 def match_shift(im1, im2, pts1, pts2):

@@ -3,10 +3,10 @@ import itertools
 import numpy as np
 import skimage.transform
 
+import constants
 import filters
 import homography
 import utils
-from constants import *
 
 
 def refine_matches():

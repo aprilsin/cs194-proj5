@@ -11,7 +11,8 @@ from scipy.interpolate import interp2d
 from scipy.spatial import Delaunay
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
-from constants import *
+
+import constants
 
 ToImgArray = Union[np.ndarray, str, Path, os.PathLike]
 
@@ -170,7 +171,7 @@ def dist2(
         c = np.array(c)
     assert isinstance(x, np.ndarray) and isinstance(c, np.ndarray), (type(x), type(c))
 
-    if DEBUG:
+    if constants.DEBUG:
         print("inputs: ", x.shape, c.shape)
     ndata, dimx = x.shape
     ncenters, dimc = c.shape

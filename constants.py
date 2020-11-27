@@ -20,6 +20,7 @@ OUTDIR_2.mkdir(exist_ok=True)
 
 NUM_PTS = 8  # pick 8 points to define homography matrix
 
+
 LOAD = False
 SAVE = False
 DEBUG = False
@@ -37,7 +38,9 @@ BLEND_METHOD = "average"
 #      PART 2       #
 #####################
 
-MIN_HARRIS_STRENGTH = 0.1  # relative to max(image), i.e. most intense pixel of image
+HARRIS_STRENGTH_THRESHOLD = (
+    0.1  # relative to max(image), i.e. most intense pixel of image
+)
 
 NUM_KEEP = 500  # want to keep the best 500 corners
 

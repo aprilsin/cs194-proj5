@@ -3,28 +3,36 @@ import sys  # TODO remove this
 
 import numpy as np
 import skimage.transform
+
+import constants
 import filters
 import homography
 import utils
-from constants import *
+from constants import MATCHING_THRESHOLD, RANSAC_THRESHOLD
 
 
 def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRESHOLD):
-    assert len(coords1) == len(patches1) == NUM_KEEP, (len(coords1), len(patches1))
-    assert len(coords2) == len(patches2) == NUM_KEEP, (len(coords2), len(patches2))
+    assert len(coords1) == len(patches1) == constants.NUM_KEEP, (
+        len(coords1),
+        len(patches1),
+    )
+    assert len(coords2) == len(patches2) == constants.NUM_KEEP, (
+        len(coords2),
+        len(patches2),
+    )
 
     matched1_ind, matched2_ind = [], []
     ssd = utils.dist2(patches1, patches2)
     is_candidate = np.full(shape=(len(coords1), len(coords2)), fill_value=True)
 
-    for i in range(NUM_KEEP):  # for each corner in image 1
+    for i in range(constants.NUM_KEEP):  # for each corner in image 1
 
         best_match_ind = None
         best_match_dist = float("inf")
         second_match_ind = None
         second_match_dist = float("inf")
 
-        for j in range(NUM_KEEP):  # for each corner in image 2
+        for j in range(constants.NUM_KEEP):  # for each corner in image 2
 
             dist = ssd[i, j]
 
@@ -48,7 +56,7 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
     return matched1, matched2
 
 
-def ransac(corners1, corners2, epsilon):
+def ransac(corners1, corners2, epsilon=RANSAC_THRESHOLD):
     assert len(corners1) == len(corners2), (
         len(corners1),
         len(corners2),
@@ -63,7 +71,9 @@ def ransac(corners1, corners2, epsilon):
     best_inliers1, best_inliners2 = [], []
 
     # select NUM_SAMPLE_POINTS points at random to compute homography
-    for indices in itertools.combinations(range(num_input_matches), NUM_SAMPLE_POINTS):
+    for indices in itertools.combinations(
+        range(num_input_matches), constants.NUM_SAMPLE_POINTS
+    ):
         # compute homography
         chosen1 = [corners1[i] for i in indices]
         chosen2 = [corners2[i] for i in indices]
@@ -74,12 +84,12 @@ def ransac(corners1, corners2, epsilon):
         dist = utils.ssd_points(
             corners2, predicted2
         )  # compare predicted with ground truth
-        if DEBUG:
+        if constants.DEBUG:
             print(min(dist), max(dist))
         matches = dist < epsilon
 
         num_matches = np.sum(matches)
-        if DEBUG:
+        if constants.DEBUG:
             print(num_matches)
 
         # save inliners if they are the largest set so far

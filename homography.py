@@ -8,7 +8,7 @@ import skimage as sk
 # import skimage.io as io
 from scipy import interpolate
 
-from constants import *
+import constants
 
 
 def homo_matrix(im1_pts: np.ndarray, im2_pts: np.ndarray):
@@ -92,18 +92,18 @@ def forward_warp(img, h_matrix, fill=True) -> np.ndarray:
     warped = empty_warp(img, h_matrix)
 
     # Compute Source Coordinates
-    if DEBUG:
+    if constants.DEBUG:
         print("=====src=====")
     # coordinates = np.meshgrid(H,W) # for each pixel
     coordinates = np.array(list(itertools.product(H, W)))
     src_rr, src_cc = coordinates[:, 0], coordinates[:, 1]
-    if DEBUG:
+    if constants.DEBUG:
         print(img.shape)
         print(src_rr.min(), src_cc.min())
         print(src_rr.max(), src_cc.max())
 
     # Compute Target Coordinates
-    if DEBUG:
+    if constants.DEBUG:
         print("====target====")
     pts_3D = [[c, r, 1] for r, c in coordinates]  # x, y = c, r
     pts_3D = np.array(pts_3D).T  # so that each column is [x, y, 1]
@@ -122,7 +122,7 @@ def forward_warp(img, h_matrix, fill=True) -> np.ndarray:
     target_rr += row_shift
     target_cc += col_shift
 
-    if DEBUG:
+    if constants.DEBUG:
         print(warped.shape)
         print(target_rr.min(), target_cc.min())
         print(target_rr.max(), target_cc.max())
@@ -132,7 +132,7 @@ def forward_warp(img, h_matrix, fill=True) -> np.ndarray:
     target_cc = np.clip(target_cc, 0, warped.shape[1] - 1)
 
     # Do interpolation
-    if DEBUG:
+    if constants.DEBUG:
         print("=====interpolate=====")
     interp_funcs = [
         interpolate.RectBivariateSpline(H, W, img[:, :, c]) for c in range(ch)
@@ -243,7 +243,7 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     x_shift, y_shift = -target_x.min(), -target_y.min()
 
     # compute target coordinates
-    if DEBUG:
+    if constants.DEBUG:
         print("====target====")
         print(warped.shape)
         print(target_rr.min(), target_cc.min())
@@ -252,12 +252,12 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
     # reverse shifting to get the original trasformed values
     target_rr -= y_shift
     target_cc -= x_shift
-    if DEBUG:
+    if constants.DEBUG:
         print(target_rr.min(), target_cc.min())
         print(target_rr.max(), target_cc.max())
 
     # compute source coordinates
-    if DEBUG:
+    if constants.DEBUG:
         print("=====src=====")
     num_pts = len(target_rr)
     target_pts = np.vstack((target_cc, target_rr, np.ones((1, num_pts))))
@@ -267,13 +267,13 @@ def inverse_warp(img, h_matrix) -> np.ndarray:
 
     src_x, src_y = src_pts[0, :], src_pts[1, :]
     src_rr, src_cc = src_y, src_x
-    if DEBUG:
+    if constants.DEBUG:
         print(img.shape)
         print(src_rr.min(), src_cc.min())
         print(src_rr.max(), src_cc.max())
 
     # interpolate
-    if DEBUG:
+    if constants.DEBUG:
         print("=====interpolate=====")
 
     # use zero indexed for interpolation

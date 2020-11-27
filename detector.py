@@ -1,4 +1,5 @@
 import itertools
+import sys
 from dataclasses import dataclass
 from functools import total_ordering
 from queue import PriorityQueue
@@ -8,10 +9,11 @@ import numpy as np
 import skimage.transform
 from skimage.feature import corner_harris, corner_peaks, peak_local_max
 
+# import constants
+import constants
 import filters
 import homography
 import utils
-from constants import *
 
 
 def get_harris(im, edge_discard=20) -> list:
@@ -67,13 +69,17 @@ def anms(h_strengths, coords, eps=0.9) -> list:
     keep.append(strongest_corner)
     candidates.remove(strongest_corner)
 
-    r = MIN_RADIUS  # suppression radius
-    while len(keep) < NUM_KEEP and len(candidates) > 0 and r < MAX_RADIUS:
+    r = constants.MIN_RADIUS  # suppression radius
+    while (
+        len(keep) < constants.NUM_KEEP
+        and len(candidates) > 0
+        and r < constants.MAX_RADIUS
+    ):
         # compute ssd for all kept centers / coords
         sq_dist = utils.dist2(keep, candidates)
         print(sq_dist)
         # outlier rejection
-        mask = np.where(sq_dist <= 500)
+        mask = np.where(sq_dist <= 10)
         print(sq_dist[mask])
         sq_dist = sq_dist if mask else float("inf")
         print(sq_dist.shape)
@@ -95,10 +101,10 @@ def anms(h_strengths, coords, eps=0.9) -> list:
                 candidates.remove(n)
             # candidates.remove(nearest_neighbors)
 
-        r += MIN_RADIUS
+        r += constants.MIN_RADIUS
 
-    #     assert len(keep) == NUM_KEEP
-    # return h_strengths, coords[:NUM_KEEP]
+    #     assert len(keep) == constants.NUM_KEEP
+    # return h_strengths, coords[:constants.NUM_KEEP]
     return keep
 
 
@@ -119,7 +125,7 @@ def anms_2(strength, coords):
     selected_indices = [max_global_index]
 
     # add nearest neighbors repeatedly
-    for r in reversed(range(MIN_RADIUS, MAX_RADIUS)):
+    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
         for candidate_index in range(len(candidates)):
             isGood = True
             for good_index in selected_indices:
@@ -128,9 +134,9 @@ def anms_2(strength, coords):
                     break
             if isGood:
                 selected_indices.append(candidate_index)
-                if len(selected_indices) >= NUM_KEEP:
+                if len(selected_indices) >= constants.NUM_KEEP:
                     break
-        if len(selected_indices) >= NUM_KEEP:
+        if len(selected_indices) >= constants.NUM_KEEP:
             break
 
     # figure, axis = plt.subplots(ncols=3)
@@ -145,5 +151,6 @@ def anms_2(strength, coords):
     # plt.show()
 
     selected_coords = np.array([coords[i] for i in selected_indices])
-    assert selected_coords.shape == (NUM_KEEP, 2)
+    print(constants.NUM_KEEP)
+    assert selected_coords.shape == (constants.NUM_KEEP, 2)
     return selected_coords
