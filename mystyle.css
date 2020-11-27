@@ -23,12 +23,12 @@ h2 {
 img {
   vertical-align: middle;
   margin: 10px, 100px;
-  max-width: 320px;
+  /* max-width: 320px; */
   max-height: 380px;
 }
 
 .smaller {
-  max-width: 250px; !important;
+  max-width: 250px !important;
 }
 
 .left {
@@ -44,7 +44,6 @@ img {
   max-width: 250px !important;
   position: relative;
   bottom: 50px;
-
 }
 figcaption {
   margin: 10px 0 0 0;
@@ -53,7 +52,7 @@ figcaption {
 }
 
 .clear {
-  clear:both;
+  clear: both;
 }
 
 .row {

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import skimage as sk
 import skimage.io as io
+import time
 
 # import constants
 import constants
@@ -221,8 +222,10 @@ def define_corners(im1, im2):
 
     constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
 
-    utils.plot_points(im1, coords1)
-    utils.plot_points(im2, coords2)
+    fig = utils.plot_points(im1, coords1)
+    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
+    fig = utils.plot_points(im2, coords2)
+    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
 
     print("====== ANMS ======")
     corners1 = detector.anms_2(strength1, coords1)
@@ -250,15 +253,15 @@ def define_corners(im1, im2):
 
     # find best matches / inliers
     result1, result2 = matched1, matched2
+    # TODO add plot
     # result1, result2 = matching.ransac(matched1, matched2)
 
     print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
-    # TODO plot and save results
     fig = utils.plot_points(im1, result1)
-    # plt.savefig(DATA / "tmp1.jpg")
+    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
     fig = utils.plot_points(im2, result2)
-    # plt.savefig(DATA / "tmp2.jpg")
+    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
     return result1, result2
 
 
