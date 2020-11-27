@@ -29,12 +29,15 @@ def get_harris(im, edge_discard=20) -> list:
     """
     assert im.ndim == 2, im.shape
     assert edge_discard >= 20
-    # im = filters.gauss_blur(im)
+    im = filters.gauss_blur(im)
 
     # find harris corners
     h = corner_harris(im, method="eps", sigma=1)
-    coords = peak_local_max(
-        h, min_distance=1, indices=True, threshold_rel=MIN_HARRIS_STRENGTH
+    coords = corner_peaks(
+        h,
+        min_distance=2,
+        indices=True,
+        threshold_rel=constants.HARRIS_STRENGTH_THRESHOLD,
     )
 
     # discard points on edge
@@ -48,6 +51,7 @@ def get_harris(im, edge_discard=20) -> list:
     coords = coords[mask]
 
     # return h, coords
+    utils.assert_coords(coords)
     return h, np.flip(coords, axis=-1)  # to get (x, y)
 
 
@@ -139,18 +143,8 @@ def anms_2(strength, coords):
         if len(selected_indices) >= constants.NUM_KEEP:
             break
 
-    # figure, axis = plt.subplots(ncols=3)
-    # axis[0].imshow(img, vmin=0, vmax=1)
-    # axis[1].imshow(harris_img, vmin=0, vmax=1)
-    # axis[2].imshow(img, vmin=0, vmax=1)
-
-    # for x, y in points:
-    #     marker = plt.Circle((x, y), 2, color="r")
-    #     axis[2].add_artist(marker)
-
-    # plt.show()
+    assert len(selected_indices) == constants.NUM_KEEP
 
     selected_coords = np.array([coords[i] for i in selected_indices])
-    print(constants.NUM_KEEP)
-    assert selected_coords.shape == (constants.NUM_KEEP, 2)
+    utils.assert_coords(selected_coords)
     return selected_coords

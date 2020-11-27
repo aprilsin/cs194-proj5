@@ -24,10 +24,11 @@ NUM_PTS = 8  # pick 8 points to define homography matrix
 LOAD = False
 SAVE = False
 DEBUG = False
+SHOW = False
 
 # gaussian filter
-DEFAULT_KERNEL = 50
-DEFAULT_SIGMA = 15
+DEFAULT_KERNEL = 5
+DEFAULT_SIGMA = 1
 
 BLEND_METHOD = "average"
 # BLEND_METHOD = "two-band"
@@ -49,8 +50,7 @@ MAX_RADIUS = 500  # TODO should be 1/4 th of img size
 
 MATCHING_THRESHOLD = 0.2
 
-# select 4 points at random (4 points are needed to compute homography)
-# must be at least 4
-NUM_SAMPLE_POINTS = 4
+# select points at random (>=4 points are needed to compute homography)
+NUM_SAMPLE_POINTS = 6
 
 RANSAC_THRESHOLD = 0.2

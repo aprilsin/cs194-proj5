@@ -50,9 +50,13 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
             matched1_ind.append(i)
             matched2_ind.append(j)
 
-    matched1 = [coords1[i] for i in matched1_ind]
-    matched2 = [coords2[i] for i in matched2_ind]
+    matched1 = np.array([coords1[i] for i in matched1_ind])
+    matched2 = np.array([coords2[i] for i in matched2_ind])
+
+    print(matched1[0], type(matched1[0]))
     assert len(matched1) == len(matched2)
+    utils.assert_coords(matched1)
+    utils.assert_coords(matched2)
     return matched1, matched2
 
 
@@ -68,7 +72,7 @@ def ransac(corners1, corners2, epsilon=RANSAC_THRESHOLD):
     assert corners1.ndim, corners2.ndim == 2
 
     best_num_inliers = 0
-    best_inliers1, best_inliners2 = [], []
+    best_inliers1, best_inliers2 = [], []
 
     # select NUM_SAMPLE_POINTS points at random to compute homography
     for indices in itertools.combinations(
@@ -101,4 +105,7 @@ def ransac(corners1, corners2, epsilon=RANSAC_THRESHOLD):
     assert len(best_inliers1) == len(best_inliers2)
     best_inliers1 = np.array(best_inliers1)
     best_inliers2 = np.array(best_inliers2)
+    
+    utils.assert_coords(best_inliers1)
+    utils.assert_coords(best_inliers2)
     return best_inliers1, best_inliers2

@@ -96,7 +96,8 @@ def plot_points(img: np.ndarray, points: np.ndarray) -> None:
     else:
         plt.imshow(img)
     plt.scatter(x=points[:, 0], y=points[:, 1], marker="o", color="b", s=30)
-    plt.show()
+    if constants.SHOW:
+        plt.show()
     return fig
 
 
@@ -111,7 +112,8 @@ def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
     else:
         plt.imshow(img)
     plt.scatter(x=points[:, 1], y=points[:, 0], marker="o", color="b", s=30)
-    plt.show()
+    if constants.SHOW:
+        plt.show()
     return fig
 
 
@@ -121,6 +123,8 @@ def show_two(im1, im2):
     p1.imshow(im1)
     p2 = fig.add_subplot(1, 2, 2)
     p2.imshow(im2)
+    if constants.SHOW:
+        plt.show()
     return fig
 
 
@@ -193,6 +197,14 @@ def dist2(
 def ssd_points(points1, points2):
     assert points1.ndim == points2.ndim == 2, (points1.shape, points2.shape)
     return np.sum((points1 - points2) ** 2, axis=-1)
+
+
+def assert_coords(coords):
+    assert coords.ndim == 2, coords.shape
+    assert len(np.unique(coords, axis=0)) == len(
+        coords
+    ), f"Only {len(np.unique(coords))} unique items in {len(coords)} coordinates"
+    return True
 
 
 # def dist_patches(patch1, patch2):

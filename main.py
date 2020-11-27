@@ -17,7 +17,7 @@ import homography
 import matching
 import rectification
 import utils
-from constants import DATA, LOAD, OUTDIR_1, OUTDIR_2, SAVE
+from constants import DATA, OUTDIR_1, OUTDIR_2
 
 # class ToPath(argparse.Action):
 #     def __call__(self, parser, namespace, values, option_string=None)
@@ -69,7 +69,21 @@ constants.DEBUG = args.debug
 def manual_stitch_plane():
     i, j = [im_name.stem[-1] for im_name in args.images]
     imgs = [utils.read_img(im, resize=False) for im in args.images]
-    pts = [utils.pick_points(im, constants.NUM_PTS) for im in imgs]
+
+    if constants.LOAD:
+        try:
+            pts1 = utils.load_points(args.images[0])
+            pts2 = utils.load_points(args.images[1])
+            pts = [pts1, pts2]
+            print("Loaded points for 2 images")
+        except:
+            raise FileExistsError()
+    else:
+        pts = [utils.pick_points(im, constants.NUM_PTS) for im in args.images]
+        if constants.SAVE:
+            print("Saving points")
+            utils.save_points(pts1, args.images[0])
+            utils.save_points(pts2, args.images[1])
 
     h, w, c = imgs[0].shape
     num_pixels = 1600 * 1600
@@ -98,8 +112,8 @@ def manual_stitch_plane():
     warp2, shift2 = homography.inverse_warp(im2, H2)
     warp_pts2 = homography.warp_pts(pts2, H2, shift2)
 
-    aligned1, aligned2 = rectification.align(warp1, warp2, warp_pts1, warp_pts2)
-    blended = rectification.blend(aligned1, aligned2, method=BLEND_METHOD)
+    aligned1, aligned2, *_ = rectification.align(warp1, warp2, warp_pts1, warp_pts2)
+    blended = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
 
     mosaic_name = OUTDIR_1 / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, blended)
@@ -110,7 +124,7 @@ def manual_stitch_plane():
 def manual_stitch_direct():
     imgs = [utils.read_img(im, resize=False) for im in args.images]
 
-    if LOAD:
+    if constants.LOAD:
         try:
             pts1 = utils.load_points(args.images[0])
             name_a = args.images[1].stem + "a" + args.images[1].suffix
@@ -128,7 +142,7 @@ def manual_stitch_direct():
         pts2b = utils.pick_points(args.images[1], constants.NUM_PTS)
         pts3 = utils.pick_points(args.images[2], constants.NUM_PTS)
         pts = [pts1, pts2a, pts2b, pts3]
-        if SAVE:
+        if constants.SAVE:
             print("Saving points")
             pts1 = utils.save_points(pts1, args.images[0])
             name_a = args.images[1].stem + "a" + args.images[1].suffix
@@ -168,7 +182,7 @@ def manual_stitch_direct():
     aligned1, aligned2, _, _, _, shift2 = rectification.align(
         warp1, warp2, warp1_pts, warp2_pts
     )
-    blend_12 = rectification.blend(aligned1, aligned2, method=BLEND_METHOD)
+    blend_12 = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
 
     ### merge im2 and im3 ###
     print("Warp image 3 to image 2")
@@ -179,9 +193,9 @@ def manual_stitch_direct():
 
     print("Align and blend with image 3")
     aligned12, aligned3, *_ = rectification.align(blend_12, warp3, pts2b, warp3_pts)
-    blend_123 = rectification.blend(aligned12, aligned3, method=BLEND_METHOD)
+    blend_123 = rectification.blend(aligned12, aligned3, method=constants.BLEND_METHOD)
 
-    if SAVE:
+    if constants.SAVE:
         print("Saving images")
         plt.imsave(OUTDIR_1 / (name + "_warp1.jpg"), warp1)
         plt.imsave(OUTDIR_1 / (name + "_blend12.jpg"), blend_12)
@@ -193,17 +207,14 @@ def manual_stitch_direct():
     return
 
 
-def auto_stitch():
-    im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in args.images]
+def define_corners(im1, im2):
 
-    # detect corners
     print("====== CORNER DETECTION ======")
     strength1, coords1 = detector.get_harris(im1)
     strength2, coords2 = detector.get_harris(im2)
     print(f"Detected {len(coords1)} points from image 1.")
     print(f"Detected {len(coords2)} points from image 2.")
 
-    # global constants.NUM_KEEP
     constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
 
     utils.plot_points(im1, coords1)
@@ -217,7 +228,6 @@ def auto_stitch():
     print(f"Selected top {constants.NUM_KEEP} points from image 1.")
     print(f"Selected top {constants.NUM_KEEP} points from image 2.")
 
-    # describe features with patches
     print("====== CORNER DESCRIPTION ======")
     patches1 = descriptor.get_patches(im1, corners1)
     vectors1 = np.stack([p.flatten() for p in patches1])
@@ -227,14 +237,19 @@ def auto_stitch():
     print(f"Computed descriptors of image 2.")
 
     print("====== CORNER MATCHING ======")
-    # match patches
     matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
     print(f"Found {len(matched1)} candidate coorespondences.")
+
+    if len(matched1) < 4:
+        print(f"Cannot stitch images.")
+        sys.exit()
+
     # find best matches / inliers
-    result1, result2 = matching.ransac(matched1, matched2)
+    result1, result2 = matched1, matched2
+    # result1, result2 = matching.ransac(matched1, matched2)
 
     print()
-    print("====== RESULTS ======")
+    print("====== CORRESPONDENCE RESULTS ======")
     print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
     # TODO plot and save results
@@ -242,6 +257,41 @@ def auto_stitch():
     # plt.savefig(DATA / "tmp1.jpg")
     fig = utils.plot_points(im2, result2)
     # plt.savefig(DATA / "tmp2.jpg")
+    return result1, result2
+
+
+def stitch(im1, im2, pts1, pts2):
+    print("===== STITCHING =====")
+
+    # warp image 1
+    print("Warp image 1 to image 2")
+    H1 = homography.homo_matrix(pts1, pts2)
+    warp1, shift1 = homography.inverse_warp(im1, H1)
+    warp1_pts = homography.warp_pts(pts1, H1, shift1)
+
+    # no need to warp image 2
+    warp2, warp2_pts = im2, pts2
+
+    print("Align and blend image 1 and 2")
+    aligned1, aligned2, _, _, _, shift2 = rectification.align(
+        warp1, warp2, warp1_pts, warp2_pts
+    )
+
+    mosaic = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
+    return mosaic
+
+
+def auto_stitch():
+    im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in args.images]
+    points1, points2 = define_corners(im1, im2)
+
+    im1, im2 = [utils.read_img(im1, im2, resize=True) for im in args.images]
+    mosaic = stitch(im1, im2, points1, points2)
+
+    mosaic_name = OUTDIR_2 / (name + "_mosaic.jpg")
+    plt.imsave(mosaic_name, mosaic)
+    print(f"Mosaic saved as {mosaic_name}")
+
     return
 
 
