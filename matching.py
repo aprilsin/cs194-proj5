@@ -21,7 +21,8 @@ from constants import MATCHING_THRESHOLD, RANSAC_THRESHOLD
 #         if dists[0][0]/dists[1][0] < .3:
 #             results[point_A] = dists[0][1]
 #     return results
-    
+
+
 def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRESHOLD):
     assert len(coords1) == len(patches1) == constants.NUM_KEEP, (
         len(coords1),

@@ -1,13 +1,13 @@
 import argparse
 import os
 import sys
+import time
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage as sk
 import skimage.io as io
-import time
 
 # import constants
 import constants
