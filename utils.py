@@ -84,7 +84,7 @@ def load_points(name: os.PathLike) -> np.ndarray:
     return pickle.load(open(pickle_name, "rb"))
 
 
-def plot_pts(img: np.ndarray, points: np.ndarray) -> None:
+def plot_points(img: np.ndarray, points: np.ndarray) -> None:
     """
     Displays the keypoints of an image
     points are in (x, y) format

@@ -224,13 +224,16 @@ def auto_stitch():
     print(f"Found {len(matched1)} candidate coorespondences.")
     # find best matches / inliers
     result1, result2 = matching.ransac(matched1, matched2, epsilon=RANSAC_THRESHOLD)
+
+    print()
+    print("====== RESULTS ======")
     print(f"Total features matched = {len(result1)}.")
 
     # TODO plot and save results
-    fig1 = utils.plot_corners(im1, matched1)
-    fig2 = utils.plot_corners(im2, matched2)
-    plt.imsave(DATA / "tmp1.jpg", fig1)
-    plt.imsave(DATA / "tmp2.jpg", fig2)
+    fig = utils.plot_points(im1, result1)
+    # plt.savefig(DATA / "tmp1.jpg")
+    fig = utils.plot_points(im2, result2)
+    # plt.savefig(DATA / "tmp2.jpg")
     return
 
 

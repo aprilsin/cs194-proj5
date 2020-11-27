@@ -74,11 +74,13 @@ def ransac(corners1, corners2, epsilon):
         dist = utils.ssd_points(
             corners2, predicted2
         )  # compare predicted with ground truth
-        print(min(dist), max(dist))
+        if DEBUG:
+            print(min(dist), max(dist))
         matches = dist < epsilon
 
         num_matches = np.sum(matches)
-        print(num_matches)
+        if DEBUG:
+            print(num_matches)
 
         # save inliners if they are the largest set so far
         if num_matches > best_num_inliers:
@@ -87,4 +89,7 @@ def ransac(corners1, corners2, epsilon):
             best_num_inliers = num_matches
 
     assert len(best_inliers1) == len(best_inliers2)
+    best_inliers1 = np.array(best_inliers1)
+    best_inliers2 = np.array(best_inliers2)
+    print(type(best_inliers1[0]))
     return best_inliers1, best_inliers2
