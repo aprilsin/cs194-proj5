@@ -178,11 +178,12 @@ def anms(strength, detected_coords, robust_factor=0.9):
             dists = np.sqrt(utils.dist2(coord, candidate_coords)).T
 
             # keep if candidate is outside of supression index
-            indices = [i for i in range(len(dists)) if dists[i] > r]
-            if len(indices) > 0:
-                print(f"{indices = }")
-                print("all_candidatecs: ", len(all_candidates), max(all_candidates))
-            for i in indices:
+            candidates = [i for i in range(len(dists)) if dists[i] > r]
+            if len(candidates) > 0:
+                print(f"{len(candidate_coords) = }")
+                print(f"{candidates = }")
+                print(f"{len(candidates)} will be removed from {len(all_candidates) = }")
+            for i in candidates:
                 candidate_coord = detected_coords[i]
                 if (
                     strength[coord[1], coord[0]]
@@ -191,9 +192,10 @@ def anms(strength, detected_coords, robust_factor=0.9):
                     if len(selected) >= constants.NUM_KEEP:
                         break  # TODO speedup: break out of two loops
                     else:
+                        print(f"selected {i}")
                         selected.append(i)
                         all_candidates.remove(i)
-                        print(f"selected and removed {i}")
+                        print(f"removed {i}")
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords, constants.NUM_KEEP)

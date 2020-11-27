@@ -228,8 +228,9 @@ def define_corners(im1, im2):
     plt.savefig(OUTDIR_2 / (name + f"_detected_{time.time():.0f}.jpg"))
 
     print("====== ANMS ======")
-    corners1 = detector.anms_2(strength1, coords1)
-    corners2 = detector.anms_2(strength2, coords2)
+    corners1 = detector.anms(strength1, coords1)
+    sys.exit()  # TODO remove me
+    corners2 = detector.anms(strength2, coords2)
     print(f"Selected top {len(corners1)} points from image 1.")
     print(f"Selected top {len(corners2)} points from image 2.")
 
