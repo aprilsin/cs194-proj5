@@ -218,13 +218,13 @@ def auto_stitch():
     vectors2 = np.stack([p.flatten() for p in patches2])
     print(f"Computed descriptors of image 2.")
 
-    # match patches
     print("====== CORNER MATCHING ======")
+    # match patches
     matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
-    result1, result2 = matching.ransac(
-        matched1, matched2, epsilon=0.2
-    )  # find best matches / inliers
-    print("Matched features.")
+    print(f"Found {len(matched1)} candidate coorespondences.")
+    # find best matches / inliers
+    result1, result2 = matching.ransac(matched1, matched2, epsilon=RANSAC_THRESHOLD)
+    print(f"Total features matched = {len(result1)}.")
 
     # TODO plot and save results
     fig1 = utils.plot_corners(im1, matched1)

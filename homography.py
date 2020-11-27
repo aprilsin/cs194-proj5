@@ -70,11 +70,15 @@ def empty_warp(img, h_matrix):
     return np.zeros((warp_h, warp_w, c))
 
 
-def warp_pts(pts, h_matrix, pts_shift):
+def warp_pts(pts, h_matrix, pts_shift=None):
     pts_3D = [[x, y, 1] for x, y in pts]  # x, y = c, r
     pts_3D = np.array(pts_3D).T  # so that each column is [x, y, 1]
+
     target_pts = h_matrix @ pts_3D
     target_pts /= target_pts[2]  # fix w, scaling due to transformation
+
+    if pts_shift is None:
+        return target_pts.T[:, :2]
     return np.add(target_pts.T[:, :2], pts_shift)
 
 

@@ -44,4 +44,10 @@ NUM_KEEP = 200  # want to keep the best 500 corners
 MIN_RADIUS = 2
 MAX_RADIUS = 500  # TODO should be 1/4 th of img size
 
-DEFAULT_THRESHOLD = 0.2
+MATCHING_THRESHOLD = 0.2
+
+# select 4 points at random (4 points are needed to compute homography)
+# must be at least 4
+NUM_SAMPLE_POINTS = 4
+
+RANSAC_THRESHOLD = 0.2

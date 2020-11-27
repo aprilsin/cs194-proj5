@@ -11,6 +11,7 @@ from scipy.interpolate import interp2d
 from scipy.spatial import Delaunay
 from skimage import transform
 from skimage.util import img_as_float, img_as_ubyte
+from constants import *
 
 ToImgArray = Union[np.ndarray, str, Path, os.PathLike]
 
@@ -169,7 +170,8 @@ def dist2(
         c = np.array(c)
     assert isinstance(x, np.ndarray) and isinstance(c, np.ndarray), (type(x), type(c))
 
-    print("inputs: ", x.shape, c.shape)
+    if DEBUG:
+        print("inputs: ", x.shape, c.shape)
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"
@@ -185,6 +187,11 @@ def dist2(
         - 2 * np.inner(x, c)
     )
     return sq_dist
+
+
+def ssd_points(points1, points2):
+    assert points1.ndim == points2.ndim == 2, (points1.shape, points2.shape)
+    return np.sum((points1 - points2) ** 2, axis=-1)
 
 
 # def dist_patches(patch1, patch2):

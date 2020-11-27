@@ -3,14 +3,13 @@ import sys  # TODO remove this
 
 import numpy as np
 import skimage.transform
-
 import filters
 import homography
 import utils
 from constants import *
 
 
-def match_features(coords1, patches1, coords2, patches2, threshold=DEFAULT_THRESHOLD):
+def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRESHOLD):
     assert len(coords1) == len(patches1) == NUM_KEEP, (len(coords1), len(patches1))
     assert len(coords2) == len(patches2) == NUM_KEEP, (len(coords2), len(patches2))
 
@@ -45,42 +44,47 @@ def match_features(coords1, patches1, coords2, patches2, threshold=DEFAULT_THRES
 
     matched1 = [coords1[i] for i in matched1_ind]
     matched2 = [coords2[i] for i in matched2_ind]
+    assert len(matched1) == len(matched2)
     return matched1, matched2
 
 
-def ransac(matched_corners1, matched_corners2, epsilon):
-    assert len(matched_corners1) == len(matched_corners2), (
-        len(matched_corners1),
-        len(matched_corners2),
+def ransac(corners1, corners2, epsilon):
+    assert len(corners1) == len(corners2), (
+        len(corners1),
+        len(corners2),
     )
+    num_input_matches = len(corners1)
 
-    num_input_matches = len(matched_corners1)
-    max_inliers = 0
+    corners1 = np.array(corners1)
+    corners2 = np.array(corners2)
+    assert corners1.ndim, corners2.ndim == 2
+
+    best_num_inliers = 0
     best_inliers1, best_inliners2 = [], []
 
-    # select 4 points at random (4 points are needed to compute homography)
-    for indices in itertools.combinations(range(num_input_matches), 4):
+    # select NUM_SAMPLE_POINTS points at random to compute homography
+    for indices in itertools.combinations(range(num_input_matches), NUM_SAMPLE_POINTS):
         # compute homography
-        corners1, corners2 = matched_corners1[indices], matched_corners2[indices]
-        h_matrix = homography.homo_matrix(corners1, corners2)
+        chosen1 = [corners1[i] for i in indices]
+        chosen2 = [corners2[i] for i in indices]
+        h_matrix = homography.homo_matrix(chosen1, chosen2)
 
-        # compute inliers
-        predicted2 = homography.warp_pts(corners2, h_matrix)
+        # compute inliers and count number of coordinates that are good matches
+        predicted2 = homography.warp_pts(corners1, h_matrix)
+        dist = utils.ssd_points(
+            corners2, predicted2
+        )  # compare predicted with ground truth
+        print(min(dist), max(dist))
+        matches = dist < epsilon
 
-        import detector
-
-        dist = utils.dist2(corners2, predicted2)  # TODO fix ssd
-
-        # count number of coordinates that are good matches
-        matches = np.where(dist < epsilon)
-        num_matches = np.cound_non_zero(matches)
+        num_matches = np.sum(matches)
+        print(num_matches)
 
         # save inliners if they are the largest set so far
-        if num_matches > max_inliers:
-            best_inliers1, best_inliers2 = (
-                matched_corners1[matches[:, 0]],
-                matched_corners2[matches[:, 1]],
-            )
-            max_inliers = num_matches
+        if num_matches > best_num_inliers:
+            best_inliers1 = corners1[matches]
+            best_inliers2 = corners2[matches]
+            best_num_inliers = num_matches
 
+    assert len(best_inliers1) == len(best_inliers2)
     return best_inliers1, best_inliers2
