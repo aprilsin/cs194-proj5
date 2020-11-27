@@ -86,7 +86,7 @@ def load_points(name: os.PathLike) -> np.ndarray:
 
 
 def plot_points(
-    img: np.ndarray, points: np.ndarray, markers=None, colors=constants.colors
+    img: np.ndarray, points: np.ndarray, markers=None, colors=None
 ) -> None:
     """
     Displays the keypoints of an image
