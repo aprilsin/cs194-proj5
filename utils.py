@@ -202,6 +202,7 @@ def dist2(
     if constants.DEBUG:
         print("inputs: ", x.shape, c.shape)
         print(type(x), type(c))
+
     ndata, dimx = x.shape
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"

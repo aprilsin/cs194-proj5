@@ -182,9 +182,7 @@ def anms(strength, detected_coords, robust_factor=0.9):
             candidates = [i for i in range(len(dists)) if dists[i] > r]
             candidates = [1, 2, 3]
             for i in candidates:
-                print(i)
                 candidate_coord = detected_coords[i]
-                print(candidate_coord)
                 if (
                     strength[coord[1], coord[0]]
                     < robust_factor * strength[candidate_coord[1], candidate_coord[0]]

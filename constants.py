@@ -23,7 +23,7 @@ NUM_PTS = 8  # pick 8 points to define homography matrix
 
 LOAD = False
 SAVE = False
-DEBUG = True
+DEBUG = False
 SHOW = False
 
 # gaussian filter
