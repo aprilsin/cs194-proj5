@@ -59,7 +59,7 @@ parser.add_argument(
     dest="debug",
     default=False,
     action="store_true",
-    help="Show constants.DEBUGging print statements.",
+    help="Show debugging print statements.",
 )
 
 args = parser.parse_args()

@@ -18,5 +18,5 @@ optional arguments:
     -h, --help show this help message and exit
     -s, --save Save intermediate data.
     -l, --load Load points from pickle files.
-    -d, --debug Show constants.DEBUGging print statements.
+    -d, --debug Show debugging print statements.
 ```
