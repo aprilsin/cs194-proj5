@@ -36,53 +36,12 @@ BLEND_METHOD = "average"
 #####################
 #      PART 2       #
 #####################
+
 MIN_HARRIS_STRENGTH = 0.1  # relative to max(image), i.e. most intense pixel of image
+
 NUM_KEEP = 500  # want to keep the best 500 corners
+
 MIN_RADIUS = 2
 MAX_RADIUS = 500  # TODO should be 1/4 th of img size
 
-
-@dataclass
-# @total_ordering
-class Corner:
-    coord: np.ndarray  # shape = (2,  )
-    strength: float
-
-
-#     def __eq__(self, other):
-#         return self.strength == other.strength
-
-#     def __lt__(self, other):
-#         return self.strength < other.strength
-
-# #     def __hash__(self):
-# #         return hash(self.coord) ^ hash(self.strength)
-
-
-@dataclass
-class Feature:
-    coord: np.ndarray  # shape = (2,  )
-    patch: np.ndarray  # shape = (8, 8)
-
-
-# TODO
-# combine the two data classes?
-# ignore compare functions, manually implement them
-
-
-class Tmp:
-    def __init__(self, coord, strength, patch=None):
-        # assert coord.ndim == 2, coord
-        # assert len(coord) == 2, coord
-        assert type(strength) == np.float64, type(strength)
-        self.coord = coord
-        self.strength = strength
-        if patch is None:
-            self.patch = np.zeros((8, 8))  # one patch is 8x8
-        else:
-            assert patch.shape == (8, 8), patch.shape
-            self.patch = patch
-
-
-combinations = {}
-features = {}
+DEFAULT_THRESHOLD = 0.2
