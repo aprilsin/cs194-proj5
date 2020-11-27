@@ -200,17 +200,15 @@ def auto_stitch():
     print(f"Detected {len(coords2)} points from image 2.")
 
     print("====== ANMS ======")
-    strength1, coords1 = detector.anms(strength1, coords1)
-    strength2, coords2 = detector.anms(strength2, coords2)
-    assert len(coords1) == NUM_KEEP, len(coords1)
-    assert len(coords2) == NUM_KEEP, len(coords2)
+    corners1 = detector.anms_2(strength1, coords1)
+    corners2 = detector.anms_2(strength2, coords2)
+    assert len(corners1) == NUM_KEEP, len(corners1)
+    assert len(corners2) == NUM_KEEP, len(corners2)
     print(f"Selected top {NUM_KEEP} points from image 1.")
     print(f"Selected top {NUM_KEEP} points from image 2.")
 
     # describe features with patches
     print("====== CORNER DESCRIPTION ======")
-    corners1 = coords1
-    corners2 = coords2
     patches1 = descriptor.get_patches(im1, corners1)
     vectors1 = np.stack([p.flatten() for p in patches1])
     print(f"Computed descriptors of image 1.")

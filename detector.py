@@ -42,17 +42,18 @@ def get_harris(im, edge_discard=20) -> list:
         & (coords[:, 1] > edge)
         & (coords[:, 1] < im.shape[1] - edge)
     )
-
     coords = coords[mask]
-    return h, coords
+    # return h, coords
+    return h, np.flip(coords, axis=-1)  # to get (x, y)
 
 
 def anms(h_strengths, coords, eps=0.9) -> list:
 
     # initialize
     keep = []
-    candidates = [(coord[0], coord[1]) for coord in coords]
-    r = MIN_RADIUS  # suppression radius
+    candidates = [
+        (coord[0], coord[1]) for coord in coords
+    ]  # turn np.ndarray into a list
 
     # get global maximum
     strongest_corner = None
@@ -61,44 +62,104 @@ def anms(h_strengths, coords, eps=0.9) -> list:
         if h_strengths[corner] > strongest_strength:
             strongest_corner = corner
             strongest_strength = h_strengths[corner]
-
     keep.append(strongest_corner)
     candidates.remove(strongest_corner)
 
+    r = MIN_RADIUS  # suppression radius
     while len(keep) < NUM_KEEP and len(candidates) > 0 and r < MAX_RADIUS:
         # compute ssd for all kept centers / coords
         sq_dist = utils.dist2(keep, candidates)
+        print(sq_dist)
         # outlier rejection
-        mask = np.where(sq_dist <= r)
-        sq_dist = sq_dist[mask]
+        mask = np.where(sq_dist <= 500)
+        print(sq_dist[mask])
+        sq_dist = sq_dist if mask else float("inf")
+        print(sq_dist.shape)
         if len(sq_dist) == 0:
             break
         else:
-            nearest_neighbors = np.unravel_index(
-                np.argmin(sq_dist, axis=0), sq_dist.shape
-            )
+            indices = np.argmin(sq_dist, axis=0)
+            print(indices[0])
+            print(indices.shape)
+            nearest_neighbors = [np.unravel_index(i, sq_dist.shape) for i in indices]
+            print(nearest_neighbors[2])
             # assert len(nearest_neighbors) == len(keep) # one nearest neighbor for each center?
-            print(nearest_neighbors)
+            for i in range(len(keep)):
+                center = keep[i]
+                neighbor = nearest_neighbors[i]
+                # if h_strengths[keep] < 0.9
             keep.append(nearest_neighbors)
-            candidates.remove(nearest_neighbors)
-        # for center in keep:
-        #     sq_dist = utils.dist2(center, candidates)
+            for n in nearest_neighbors:
+                candidates.remove(n)
+            # candidates.remove(nearest_neighbors)
 
-        #     # outlier rejection
-        #     mask = np.where(sq_dist <= r)
-        #     sq_dist = sq_dist[mask]
-        #     if len(sq_dist) == 0:
-        #         break
-        #     else:
-        #         nearest_neighbor = np.unravel_index(np.argmin(sq_dist), sq_dist.shape)
-        #         keep.append(nearest_neighbor)
-        #         candidates.remove(nearest_neighbor)
         r += MIN_RADIUS
 
-    sys.exit()  # TODO remove this
     #     assert len(keep) == NUM_KEEP
     # return h_strengths, coords[:NUM_KEEP]
     return keep
+
+
+def anms_2(strength, coords):
+    selected = []
+    candidates = [(coord[0], coord[1]) for coord in coords]
+    dists = utils.dist2(coords, coords)
+
+    # find global maximum
+    # strongest_corner = None
+    # strongest_strength = float("-inf")
+    # # for corner in candidates:
+    # #     if strength[corner] > strongest_strength:
+    # #         strongest_corner = corner
+    # #         strongest_strength = strength[corner]
+    # # selected.append(strongest_corner)
+
+    max_global = float("-inf")
+    max_global_index = None
+    for index in range(len(coords)):
+        x = coords[index][0]
+        y = coords[index][1]
+        if strength[y, x] > max_global:
+            max_global_index = index
+            max_global = strength[y, x]
+
+    selected = [max_global_index]
+
+    # add nearest neighbors repeatedly
+    for r in reversed(range(MIN_RADIUS, MAX_RADIUS)):
+        for candidate_index in range(len(candidates)):
+            isGood = True
+            for good_index in selected:
+                if dists[candidate_index, good_index] < r * r:
+                    isGood = False
+                    break
+            if isGood:
+                selected.append(candidate_index)
+                # print(
+                #     "Found "
+                #     + str(len(selected))
+                #     + " out of "
+                #     + str(NUM_KEEP)
+                #     + " points expected."
+                # )
+                if len(selected) >= NUM_KEEP:
+                    break
+        if len(selected) >= NUM_KEEP:
+            break
+
+    # figure, axis = plt.subplots(ncols=3)
+    # axis[0].imshow(img, vmin=0, vmax=1)
+    # axis[1].imshow(harris_img, vmin=0, vmax=1)
+    # axis[2].imshow(img, vmin=0, vmax=1)
+
+    # for x, y in points:
+    #     marker = plt.Circle((x, y), 2, color="r")
+    #     axis[2].add_artist(marker)
+
+    # plt.show()
+    selected = [np.unravel_index(i, strength.shape) for i in selected]
+    seleceted = np.flip(np.array(selected))
+    return selected
 
 
 # def get_corners(img):
