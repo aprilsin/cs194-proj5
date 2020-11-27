@@ -46,6 +46,9 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
 
         for j in range(constants.NUM_KEEP):  # for each corner in image 2
 
+            if not is_candidate[i, j]:
+                break  # TODO speed up: break out of two loops?
+
             dist = ssd[i, j]
 
             if dist < best_match_dist:
@@ -58,9 +61,10 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
                 second_match_dist = dist
                 second_match_ind = j
 
-        if best_match_dist / second_match_dist < threshold:
-            matched1_ind.append(i)
-            matched2_ind.append(j)
+            if best_match_dist / second_match_dist < threshold:
+                matched1_ind.append(i)
+                matched2_ind.append(j)
+                is_candidate[i, j] = False
 
     matched1 = np.array([coords1[i] for i in matched1_ind])
     matched2 = np.array([coords2[i] for i in matched2_ind])

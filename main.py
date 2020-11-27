@@ -223,22 +223,20 @@ def define_corners(im1, im2):
     constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
 
     fig = utils.plot_points(im1, coords1)
-    plt.savefig(OUTDIR_2 / name + f"_detected_{time.time():.0f}.jpg")
+    plt.savefig(OUTDIR_2 / (name + f"_detected_{time.time():.0f}.jpg"))
     fig = utils.plot_points(im2, coords2)
-    plt.savefig(OUTDIR_2 / name + f"_detected_{time.time():.0f}.jpg")
+    plt.savefig(OUTDIR_2 / (name + f"_detected_{time.time():.0f}.jpg"))
 
     print("====== ANMS ======")
     corners1 = detector.anms_2(strength1, coords1)
     corners2 = detector.anms_2(strength2, coords2)
-    assert len(corners1) == constants.NUM_KEEP, len(corners1)
-    assert len(corners2) == constants.NUM_KEEP, len(corners2)
-    print(f"Selected top {constants.NUM_KEEP} points from image 1.")
-    print(f"Selected top {constants.NUM_KEEP} points from image 2.")
+    print(f"Selected top {len(corners1)} points from image 1.")
+    print(f"Selected top {len(corners2)} points from image 2.")
 
     fig = utils.plot_points(im1, corners1)
-    plt.savefig(OUTDIR_2 / name + f"_anms_{time.time():.0f}.jpg")
+    plt.savefig(OUTDIR_2 / (name + f"_anms_{time.time():.0f}.jpg"))
     fig = utils.plot_points(im2, corners2)
-    plt.savefig(OUTDIR_2 / name + f"_anms_{time.time():.0f}.jpg")
+    plt.savefig(OUTDIR_2 / (name + f"_anms_{time.time():.0f}.jpg"))
 
     print("====== CORNER DESCRIPTION ======")
     patches1 = descriptor.get_patches(im1, corners1)
@@ -264,10 +262,10 @@ def define_corners(im1, im2):
 
     print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
-    fig = utils.plot_points(im1, result1)
-    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
-    fig = utils.plot_points(im2, result2)
-    plt.savefig(OUTDIR_2 / f"{time.time():.0f}.jpg")
+    fig = utils.plot_points(im1, result1, colors=constants.colors)
+    plt.savefig(OUTDIR_2 / (name + f"_result_{time.time():.0f}.jpg"))
+    fig = utils.plot_points(im2, result2, colors=constants.colors)
+    plt.savefig(OUTDIR_2 / (name + f"_result_{time.time():.0f}.jpg"))
     return result1, result2
 
 
