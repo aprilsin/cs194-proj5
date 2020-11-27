@@ -4,11 +4,10 @@ __pycache__/
 
 # VS Code
 .vscode/
-node_modules/
-*.json
 
 # virtual environment
 env/
 
 # temporary files
 tmp.*
+output*/

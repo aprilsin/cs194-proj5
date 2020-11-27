@@ -158,9 +158,7 @@ def anms(strength, detected_coords, robust_factor=0.9):
     """
 
     # sort by strength
-    print(detected_coords[0], type(detected_coords[0]))
     detected_coords = sorted(detected_coords, key=lambda i: strength[i[1], i[0]])
-    print(detected_coords[0], type(detected_coords[0]))
 
     selected = []
     all_candidates = [*range(len(detected_coords))]
@@ -170,27 +168,32 @@ def anms(strength, detected_coords, robust_factor=0.9):
     selected = [0]
     all_candidates.remove(0)
 
-    while (
-        len(selected) < constants.NUM_KEEP and r > constants.MIN_RADIUS
-    ):  # TODO can I do this???
+    # while (
+    #     len(selected) < constants.NUM_KEEP and r > constants.MIN_RADIUS
+    # ):  # TODO can I do this???
+    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
         for selected_ind in selected:
             coord = detected_coords[selected_ind]
-            candidates = [detected_coords[i] for i in all_candidates]
-            dists = np.sqrt(utils.dist2(coord, candidates)).T
+            candidate_coords = [detected_coords[i] for i in all_candidates]
+            dists = np.sqrt(utils.dist2(coord, candidate_coords)).T
 
             # keep if candidate is outside of supression index
-            candidates = [i for i in range(len(dists)) if dists[i] > r]
-            for i in candidates:
+            indices = [i for i in range(len(dists)) if dists[i] > r]
+            if len(indices) > 0:
+                print(f"{indices = }")
+                print("all_candidatecs: ", len(all_candidates), max(all_candidates))
+            for i in indices:
                 candidate_coord = detected_coords[i]
                 if (
                     strength[coord[1], coord[0]]
                     < robust_factor * strength[candidate_coord[1], candidate_coord[0]]
                 ):
-                    if len(selected) < constants.NUM_KEEP:
-                        selected.append(i)
+                    if len(selected) >= constants.NUM_KEEP:
+                        break  # TODO speedup: break out of two loops
                     else:
-                        break  # TODO need to break out of two loops
-        r -= 1
+                        selected.append(i)
+                        all_candidates.remove(i)
+                        print(f"selected and removed {i}")
 
     selected_coords = np.array([detected_coords[i] for i in selected])
     utils.assert_coords(selected_coords, constants.NUM_KEEP)

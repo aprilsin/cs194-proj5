@@ -36,17 +36,17 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
     # break
 
     for i in range(len(coords1)):  # for each corner in image 1
-
         best_match_ind = None
         best_match_dist = float("inf")
         second_match_ind = None
         second_match_dist = float("inf")
 
         for j in range(len(coords2)):  # for each corner in image 2
-            print(
-                not is_candidate.all(),
-                f"{is_candidate.size - np.sum(is_candidate)} are rejected",
-            )  # TODO this is not strictly increasing????
+            # print(best_match_ind, second_match_ind)
+            # print(
+            #     not is_candidate.all(),
+            #     f"{is_candidate.size - np.sum(is_candidate)} are rejected",
+            # )
             if is_candidate[i, j]:  # TODO how to break out of two loops?
                 dist = ssd[i, j]
 
@@ -62,10 +62,15 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
 
                 if best_match_dist / second_match_dist < threshold:
                     matched_indices.append([i, j])
-                    is_candidate[i, j] = False
+                    is_candidate[i, :] = False
+                    is_candidate[:, j] = False
                     # is_candidate[j, i] = False
 
-    print(len(matched_indices)) # TODO this number is not less than NUM_KEEP
+    print(
+        len(matched_indices),
+        len(np.unique(np.array(matched_indices)[:, 0])),
+        len(np.unique(np.array(matched_indices)[:, 1])),
+    )  # TODO this number is not less than NUM_KEEP
     m1 = np.array([i for i, j in matched_indices])
     m2 = np.array([j for i, j in matched_indices])
     print(len(m1), len(np.unique(m1)))
