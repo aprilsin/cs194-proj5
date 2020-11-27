@@ -34,7 +34,7 @@ def get_harris(im, edge_discard=20) -> list:
     coords = peak_local_max(
         h, min_distance=1, indices=True, threshold_rel=MIN_HARRIS_STRENGTH
     )
-    print(type(coords), coords[0])
+
     # discard points on edge
     edge = edge_discard  # pixels
     mask = (
@@ -44,7 +44,7 @@ def get_harris(im, edge_discard=20) -> list:
         & (coords[:, 1] < im.shape[1] - edge)
     )
     coords = coords[mask]
-    print(np.array([0, 0]) in coords)
+
     # return h, coords
     return h, np.flip(coords, axis=-1)  # to get (x, y)
 
