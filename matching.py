@@ -2,7 +2,7 @@ import itertools
 
 import numpy as np
 import skimage.transform
-
+import sys  # TODO remove this
 import filters
 import homography
 import utils
@@ -13,8 +13,10 @@ def match_features(coords1, patches1, coords2, patches2):
     ssd = utils.dist2(patches1, patches2)
 
     # find best match
+    print(np.argmin(ssd))
     best_match = np.unravel_index(np.argmin(ssd), ssd.shape)
     print(f"{best_match = }")
+    sys.exit()
     # combos = list(itertools.product(features1, features2))
     # ssd = [utils.dist_patches(f1.patch, f2.patch) for f1, f2 in combos]
 
