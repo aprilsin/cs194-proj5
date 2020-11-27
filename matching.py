@@ -24,50 +24,56 @@ from constants import MATCHING_THRESHOLD, RANSAC_THRESHOLD
 
 
 def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRESHOLD):
-    assert len(coords1) == len(patches1) == constants.NUM_KEEP, (
-        len(coords1),
-        len(patches1),
-    )
-    assert len(coords2) == len(patches2) == constants.NUM_KEEP, (
-        len(coords2),
-        len(patches2),
-    )
+    print(f"Matching {len(coords1)} features with {len(coords2)} features.")
+    assert len(coords1) == len(patches1), f"{len(coords1)}, {len(patches1)}"
+    assert len(coords2) == len(patches2), f"{len(coords2)}, {len(patches2)}"
 
-    matched1_ind, matched2_ind = [], []
+    matched_indices = []
     ssd = utils.dist2(patches1, patches2)
     is_candidate = np.full(shape=(len(coords1), len(coords2)), fill_value=True)
 
-    for i in range(constants.NUM_KEEP):  # for each corner in image 1
+    # while is_candidate.any():
+    # break
+
+    for i in range(len(coords1)):  # for each corner in image 1
 
         best_match_ind = None
         best_match_dist = float("inf")
         second_match_ind = None
         second_match_dist = float("inf")
 
-        for j in range(constants.NUM_KEEP):  # for each corner in image 2
+        for j in range(len(coords2)):  # for each corner in image 2
+            print(
+                not is_candidate.all(),
+                f"{is_candidate.size - np.sum(is_candidate)} are rejected",
+            )  # TODO this is not strictly increasing????
+            if is_candidate[i, j]:  # TODO how to break out of two loops?
+                dist = ssd[i, j]
 
-            if not is_candidate[i, j]:
-                break  # TODO speed up: break out of two loops?
+                if dist < best_match_dist:
+                    second_match_ind = best_match_ind
+                    second_match_dist = best_match_dist
+                    best_match_ind = j
+                    best_match_dist = dist
 
-            dist = ssd[i, j]
+                elif dist < second_match_dist:
+                    second_match_dist = dist
+                    second_match_ind = j
 
-            if dist < best_match_dist:
-                second_match_ind = best_match_ind
-                second_match_dist = best_match_dist
-                best_match_ind = j
-                best_match_dist = dist
+                if best_match_dist / second_match_dist < threshold:
+                    matched_indices.append([i, j])
+                    is_candidate[i, j] = False
+                    # is_candidate[j, i] = False
 
-            elif dist < second_match_dist:
-                second_match_dist = dist
-                second_match_ind = j
+    print(len(matched_indices)) # TODO this number is not less than NUM_KEEP
+    m1 = np.array([i for i, j in matched_indices])
+    m2 = np.array([j for i, j in matched_indices])
+    print(len(m1), len(np.unique(m1)))
+    print(len(m2), len(np.unique(m2)))
+    sys.exit()  # TODO remove this
 
-            if best_match_dist / second_match_dist < threshold:
-                matched1_ind.append(i)
-                matched2_ind.append(j)
-                is_candidate[i, j] = False
-
-    matched1 = np.array([coords1[i] for i in matched1_ind])
-    matched2 = np.array([coords2[i] for i in matched2_ind])
+    matched1 = np.array([coords1[i] for i, j in matched_indices])
+    matched2 = np.array([coords2[j] for i, j in matched_indices])
 
     if constants.DEBUG:
         print(matched1[0], type(matched1[0]))
