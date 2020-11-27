@@ -91,5 +91,4 @@ def ransac(corners1, corners2, epsilon):
     assert len(best_inliers1) == len(best_inliers2)
     best_inliers1 = np.array(best_inliers1)
     best_inliers2 = np.array(best_inliers2)
-    print(type(best_inliers1[0]))
     return best_inliers1, best_inliers2

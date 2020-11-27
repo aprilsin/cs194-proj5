@@ -201,6 +201,12 @@ def auto_stitch():
     print(f"Detected {len(coords1)} points from image 1.")
     print(f"Detected {len(coords2)} points from image 2.")
 
+    global NUM_KEEP
+    NUM_KEEP = min([NUM_KEEP, len(coords1), len(coords2)])
+
+    utils.plot_points(im1, coords1)
+    utils.plot_points(im2, coords2)
+
     print("====== ANMS ======")
     corners1 = detector.anms_2(strength1, coords1)
     corners2 = detector.anms_2(strength2, coords2)
@@ -227,7 +233,7 @@ def auto_stitch():
 
     print()
     print("====== RESULTS ======")
-    print(f"Total features matched = {len(result1)}.")
+    print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
     # TODO plot and save results
     fig = utils.plot_points(im1, result1)
