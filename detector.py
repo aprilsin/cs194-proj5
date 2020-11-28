@@ -69,11 +69,11 @@ def anms(strength, detected_coords, robust_factor=0.9):
     """
     # P,P where entries are *distances* between detected_coords[i] and detected_coords[j]
     dists = squareform(pdist(detected_coords))
-    # only care about common pts
-    # shape = P,
+
     robust_strength = (
         robust_factor * strength[detected_coords[:, 0], detected_coords[:, 1]]
-    )
+    )  # shape = (P, )
+
     candidates = set()
 
     for r in range(constants.MAX_RADIUS, constants.MIN_RADIUS, -constants.MIN_RADIUS):
