@@ -325,7 +325,7 @@ def define_corners(im1, im2):
 
     # result1, result2 = matched1, matched2
     result1, result2 = matching.ransac(matched1, matched2)
-    # print(f"Total features matched = {len(result1)}, {len(result2)}.")
+    print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
     # plot figures
     utils.plot_corners(im1, result1, colors=constants.colors)
@@ -346,15 +346,19 @@ def stitch(im1, im2, pts1, pts2):
     H1 = homography.homo_matrix(pts1, pts2)
     warp1, shift1 = homography.inverse_warp(im1, H1)
     warp1_pts = homography.warp_pts(pts1, H1, shift1)
-    utils.plot_points(warp1, warp1_pts, title="Image 1 warped to Image 2)")
+    utils.plot_points(
+        warp1, warp1_pts, title="Image 1 and keypoints", colors=constants.colors
+    )
     if SAVE:
-        plt.savefig(OUTDIR_2b / f"{IMAGES[0].stem}_w.jpg")
+        plt.savefig(OUTDIR_2b / f"{IMAGES[0].stem}_warped.jpg")
 
     print("Warped image 2 = image 2")
     warp2, warp2_pts = im2, pts2  # no need to warp image 2
-    utils.plot_points(warp2, warp2_pts, title="Image 2 (not warped)")
+    utils.plot_points(
+        warp2, warp2_pts, title="Image 2 and keypoints", colors=constants.colors
+    )
     if SAVE:
-        plt.savefig(OUTDIR_2b / f"{IMAGES[1].stem}_w.jpg")
+        plt.savefig(OUTDIR_2b / f"{IMAGES[1].stem}_warped.jpg")
 
     print("Align and blend image 1 and 2")
     aligned1, aligned2, _, _, _, shift2 = rectification.align(
@@ -369,14 +373,13 @@ def stitch(im1, im2, pts1, pts2):
     return mosaic
 
 
-def auto_stitch(imgs):
-    im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in IMAGES]
-    points1, points2 = define_corners(im1, im2)
+def auto_stitch(im1, im2):
+    im1_gray, im2_gray = utils.to_gray(im1), utils.to_gray(im2)
+    points1, points2 = define_corners(im1_gray, im2_gray)
 
     points1 = np.flip(points1, axis=-1)
     points2 = np.flip(points2, axis=-1)
 
-    im1, im2 = [utils.read_img(im, resize=True) for im in IMAGES]
     mosaic = stitch(im1, im2, points1, points2)
 
     return mosaic
@@ -394,7 +397,7 @@ detection: {args.detection}
     if args.detection == "manual":
         if NUM_IMGS == 2:  # warp images to a frontal plane
             print("rectification: frontal plane\n")
-            imgs = [utils.read_img(im, resize=False) for im in args.images]
+            imgs = [utils.read_img(im, resize=False) for im in IMAGES]
             mosaic = manual_stitch_plane(imgs)
             mosaic_name = OUTDIR_1a / (NAME + "_mosaic.jpg")
             plt.imsave(mosaic_name, mosaic)
@@ -402,7 +405,7 @@ detection: {args.detection}
             sys.exit()
         elif NUM_IMGS == 3:  # warp image 1 and image 3 to middle image 2
             print("rectification: warp to middle image\n")
-            imgs = [utils.read_img(im, resize=False) for im in args.images]
+            imgs = [utils.read_img(im, resize=False) for im in IMAGES]
             mosaic = manual_stitch_direct(imgs)
             mosaic_name = OUTDIR_1b / (NAME + "_mosaic.jpg")
             plt.imsave(mosaic_name, mosaic)
@@ -410,13 +413,24 @@ detection: {args.detection}
             sys.exit()
         else:
             raise ValueError(f"{NUM_IMGS = }")
+
     if args.detection == "auto":
-        assert NUM_IMGS == 2, NUM_IMGS
-        imgs = [utils.read_img(im, resize=True, gray=True) for im in args.images]
-        mosaic = auto_stitch(imgs)
-        mosaic_name = OUTDIR_2b / (NAME + "_mosaic.jpg")
-        plt.imsave(mosaic_name, mosaic)
-        print(f"Mosaic saved as {mosaic_name}")
-        sys.exit()
+        if NUM_IMGS == 2:
+            im1, im2 = [utils.read_img(im, resize=True) for im in IMAGES]
+            mosaic = auto_stitch(im1, im2)
+            mosaic_name = OUTDIR_2b / (NAME + "_mosaic.jpg")
+            plt.imsave(mosaic_name, mosaic)
+            print(f"Mosaic saved as {mosaic_name}")
+            sys.exit()
+        elif NUM_IMGS > 2:
+            imgs = [utils.read_img(im, resize=True) for im in IMAGES]
+            tmp = imgs[0]
+            for i in range(1, NUM_IMGS):
+                tmp = auto_stitch(tmp, imgs[i])
+                plt.imsave(OUTDIR_2b / f"{NAME}_blend{i}.jpg", tmp)
+
+        else:
+            raise ValueError(f"cannot stitch {NUM_IMGS} images")
+
     else:
-        raise ValueError()
+        raise ValueError("Please select 'manual' or 'auto' stitching.")
