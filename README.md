@@ -5,7 +5,8 @@
 Input images need to be in JPEG format.
 Make sure all images are named in the format "name0.jpg" (or "name0.jpeg").
 
-This program can only stitch 2 or 3 images. Please input them in stitching order.
+This program can only stitch up to 10 images due to 0-9 for now.
+Please input images in stitching order.
 
 ### Instructions:
 
