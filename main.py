@@ -226,9 +226,9 @@ def define_corners(im1, im2):
 
     if constants.SAVE:
         fig = utils.plot_points(im1, coords1)
-        plt.savefig(OUTDIR_2 / (args.image[0].stem + "_detected.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[0].stem + "_detected.jpg"))
         fig = utils.plot_points(im2, coords2)
-        plt.savefig(OUTDIR_2 / (args.image[1].stem + "_detected.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[1].stem + "_detected.jpg"))
 
     print("====== ANMS ======")
 
@@ -244,9 +244,9 @@ def define_corners(im1, im2):
 
     if constants.SAVE:
         fig = utils.plot_points(im1, corners1)
-        plt.savefig(OUTDIR_2 / (args.image[0].stem + "_anms.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[0].stem + "_anms.jpg"))
         fig = utils.plot_points(im2, corners2)
-        plt.savefig(OUTDIR_2 / (args.image[1].stem + "_anms.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[1].stem + "_anms.jpg"))
 
     print("====== CORNER DESCRIPTION ======")
     patches1 = descriptor.get_patches(im1, corners1)
@@ -260,9 +260,9 @@ def define_corners(im1, im2):
     if constants.SAVE:
         for i in indices:
             fig = utils.plot_points(im1, corners1)
-            plt.savefig(OUTDIR_2 / (args.image[0].stem + f"_patch{i}.jpg"))
+            plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_patch{i}.jpg"))
             fig = utils.plot_points(im2, corners2)
-            plt.savefig(OUTDIR_2 / (args.image[1].stem + f"_patch{i}.jpg"))
+            plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_patch{i}.jpg"))
 
     print("====== CORNER MATCHING ======")
     matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
@@ -275,9 +275,9 @@ def define_corners(im1, im2):
 
     if constants.SAVE:
         fig = utils.plot_points(im1, matched1, colors=constants.colors)
-        plt.savefig(OUTDIR_2 / (args.image[0].stem + f"_match_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_match_{time.time():.0f}.jpg"))
         fig = utils.plot_points(im2, matched2, colors=constants.colors)
-        plt.savefig(OUTDIR_2 / (args.image[1].stem + f"_match_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_match_{time.time():.0f}.jpg"))
 
     # find best matches / inliers
     print("Do RANSAC...")
@@ -287,9 +287,9 @@ def define_corners(im1, im2):
 
     if constants.SAVE:
         fig = utils.plot_points(im1, result1, colors=constants.colors)
-        plt.savefig(OUTDIR_2 / (args.image[0].stem + f"_ransac_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_ransac_{time.time():.0f}.jpg"))
         fig = utils.plot_points(im2, result2, colors=constants.colors)
-        plt.savefig(OUTDIR_2 / (args.image[1].stem + f"_ransac_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_ransac_{time.time():.0f}.jpg"))
 
     return result1, result2
 
