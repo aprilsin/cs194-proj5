@@ -64,6 +64,7 @@ RANSAC_THRESHOLD = 3  # 3 pixels
 #      OTHERS       #
 #####################
 
+MARKER_SIZE = 25
 colors = ["b", "g", "r", "c", "m", "y", "k", "w"]
 markers = ["o", ".", "+", "x", ">", "v", "^", "*", "D"]
 # {time.time():.0f}

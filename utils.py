@@ -119,7 +119,7 @@ def plot_points(
             y=point[1],
             marker=markers[i % len(markers)],
             color=colors[i % len(colors)],
-            s=30,
+            s=constants.MARKER_SIZE,
         )
 
     if constants.SHOW:
@@ -175,7 +175,51 @@ def plot_corners(
             y=point[0],
             marker=markers[i % len(markers)],
             color=colors[i % len(colors)],
-            s=30,
+            s=constants.MARKER_SIZE,
+        )
+
+    if constants.SHOW:
+        plt.show()
+
+    return fig
+
+
+def plot_chosen(
+    img: np.ndarray,
+    all_points: np.ndarray,
+    chosen_points: np.ndarray,
+    title="Plot Corners",
+    colors=None,
+    markers=None,
+):
+    """
+    Displays the all detected keypoints the chosen keypoints of an image.
+    Points are in (r, c) format.
+    """
+    fig = plt.figure()
+
+    if img.ndim == 2:
+        plt.imshow(img, cmap="gray")
+    else:
+        plt.imshow(img)
+
+    # plot all detected keypoints
+    plt.scatter(
+        x=all_points[:, 1], y=all_points[:, 0], color="r", s=constants.MARKER_SIZE
+    )
+
+    # plot matched keypoints
+    if colors is None:
+        colors = ["b"]
+    if markers is None:
+        markers = ["o"]
+    for i, point in enumerate(chosen_points):
+        plt.scatter(
+            x=point[1],
+            y=point[0],
+            marker=markers[i % len(markers)],
+            color=colors[i % len(colors)],
+            s=constants.MARKER_SIZE,
         )
 
     if constants.SHOW:

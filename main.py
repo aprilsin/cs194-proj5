@@ -318,10 +318,10 @@ def define_corners(im1, im2):
         sys.exit()
 
     # plot figures
-    utils.plot_corners(im1, matched1, colors=constants.colors)
+    utils.plot_chosen(im1, coords1, matched1, colors=constants.colors)
     if SAVE:
         plt.savefig(OUTDIR_2a / (args.images[0].stem + f"_match.jpg"))
-    utils.plot_corners(im2, matched2, colors=constants.colors)
+    utils.plot_chosen(im2, coords2, matched2, colors=constants.colors)
     if SAVE:
         plt.savefig(OUTDIR_2a / (args.images[1].stem + f"_match.jpg"))
 
