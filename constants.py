@@ -44,7 +44,7 @@ BLEND_METHOD = "average"
 #####################
 
 HARRIS_STRENGTH_THRESHOLD = (
-    0.1  # relative to max(image), i.e. most intense pixel of image
+    0.06  # relative to max(image), i.e. most intense pixel of image
 )
 
 NUM_KEEP = 500  # want to keep the best 500 corners

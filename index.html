@@ -272,13 +272,34 @@
             </div>
         </div>
 
-        <h2>Corner Matching</h2>
+        <h2>Step 3: Corner Matching</h2>
         <p>Given two sets of patches, we want to find the best way to match them. As mentioned in the paper, the best
             metric is 1-NN / 2-NN (atio of the closest distance to the second closest) </p>
         <div class="row">
             <img id="graph" src="web_part2/graph.png" alt="graph" />
-            
         </div>
+
+        <div class="row">
+            <div class="column">
+                <img src="web_part2/car1_matched.jpg" alt="input" />
+                <figcaption>Points matched to image 2</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_part2/car2_matched.jpg" alt="detected points" />
+                <figcaption>Points matched to image 1</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="web_part2/car1_ransac.jpg" />
+                <figcaption>Matches after RANSAC</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_part2/car2_ransac.jpg" />
+                <figcaption>Matches after RANSAC</figcaption>
+            </div>
+        </div>
+
 
     </body>
 

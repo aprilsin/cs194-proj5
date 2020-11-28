@@ -139,7 +139,7 @@ def manual_stitch_plane(imgs):
     warp_pts1 = homography.warp_pts(pts1, H1, shift1)
     utils.plot_points(warp1, warp_pts1)
     if SAVE:
-        plt.savefig(OUTDIR_1a / (IMAGES[0].stem + "_w" + ".jpg"))
+        plt.savefig(OUTDIR_1a / (IMAGES[0].stem + "_warped" + ".jpg"))
 
     # warp image 2
     print("Warp image 2 to plane.")
@@ -148,7 +148,7 @@ def manual_stitch_plane(imgs):
     warp_pts2 = homography.warp_pts(pts2, H2, shift2)
     utils.plot_points(warp2, warp_pts2)
     if SAVE:
-        plt.savefig(OUTDIR_1a / (IMAGES[1].stem + "_w" + ".jpg"))
+        plt.savefig(OUTDIR_1a / (IMAGES[1].stem + "_warped" + ".jpg"))
 
     aligned1, aligned2, *_ = rectification.align(warp1, warp2, warp_pts1, warp_pts2)
     blended = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
@@ -427,7 +427,9 @@ detection: {args.detection}
             tmp = imgs[0]
             for i in range(1, NUM_IMGS):
                 tmp = auto_stitch(tmp, imgs[i])
-                plt.imsave(OUTDIR_2b / f"{NAME}_blend{i}.jpg", tmp)
+                mosaic_name = OUTDIR_2b / f"{time.time():.0f}-{NAME}_blend{i}.jpg"
+                plt.imsave(mosaic_name, tmp)
+                print(f"Mosaic saved as {mosaic_name}")
 
         else:
             raise ValueError(f"cannot stitch {NUM_IMGS} images")
