@@ -10,4 +10,4 @@ env/
 
 # temporary files
 tmp.*
-output*/*
+output*/

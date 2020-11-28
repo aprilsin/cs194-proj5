@@ -316,10 +316,10 @@ def define_corners(im1, im2):
     # plot figures
     utils.plot_chosen(im1, coords1, matched1, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / f"{NAME}_match_{IDS[0]}.jpg")
+        plt.savefig(OUTDIR_2a / f"{NAME}_matched{IDS[0]}.jpg")
     utils.plot_chosen(im2, coords2, matched2, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / f"{NAME}_match_{IDS[1]}.jpg")
+        plt.savefig(OUTDIR_2a / f"{NAME}_matched{IDS[1]}.jpg")
 
     print("===== RANSAC =====")  # find best matches / inliers
 

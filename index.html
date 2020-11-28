@@ -11,7 +11,21 @@
     </head>
 
     <body>
-        <h1>CS194 Project 5A: IMAGE WARPING and MOSAICING </h1>
+        <div id="toc_container">
+            <p class="toc_title">Table of Contents :)</p>
+            <ul>
+                <li>
+                    <a href="#PART1">Part A: IMAGE WARPING and MOSAICING</a>
+                </li>
+                <li>
+                    <a href="#PART2">Part 2: FEATURE MATCHING for AUTOSTITCHING</a></li>
+                <li>
+                    <a href="#RESULTS">RESULTS</a>
+                </li>
+            </ul>
+        </div>
+
+        <h1 id="PART1">CS194 Project 5A: IMAGE WARPING and MOSAICING </h1>
         <h1 style="font-size: 24px">April Sin</h1>
 
         <h2>Overview</h2>
@@ -108,15 +122,15 @@
         <h2>More Mosaics</h2>
         <div class="row">
             <div class="column">
-                <img src="data/plush1.jpg" alt="input 1" />
+                <img src="web_imgs/plush1.jpg" alt="input 1" />
                 <figcaption>input 1</figcaption>
             </div>
             <div class="column">
-                <img src="data/plush2.jpg" alt="input 2" />
+                <img src="web_imgs/plush2.jpg" alt="input 2" />
                 <figcaption>input 2</figcaption>
             </div>
             <div class="column">
-                <img src="data/plush3.jpg" alt="input 3" />
+                <img src="web_imgs/plush3.jpg" alt="input 3" />
                 <figcaption>input 3</figcaption>
             </div>
         </div>
@@ -132,15 +146,33 @@
         </div>
         <div class="row">
             <div class="column">
-                <img src="data/car1.jpg" alt="input 1" />
+                <img src="web_imgs/doll1.jpg" alt="input 1" />
                 <figcaption>input 1</figcaption>
             </div>
             <div class="column">
-                <img src="data/car2.jpg" alt="input 2" />
+                <img src="web_imgs/doll2.jpg" alt="input 2" />
                 <figcaption>input 2</figcaption>
             </div>
             <div class="column">
-                <img src="data/car3.jpg" alt="input 3" />
+                <img src="web_imgs/doll3.jpg" alt="input 3" />
+                <figcaption>input 3</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_part1/doll_mosaic.jpg" alt="mosaic" />
+                <figcaption>mosaic</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="web_imgs/car1.jpg" alt="input 1" />
+                <figcaption>input 1</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/car2.jpg" alt="input 2" />
+                <figcaption>input 2</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/car3.jpg" alt="input 3" />
                 <figcaption>input 3</figcaption>
             </div>
             <div class="column">
@@ -150,15 +182,15 @@
         </div>
         <div class="row">
             <div class="column">
-                <img src="data/lohas1.jpg" alt="input 1" />
+                <img src="web_imgs/lohas1.jpg" alt="input 1" />
                 <figcaption>input 1</figcaption>
             </div>
             <div class="column">
-                <img src="data/lohas2.jpg" alt="input 2" />
+                <img src="web_imgs/lohas2.jpg" alt="input 2" />
                 <figcaption>input 2</figcaption>
             </div>
             <div class="column">
-                <img src="data/lohas3.jpg" alt="input 3" />
+                <img src="web_imgs/lohas3.jpg" alt="input 3" />
                 <figcaption>input 3</figcaption>
             </div>
             <div class="column">
@@ -166,28 +198,11 @@
                 <figcaption>mosaic</figcaption>
             </div>
         </div>
-        <div class="row">
-            <div class="column">
-                <img src="data/doll1.jpg" alt="input 1" />
-                <figcaption>input 1</figcaption>
-            </div>
-            <div class="column">
-                <img src="data/doll2.jpg" alt="input 2" />
-                <figcaption>input 2</figcaption>
-            </div>
-            <div class="column">
-                <img src="data/doll3.jpg" alt="input 3" />
-                <figcaption>input 3</figcaption>
-            </div>
-            <div class="column">
-                <img src="web_part1/doll_mosaic.jpg" alt="mosaic" />
-                <figcaption>mosaic</figcaption>
-            </div>
-        </div>
+
 
         <hr class="spacer">
 
-        <h1>CS194 Project 5B: FEATURE MATCHING for AUTOSTITCHING </h1>
+        <h1 id="PART2">CS194 Project 5B: FEATURE MATCHING for AUTOSTITCHING </h1>
 
         <h2>Overview</h2>
         <p>In the real world, manually selected correspondances will be a pain! So in this part, we will implement
@@ -211,20 +226,30 @@
 
         <div class="row">
             <div class="column">
-                <img src="data/car1.jpg" alt="input" />
-                <figcaption>input image</figcaption>
+                <img src="web_imgs/car1.jpg" alt="input" />
+                <figcaption>input 1</figcaption>
             </div>
             <div class="column">
-                <img src="web_part2/car1_detected.jpg" alt="detected points" />
-                <figcaption>detected points from Harris Detector</figcaption>
+                <img src="web_part2/car_detected_1.jpg" alt="detected points" />
+                <figcaption>Detected points from Harris Detector</figcaption>
             </div>
             <div class="column">
-                <img src="web_part2/car1_anms_100.jpg" alt="anms points" />
-                <figcaption>anms top 100 points</figcaption>
+                <img src="web_part2/car_anms_17_1.jpg" alt="anms points" />
+                <figcaption>Points after ANMS</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="web_imgs/car2.jpg" alt="input" />
+                <figcaption>input 2</figcaption>
             </div>
             <div class="column">
-                <img src="web_part2/car1_anms_500.jpg" alt="anms points" />
-                <figcaption>anms top 500 points</figcaption>
+                <img src="web_part2/car_detected_2.jpg" alt="detected points" />
+                <figcaption>Detected points from Harris Detector</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_part2/car_anms_17_2.jpg" alt="anms points" />
+                <figcaption>Points after ANMS</figcaption>
             </div>
         </div>
 
@@ -249,24 +274,24 @@
                 <p>Here are some of the patches extracted.</p>
                 <div class="row">
                     <div class="column">
-                        <img src="web_part2/car1_patch0.jpg" alt="patch" />
+                        <img src="web_part2/car_patch0.jpg" alt="patch" />
                     </div>
                     <div class="column">
-                        <img src="web_part2/car1_patch1.jpg" alt="patch" />
+                        <img src="web_part2/car_patch7.jpg" alt="patch" />
                     </div>
                     <div class="column">
-                        <img src="web_part2/car1_patch2.jpg" alt="patch" />
+                        <img src="web_part2/car_patch2.jpg" alt="patch" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="column">
-                        <img src="web_part2/car1_patch3.jpg" alt="patch" />
+                        <img src="web_part2/car_patch3.jpg" alt="patch" />
                     </div>
                     <div class="column">
-                        <img src="web_part2/car1_patch4.jpg" alt="patch" />
+                        <img src="web_part2/car_patch4.jpg" alt="patch" />
                     </div>
                     <div class="column">
-                        <img src="web_part2/car1_patch5.jpg" alt="patch" />
+                        <img src="web_part2/car_patch5.jpg" alt="patch" />
                     </div>
                 </div>
             </div>
@@ -279,28 +304,76 @@
             <img id="graph" src="web_part2/graph.png" alt="graph" />
         </div>
 
+        <p>We can see that RANSAC helps finalizes good matches by rejecting outliers. Using <code>epsilon = 3
+                pixels</code>, more than 60% of the matches were rejected.</p>
         <div class="row">
             <div class="column">
-                <img src="web_part2/car1_matched.jpg" alt="input" />
+                <img src="web_part2/car_matched_1.jpg" alt="input" />
                 <figcaption>Points matched to image 2</figcaption>
             </div>
             <div class="column">
-                <img src="web_part2/car2_matched.jpg" alt="detected points" />
+                <img src="web_part2/car_matched_2.jpg" alt="detected points" />
                 <figcaption>Points matched to image 1</figcaption>
             </div>
         </div>
         <div class="row">
             <div class="column">
-                <img src="web_part2/car1_ransac.jpg" />
+                <img src="web_part2/car_ransac_1.jpg" />
                 <figcaption>Matches after RANSAC</figcaption>
             </div>
             <div class="column">
-                <img src="web_part2/car2_ransac.jpg" />
+                <img src="web_part2/car_ransac_2.jpg" />
                 <figcaption>Matches after RANSAC</figcaption>
             </div>
         </div>
 
+        <h1 id="RESULTS">Results</h1>
+        <h2>Manual vs Auto Stitching</h2>
+        <div class="row">
+            <div class="column">
+                <img src="web_part1/plush_mosaic.jpg" />
+                <figcaption>Mosaic with manual keypoints</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_part2/1606549014-plush_blend2.jpg" />
+                <figcaption>Mosaic with auto-stitching</figcaption>
+            </div>
+        </div>
 
+        <div class="row">
+            <div class="column">
+                <img src="web_part1/doll_blend12.jpg" />
+                <figcaption>Mosaic with manual keypoints</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_part2/doll_mosaic.jpg" />
+                <figcaption>Mosaic with auto-stitching</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="web_part1/car_blend12.jpg" />
+                <figcaption>Mosaic with manual keypoints</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_part2/car_mosaic.jpg" />
+                <figcaption>Mosaic with auto-stitching</figcaption>
+            </div>
+        </div>
+
+        <h2>Takeaways</h2>
+        <p>This project allowed me to learn the the new skill of reading research papers. At first I was really confused
+            about what's going on, but as I try to implement more code, and re-read the paragraphs over and over,
+            something magically clicks! </p>
+        <p>ANMS took me a really long time to understand and I reimplemented it 5 times!</p>
+        <p>Still my favourite thing from this project is creating the mosaic of me and my friend's
+            plushies. The mosaic will become my wallpapers now. Haha!</p>
+
+        <footer>
+            <hr>
+            <a style="float:left;" href="#toc_container">Back to top</a>
+            <p style="float:right;">April Sin @ Fall 2020, UC Berkeley</p>
+        </footer>
     </body>
 
 </html>
