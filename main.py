@@ -259,7 +259,7 @@ def define_corners(im1, im2):
     indices = np.random.randint(len(patches1), size=3)
     if constants.SAVE:
         for i in indices:
-            fig = plt.imshow(im1, corners1)
+            fig = utils.plot_points(im1, corners1)
             plt.savefig(OUTDIR_2 / (args.image[0].stem + f"_patch{i}.jpg"))
             fig = utils.plot_points(im2, corners2)
             plt.savefig(OUTDIR_2 / (args.image[1].stem + f"_patch{i}.jpg"))
