@@ -42,6 +42,13 @@ def read_img(x: ToImgArray, resize=True, gray=False) -> np.ndarray:
     return img
 
 
+def show_img(img, title=None):
+    if constants.SHOW:
+        plt.imshow(img)
+        if title is not None:
+            plt.title(title)
+
+
 ########################
 #        PART 1        #
 ########################
@@ -128,12 +135,15 @@ def plot_points(
     return fig
 
 
-def show_two(im1, im2):
+def show_two(im1, im2, title=None):
     fig = plt.figure(figsize=(12, 12))
     p1 = fig.add_subplot(1, 2, 1)
     p1.imshow(im1)
     p2 = fig.add_subplot(1, 2, 2)
     p2.imshow(im2)
+    
+    if title is not None:
+        plt.title(title)
 
     if constants.SHOW:
         plt.show()
@@ -307,13 +317,6 @@ def assert_coords(coords, num=None):
     if num is not None:
         assert len(coords) == num
     return True
-
-
-def show_img(img, title=None):
-    if constants.SHOW:
-        plt.imshow(img)
-        if title is not None:
-            plt.title(title)
 
 
 # def dist_patches(patch1, patch2):
