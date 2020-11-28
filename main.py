@@ -83,7 +83,7 @@ IDS = [Path(x).stem[-1] for x in args.images]
 STEMS = [Path(x).stem for x in args.images]
 
 NUM_IMGS = len(IMAGES)
-NAME = IMAGES[0].stem[:-1]
+NAME = STEMS[0][:-1]
 
 SAVE = not args.not_save
 LOAD = args.load_data
@@ -253,8 +253,8 @@ def define_corners(im1, im2):
     )
 
     # plot figures
-    name1 = f"{IMAGES[0].stem}_detected"
-    name2 = f"{IMAGES[1].stem}_detected"
+    name1 = f"{NAME}_detected_{IDS[0]}"
+    name2 = f"{NAME}_detected_{IDS[1]}"
     utils.plot_corners(im1, coords1, title=name1)
     if SAVE:
         plt.savefig(OUTDIR_2a / (name1 + ".jpg"))
@@ -276,8 +276,8 @@ def define_corners(im1, im2):
     print(f"Selected top {len(corners2)} points from image 2.")
 
     # plot figures
-    name1 = f"{IMAGES[0].stem}_anms_{constants.NUM_KEEP}"
-    name2 = f"{IMAGES[1].stem}_anms_{constants.NUM_KEEP}"
+    name1 = f"{NAME}_anms_{constants.NUM_KEEP}_{IDS[0]}"
+    name2 = f"{NAME}_anms_{constants.NUM_KEEP}_{IDS[1]}"
     utils.plot_corners(im1, corners1, title=name1)
     if SAVE:
         plt.savefig(OUTDIR_2a / (name1 + ".jpg"))
@@ -297,8 +297,8 @@ def define_corners(im1, im2):
     # plot figures
     indices = np.random.randint(len(patches1), size=3)
     for i, index in enumerate(indices):
-        name1 = IMAGES[0].stem + f"_patch{i}.jpg"
-        name2 = IMAGES[1].stem + f"_patch{i}.jpg"
+        name1 = f"{NAME}_patch{i}_{IDS[0]}.jpg"
+        name2 = f"{NAME}_patch{i}_{IDS[1]}.jpg"
         if SAVE:
             plt.imsave(OUTDIR_2a / name1, patches1[index])
         if SAVE:
@@ -316,10 +316,10 @@ def define_corners(im1, im2):
     # plot figures
     utils.plot_chosen(im1, coords1, matched1, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / (IMAGES[0].stem + f"_match.jpg"))
+        plt.savefig(OUTDIR_2a / f"{NAME}_match_{IDS[0]}.jpg")
     utils.plot_chosen(im2, coords2, matched2, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / (IMAGES[1].stem + f"_match.jpg"))
+        plt.savefig(OUTDIR_2a / f"{NAME}_match_{IDS[1]}.jpg")
 
     print("===== RANSAC =====")  # find best matches / inliers
 
@@ -330,10 +330,10 @@ def define_corners(im1, im2):
     # plot figures
     utils.plot_corners(im1, result1, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / (IMAGES[0].stem + f"_ransac.jpg"))
+        plt.savefig(OUTDIR_2a / f"{NAME}_ransac_{IDS[0]}.jpg")
     utils.plot_corners(im2, result2, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / (IMAGES[1].stem + f"_ransac.jpg"))
+        plt.savefig(OUTDIR_2a / f"{NAME}_ransac_{IDS[1]}.jpg")
 
     return result1, result2
 
