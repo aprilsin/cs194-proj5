@@ -295,7 +295,7 @@ def define_corners(im1, im2):
     print(f"Computed descriptors of image 2.")
 
     # plot figures
-    indices = np.random.randint(len(patches1), size=3)
+    indices = np.random.randint(min(len(patches1), len(patches2)), size=3)
     for i, index in enumerate(indices):
         name1 = f"{NAME}_patch{i}_{IDS[0]}.jpg"
         name2 = f"{NAME}_patch{i}_{IDS[1]}.jpg"
@@ -360,11 +360,11 @@ def stitch(im1, im2, pts1, pts2):
     aligned1, aligned2, _, _, _, shift2 = rectification.align(
         warp1, warp2, warp1_pts, warp2_pts
     )
-    utils.show_two(aligned1, aligned2, title="Aligned")
+    utils.show_two(aligned1, aligned2, title="{NAME} Aligned")
 
     print("Creating Mosaic...")
     mosaic = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
-    utils.show_img(mosaic, title="Mosaic")
+    utils.show_img(mosaic, title="{NAME} Mosaic")
 
     return mosaic
 
@@ -374,7 +374,7 @@ def auto_stitch(imgs):
     points1, points2 = define_corners(im1, im2)
 
     points1 = np.flip(points1, axis=-1)
-    points2 = np.flip(points1, axis=-1)
+    points2 = np.flip(points2, axis=-1)
 
     im1, im2 = [utils.read_img(im, resize=True) for im in IMAGES]
     mosaic = stitch(im1, im2, points1, points2)
