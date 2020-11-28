@@ -1,4 +1,5 @@
 import argparse
+import math
 import os
 import sys
 import time
@@ -19,7 +20,6 @@ import matching
 import rectification
 import utils
 from constants import DATA, OUTDIR_1a, OUTDIR_1b, OUTDIR_2a, OUTDIR_2b
-import math
 
 OUTDIR_1a.mkdir(parents=True, exist_ok=True)
 OUTDIR_1b.mkdir(parents=True, exist_ok=True)
@@ -45,11 +45,21 @@ parser.add_argument(
     help="2 or 3 images to be stitched in entered in stitching order",
 )  # TODO: action=ToPath
 
+
 parser.add_argument(
-    "--not-save",
-    dest="not_save",
-    action="store_true",
-    help="Do not save intermediate data.",
+    "-s",
+    "--save",
+    dest="save_data",
+    action="store_false",
+    help="Save intermediate data.",
+)
+
+parser.add_argument(
+    "-S",
+    "--show",
+    dest="show_plots",
+    action="store_false",
+    help="Show intermediate images.",
 )
 
 parser.add_argument(
@@ -372,9 +382,6 @@ def stitch(im1, im2, pts1, pts2):
 def auto_stitch(imgs):
     im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in IMAGES]
     points1, points2 = define_corners(im1, im2)
-
-    points1 = np.flip(points1, axis=-1)
-    points2 = np.flip(points1, axis=-1)
 
     im1, im2 = [utils.read_img(im, resize=True) for im in IMAGES]
     mosaic = stitch(im1, im2, points1, points2)

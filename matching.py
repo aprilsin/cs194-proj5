@@ -1,10 +1,12 @@
 import itertools
 import random
 import sys  # TODO remove this
+from collections import Counter, defaultdict
 
 import numpy as np
 import skimage.transform
-from scipy.spatial.distance import cdist
+from scipy.spatial.distance import cdist, sqeuclidean
+from tqdm import trange
 
 import constants
 import filters
@@ -17,15 +19,28 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
     print(f"Matching {len(coords1)} features with {len(coords2)} features.")
     assert len(coords1) == len(patches1), f"{len(coords1)}, {len(patches1)}"
     assert len(coords2) == len(patches2), f"{len(coords2)}, {len(patches2)}"
+    utils.assert_coords(coords1)
+    utils.assert_coords(coords2)
 
     ssd = cdist(patches1, patches2, metric="sqeuclidean")
+    # XXX this is necessary to ensure that the mapping is a bijection so it can
+    # be used for homography later.
+    used = {}
     matched_indices = set()
 
-    for i in range(len(coords1)):
-        first, second, *_ = np.argsort(ssd[i]).ravel()
-
-        if ssd[i, first] / ssd[i, second] < threshold:
-            matched_indices.add((i, first))
+    for i in trange(len(patches1)):
+        j_first, j_second, *_ = np.argsort(ssd[i]).ravel()
+        ratio = ssd[i, j_first] / ssd[i, j_second]
+        if ratio < threshold:
+            if j_first in used:
+                i_, j_second_, ratio_ = used[j_first]
+                if ratio < ratio_:
+                    used[j_first] = [i, j_second, ratio]
+                    matched_indices.remove((i_, j_first))
+                    matched_indices.add((i, j_first))
+            else:
+                matched_indices.add((i, j_first))
+                used[j_first] = [i, j_second, ratio]
 
     matched1 = np.array([coords1[i] for i, _ in matched_indices])
     matched2 = np.array([coords2[j] for _, j in matched_indices])
@@ -38,7 +53,8 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
     return matched1, matched2
 
 
-def ransac(corners1, corners2, epsilon=RANSAC_THRESHOLD):
+# def ransac(corners1, corners2, epsilon=3):
+def ransac(corners1, corners2, epsilon=3):
     assert len(corners1) == len(corners2), (
         len(corners1),
         len(corners2),
@@ -46,15 +62,18 @@ def ransac(corners1, corners2, epsilon=RANSAC_THRESHOLD):
 
     corners1 = np.array(corners1)
     corners2 = np.array(corners2)
-    assert corners1.ndim, corners2.ndim == 2
+    print(f"{corners1.shape=}")
+    print(f"{corners2.shape=}")
+    assert corners1.ndim == 2 and corners2.ndim == 2
 
     best_num_inliers = 0
     best_inliers1, best_inliers2 = [], []
 
     # select NUM_SAMPLE_POINTS points at random to compute homography
-    for _ in range(1_000):
+    for _ in range(10_000):
         chosen1, chosen2 = [
-            c[np.random.choice(len(c), replace=False, size=constants.NUM_SAMPLE_POINTS)]
+            # c[np.random.choice(len(c), replace=False, size=constants.NUM_SAMPLE_POINTS)]
+            c[np.random.choice(len(c), replace=False, size=4)]
             for c in (corners1, corners2)
         ]
         # compute homography
@@ -62,9 +81,8 @@ def ransac(corners1, corners2, epsilon=RANSAC_THRESHOLD):
 
         # compute inliers and count number of coordinates that are good matches
         predicted2 = homography.warp_pts(corners1, h_matrix)
-        dist = utils.ssd_points(
-            corners2, predicted2
-        )  # compare predicted with ground truth
+        # compare predicted with ground truth
+        dist = np.sqrt(utils.ssd_points(corners2, predicted2))
 
         if constants.DEBUG:
             print(min(dist), max(dist))
