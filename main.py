@@ -229,7 +229,6 @@ def define_corners(im1, im2):
 
     print("====== ANMS ======")
     corners1 = detector.anms(strength1, coords1)
-    sys.exit()  # TODO remove me
     corners2 = detector.anms(strength2, coords2)
     print(f"Selected top {len(corners1)} points from image 1.")
     print(f"Selected top {len(corners2)} points from image 2.")
@@ -257,9 +256,7 @@ def define_corners(im1, im2):
         sys.exit()
 
     # find best matches / inliers
-    result1, result2 = matched1, matched2
-    # TODO add plot
-    # result1, result2 = matching.ransac(matched1, matched2)
+    result1, result2 = matching.ransac(matched1, matched2)
 
     print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
