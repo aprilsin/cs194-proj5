@@ -5,6 +5,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+#####################
+#       PATHS       #
+#####################
+
 DATA = Path("data")
 # assert DATA.exists()
 
@@ -18,6 +22,7 @@ OUTDIR_2b = Path("output_part2/stitching")
 
 DEBUG = None
 SHOW = None
+
 
 #####################
 #      PART 1       #
@@ -54,8 +59,14 @@ NUM_SAMPLE_POINTS = 6
 
 RANSAC_THRESHOLD = 3  # 3 pixels
 
+
+#####################
+#      OTHERS       #
+#####################
+
 colors = ["b", "g", "r", "c", "m", "y", "k", "w"]
 markers = ["o", ".", "+", "x", ">", "v", "^", "*", "D"]
+# {time.time():.0f}
 
 
 @dataclass

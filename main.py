@@ -252,7 +252,9 @@ def define_corners(im1, im2):
     print(f"Detected {len(coords2)} points from image 2.")
 
     # update NUM_KEEP for ANMS to run correctly
-    constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
+    constants.NUM_KEEP = min(
+        [constants.NUM_KEEP, len(coords1) % 100, len(coords2) % 100]
+    )
 
     # plot figures
     name1 = f"{args.images[0].stem}_detected"
@@ -265,6 +267,7 @@ def define_corners(im1, im2):
         plt.savefig(OUTDIR_2a / (name2 + ".jpg"))
 
     print("====== ANMS ======")
+    print(f"Keeping top {constants.NUM_KEEP} points.")
 
     h, w = im1.shape
     constants.MAX_RADIUS = round(math.sqrt(h * w))
@@ -297,15 +300,13 @@ def define_corners(im1, im2):
 
     # plot figures
     indices = np.random.randint(len(patches1), size=3)
-    for i in indices:
+    for i, index in enumerate(indices):
         name1 = args.images[0].stem + f"_patch{i}.jpg"
         name2 = args.images[1].stem + f"_patch{i}.jpg"
-        utils.plot_corners(im1, corners1, title=name1)
         if SAVE:
-            plt.savefig(OUTDIR_2a / name1)
-        utils.plot_corners(im2, corners2, title=name2)
+            plt.imsave(OUTDIR_2a / name1, patches1[index])
         if SAVE:
-            plt.savefig(OUTDIR_2a / name2)
+            plt.imsave(OUTDIR_2a / name2, patches2[index])
 
     print("====== CORNER MATCHING ======")
 
@@ -319,27 +320,24 @@ def define_corners(im1, im2):
     # plot figures
     utils.plot_corners(im1, matched1, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / (args.images[0].stem + f"_match_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2a / (args.images[0].stem + f"_match.jpg"))
     utils.plot_corners(im2, matched2, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2a / (args.images[1].stem + f"_match_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2a / (args.images[1].stem + f"_match.jpg"))
 
     print("===== RANSAC =====")  # find best matches / inliers
 
-    result1, result2 = matching.ransac(matched1, matched2)
-    print(f"Total features matched = {len(result1)}, {len(result2)}.")
+    result1, result2 = matched1, matched2
+    # result1, result2 = matching.ransac(matched1, matched2)
+    # print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
     # plot figures
     utils.plot_corners(im1, result1, colors=constants.colors)
     if SAVE:
-        plt.savefig(
-            OUTDIR_2a / (args.images[0].stem + f"_ransac_{time.time():.0f}.jpg")
-        )
+        plt.savefig(OUTDIR_2a / (args.images[0].stem + f"_ransac.jpg"))
     utils.plot_corners(im2, result2, colors=constants.colors)
     if SAVE:
-        plt.savefig(
-            OUTDIR_2a / (args.images[1].stem + f"_ransac_{time.time():.0f}.jpg")
-        )
+        plt.savefig(OUTDIR_2a / (args.images[1].stem + f"_ransac.jpg"))
 
     return result1, result2
 
