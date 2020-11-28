@@ -19,8 +19,7 @@ def get_patches(img, corners) -> np.ndarray:
     img = utils.to_gray(img)
 
     patches = []
-    for (x, y) in corners:
-        r, c = y, x
+    for (r, c) in corners:
 
         patch = img[r - 20 : r + 20, c - 20 : c + 20]  # get a 40x40 patch
         patch = filters.gauss_blur(patch)
