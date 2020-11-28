@@ -20,7 +20,6 @@ OUTDIR_2.mkdir(exist_ok=True)
 
 NUM_PTS = 8  # pick 8 points to define homography matrix
 
-
 LOAD = False
 SAVE = False
 DEBUG = False
@@ -46,7 +45,7 @@ HARRIS_STRENGTH_THRESHOLD = (
 NUM_KEEP = 500  # want to keep the best 500 corners
 
 MIN_RADIUS = 1
-MAX_RADIUS = 1600  # TODO should be 1/4 th of img size
+MAX_RADIUS = 1600
 
 MATCHING_THRESHOLD = 0.3
 

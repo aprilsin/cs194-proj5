@@ -16,7 +16,7 @@ def refine_matches():
 def get_patches(img, corners) -> np.ndarray:
     """make all detected corner an 8x8 grid"""
     img = filters.gauss_blur(img)
-    img = utils.to_gray(img)  # TODO make it work with colored patches?
+    img = utils.to_gray(img)
 
     patches = []
     for (x, y) in corners:
