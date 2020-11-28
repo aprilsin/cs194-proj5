@@ -60,7 +60,7 @@ markers = ["o", ".", "+", "x", ">", "v", "^", "*", "D"]
 
 
 @dataclass
-def Corner():
+class Corner:
     coord: np.ndarray
     strength: np.float64
-    patch: np.ndarray
+    patch: np.ndarray = None
