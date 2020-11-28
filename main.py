@@ -383,9 +383,6 @@ def auto_stitch(imgs):
     im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in IMAGES]
     points1, points2 = define_corners(im1, im2)
 
-    points1 = np.flip(points1, axis=-1)
-    points2 = np.flip(points1, axis=-1)
-
     im1, im2 = [utils.read_img(im, resize=True) for im in IMAGES]
     mosaic = stitch(im1, im2, points1, points2)
 
