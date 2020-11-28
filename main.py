@@ -52,7 +52,7 @@ parser.add_argument(
     "-S",
     "--show",
     dest="show_plots",
-    action="store_false",
+    action="store_true",
     help="Show intermediate images.",
 )
 
