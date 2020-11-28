@@ -1,9 +1,9 @@
 import itertools
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from functools import total_ordering
 from queue import PriorityQueue
-from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -70,7 +70,7 @@ def anms(strength, detected_coords, robust_factor=0.9):
     """
     # P,P where entries are *distances* between detected_coords[i] and detected_coords[j]
     dists = squareform(pdist(detected_coords))
-    print(f'{len(detected_coords)=}')
+    print(f"{len(detected_coords)=}")
 
     robust_strength = (
         robust_factor * strength[detected_coords[:, 0], detected_coords[:, 1]]
@@ -118,14 +118,13 @@ def anms(strength, detected_coords, robust_factor=0.9):
         R[i] = [dists[i, best_idx], best_idx]
 
     R = sorted(R, key=lambda x: x[0], reverse=True)
-    # we skip the global max `R[0]` since it can never work
-    R = R[1 : constants.NUM_KEEP + 1]
+    # skip any values that are inf distance (global maxima)
+    candidate_idxs = {idx for dist, idx in R if idx is not None and np.isfinite(dist)}
     # make a set since we want uniq ones and multiple points can have the same
     # pt as nearest local max
-    candidate_idxs = {x[1] for x in R}
+
     candidate_idxs = np.array(list(candidate_idxs))
     candidates = detected_coords[candidate_idxs]
-
 
     utils.assert_coords(candidates)
     # return best_corners
