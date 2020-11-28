@@ -53,7 +53,6 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
     return matched1, matched2
 
 
-# def ransac(corners1, corners2, epsilon=3):
 def ransac(corners1, corners2, epsilon=3):
     assert len(corners1) == len(corners2), (
         len(corners1),
@@ -71,7 +70,7 @@ def ransac(corners1, corners2, epsilon=3):
 
     # select NUM_SAMPLE_POINTS points at random to compute homography
     for _ in range(10_000):
-        rand_idxs = np.random.choice(len(c), replace=False, size=4)
+        rand_idxs = np.random.choice(len(corners1), replace=False, size=4)
         chosen1, chosen2 = corners1[rand_idxs], corners2[rand_idxs]
         # compute homography
         h_matrix = homography.homo_matrix(chosen1, chosen2)
