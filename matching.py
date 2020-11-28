@@ -39,8 +39,8 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
                     matched_indices.remove((i_, j_first))
                     matched_indices.add((i, j_first))
             else:
-                matched_indices.add((i, j_first))
                 used[j_first] = [i, j_second, ratio]
+                matched_indices.add((i, j_first))
 
     matched1 = np.array([coords1[i] for i, _ in matched_indices])
     matched2 = np.array([coords2[j] for _, j in matched_indices])
@@ -71,11 +71,8 @@ def ransac(corners1, corners2, epsilon=3):
 
     # select NUM_SAMPLE_POINTS points at random to compute homography
     for _ in range(10_000):
-        chosen1, chosen2 = [
-            # c[np.random.choice(len(c), replace=False, size=constants.NUM_SAMPLE_POINTS)]
-            c[np.random.choice(len(c), replace=False, size=4)]
-            for c in (corners1, corners2)
-        ]
+        rand_idxs = np.random.choice(len(c), replace=False, size=4)
+        chosen1, chosen2 = corners1[rand_idxs], corners2[rand_idxs]
         # compute homography
         h_matrix = homography.homo_matrix(chosen1, chosen2)
 
