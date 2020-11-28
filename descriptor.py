@@ -23,7 +23,7 @@ def get_patches(img, corners) -> np.ndarray:
 
         patch = img[r - 20 : r + 20, c - 20 : c + 20]  # get a 40x40 patch
         patch = filters.gauss_blur(patch)
-        assert patch.shape == (40, 40), patch.shape
+        assert patch.shape == (40, 40), f"{patch.shape}, {(r, c) = }, {img.shape = }"
 
         patch = patch[::5, ::5]  # downsample by taking every 5th pixel
         assert patch.shape == (8, 8), patch.shape

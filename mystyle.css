@@ -22,13 +22,17 @@ h2 {
 
 img {
   vertical-align: middle;
-  margin: 10px, 100px;
-  /* max-width: 320px; */
-  max-height: 380px;
+  max-width: 90%;
 }
 
-.smaller {
-  max-width: 250px !important;
+.spacer {
+  margin: 30px 0px 30px 0px;
+}
+
+.column_6 img {
+  /* patches */
+  width: 80%;
+  height: 90%;
 }
 
 .left {
@@ -39,12 +43,18 @@ img {
   float: right;
 }
 
+#graph {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 #canvas {
   float: right;
   max-width: 250px !important;
   position: relative;
   bottom: 50px;
 }
+
 figcaption {
   margin: 10px 0 0 0;
   font-family: "Actor", sans-serif;
@@ -60,9 +70,9 @@ figcaption {
   flex-direction: row;
 }
 
-.row img {
+/* .row img {
   height: 250px;
-}
+} */
 
 .column {
   flex: 50%;
@@ -84,6 +94,12 @@ figcaption {
 
 .column_5 {
   flex: 20%;
+  padding: 5px;
+  text-align: center;
+}
+
+.column_6 {
+  flex: 66%;
   padding: 5px;
   text-align: center;
 }

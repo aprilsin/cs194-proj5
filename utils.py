@@ -90,7 +90,13 @@ def load_points(name: os.PathLike) -> np.ndarray:
     return pickle.load(open(pickle_name, "rb"))
 
 
-def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
+def plot_points(
+    img: np.ndarray,
+    points: np.ndarray,
+    title="Plot Points",
+    colors=None,
+    markers=None,
+):
     """
     Displays the keypoints of an image
     points are in (x, y) format
@@ -113,7 +119,7 @@ def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
             y=point[1],
             marker=markers[i % len(markers)],
             color=colors[i % len(colors)],
-            s=30,
+            s=constants.MARKER_SIZE,
         )
 
     if constants.SHOW:
@@ -128,8 +134,10 @@ def show_two(im1, im2):
     p1.imshow(im1)
     p2 = fig.add_subplot(1, 2, 2)
     p2.imshow(im2)
+
     if constants.SHOW:
         plt.show()
+
     return fig
 
 
@@ -138,7 +146,13 @@ def show_two(im1, im2):
 ########################
 
 
-def plot_corners(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
+def plot_corners(
+    img: np.ndarray,
+    points: np.ndarray,
+    title="Plot Corners",
+    colors=None,
+    markers=None,
+):
     """
     Displays the keypoints of an image
     points are in (r, c) format
@@ -161,7 +175,51 @@ def plot_corners(img: np.ndarray, points: np.ndarray, markers=None, colors=None)
             y=point[0],
             marker=markers[i % len(markers)],
             color=colors[i % len(colors)],
-            s=30,
+            s=constants.MARKER_SIZE,
+        )
+
+    if constants.SHOW:
+        plt.show()
+
+    return fig
+
+
+def plot_chosen(
+    img: np.ndarray,
+    all_points: np.ndarray,
+    chosen_points: np.ndarray,
+    title="Plot Corners",
+    colors=None,
+    markers=None,
+):
+    """
+    Displays the all detected keypoints the chosen keypoints of an image.
+    Points are in (r, c) format.
+    """
+    fig = plt.figure()
+
+    if img.ndim == 2:
+        plt.imshow(img, cmap="gray")
+    else:
+        plt.imshow(img)
+
+    # plot all detected keypoints
+    plt.scatter(
+        x=all_points[:, 1], y=all_points[:, 0], color="r", s=constants.MARKER_SIZE
+    )
+
+    # plot matched keypoints
+    if colors is None:
+        colors = ["b"]
+    if markers is None:
+        markers = ["o"]
+    for i, point in enumerate(chosen_points):
+        plt.scatter(
+            x=point[1],
+            y=point[0],
+            marker=markers[i % len(markers)],
+            color=colors[i % len(colors)],
+            s=constants.MARKER_SIZE,
         )
 
     if constants.SHOW:
@@ -247,11 +305,20 @@ def assert_coords(coords, num=None):
     # print(f"{uniq.shape=}")
     # print(f"{coords.shape=}")
     assert len(uniq) == len(
+||||||| 70ae90a
+    assert len(np.unique(coords, axis=0)) == len(
         coords
     ), f"Only {len(uniq)} unique items in {len(coords)} coordinates"
     if num is not None:
         assert len(coords) == num
     return True
+
+
+def show_img(img, title=None):
+    if constants.SHOW:
+        plt.imshow(img)
+        if title is not None:
+            plt.title(title)
 
 
 # def dist_patches(patch1, patch2):
