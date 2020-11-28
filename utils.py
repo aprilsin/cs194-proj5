@@ -42,6 +42,11 @@ def read_img(x: ToImgArray, resize=True, gray=False) -> np.ndarray:
     return img
 
 
+########################
+#        PART 1        #
+########################
+
+
 def pick_points(img: ToImgArray, num_pts: int, APPEND_CORNERS=False) -> np.ndarray:
     """
     Returns an array of points for one image with ginput
@@ -85,7 +90,7 @@ def load_points(name: os.PathLike) -> np.ndarray:
     return pickle.load(open(pickle_name, "rb"))
 
 
-def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None) -> None:
+def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
     """
     Displays the keypoints of an image
     points are in (x, y) format
@@ -111,26 +116,10 @@ def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None) 
             s=30,
         )
 
-    # if constants.SHOW:
-    #     plt.show()
+    if constants.SHOW:
+        plt.show()
 
     return fig
-
-
-# def plot_corners(img: np.ndarray, points: np.ndarray) -> None:
-#     """
-#     Displays the keypoints of an image
-#     points are in (r, c) format
-#     """
-#     fig = plt.figure()
-#     if img.ndim == 2:
-#         plt.imshow(img, cmap="gray")
-#     else:
-#         plt.imshow(img)
-#     plt.scatter(x=points[:, 1], y=points[:, 0], marker="o", color="b", s=30)
-#     if constants.SHOW:
-#         plt.show()
-#     return fig
 
 
 def show_two(im1, im2):
@@ -144,9 +133,41 @@ def show_two(im1, im2):
     return fig
 
 
-# handle file namings
-def get_fname(name: str, i):
-    pass
+########################
+#        PART 2        #
+########################
+
+
+def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
+    """
+    Displays the keypoints of an image
+    points are in (r, c) format
+    """
+    fig = plt.figure()
+
+    if img.ndim == 2:
+        plt.imshow(img, cmap="gray")
+    else:
+        plt.imshow(img)
+
+    if colors is None:
+        colors = ["b"]
+    if markers is None:
+        markers = ["o"]
+
+    for i, point in enumerate(points):
+        plt.scatter(
+            x=point[1],
+            y=point[0],
+            marker=markers[i % len(markers)],
+            color=colors[i % len(colors)],
+            s=30,
+        )
+
+    if constants.SHOW:
+        plt.show()
+
+    return fig
 
 
 def to_gray(img: ToImgArray):
@@ -207,22 +228,12 @@ def dist2(
     ncenters, dimc = c.shape
     assert dimx == dimc, "Data dimension does not match dimension of centers"
 
-    # dist^2 = r^2 + s^2 - 2*rs*cos(theta-phi)
-    # dist^2 = r^2 + s^2 - 2*inner-product
-    # r_sq = np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)
-    # s_sq = np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
-
     sq_dist = (
         (np.ones((ncenters, 1)) * np.sum((x ** 2).T, axis=0)).T
         + np.ones((ndata, 1)) * np.sum((c ** 2).T, axis=0)
         - 2 * np.inner(x, c)
     )
     return sq_dist
-
-
-def ssd_points(points1, points2):
-    assert points1.ndim == points2.ndim == 2, (points1.shape, points2.shape)
-    return np.sum((points1 - points2) ** 2, axis=-1)
 
 
 def assert_coords(coords, num=None):
@@ -233,13 +244,3 @@ def assert_coords(coords, num=None):
     if num is not None:
         assert len(coords) == num
     return True
-
-
-# def dist_patches(patch1, patch2):
-#     """
-#     patch1 and patch2 are 8x8 grids.
-#     """
-#     assert patch1.shape == patch2.shape == (8, 8), (patch1.shape, patch2.shape)
-#     patch1 = np.flatten(patch1)
-#     patch2 = np.flatten(patch2)
-#     return np.sum((patch1 - patch2) ** 2)  # sum squared distance
