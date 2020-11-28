@@ -141,7 +141,7 @@ def show_two(im1, im2, title=None):
     p1.imshow(im1)
     p2 = fig.add_subplot(1, 2, 2)
     p2.imshow(im2)
-    
+
     if title is not None:
         plt.title(title)
 
@@ -314,8 +314,6 @@ def assert_coords(coords, num=None):
     uniq = np.unique(coords, axis=0)
     # print(f"{uniq.shape=}")
     # print(f"{coords.shape=}")
-    assert len(uniq) == len(
-||||||| 70ae90a
     assert len(np.unique(coords, axis=0)) == len(
         coords
     ), f"Only {len(uniq)} unique items in {len(coords)} coordinates"
