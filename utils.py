@@ -236,6 +236,11 @@ def dist2(
     return sq_dist
 
 
+def ssd_points(points1, points2):
+    assert points1.ndim == points2.ndim == 2, (points1.shape, points2.shape)
+    return np.sum((points1 - points2) ** 2, axis=-1)
+
+
 def assert_coords(coords, num=None):
     assert coords.ndim == 2, coords.shape
     assert len(np.unique(coords, axis=0)) == len(
@@ -244,3 +249,13 @@ def assert_coords(coords, num=None):
     if num is not None:
         assert len(coords) == num
     return True
+
+
+# def dist_patches(patch1, patch2):
+#     """
+#     patch1 and patch2 are 8x8 grids.
+#     """
+#     assert patch1.shape == patch2.shape == (8, 8), (patch1.shape, patch2.shape)
+#     patch1 = np.flatten(patch1)
+#     patch2 = np.flatten(patch2)
+#     return np.sum((patch1 - patch2) ** 2)  # sum squared distance
