@@ -138,7 +138,7 @@ def show_two(im1, im2):
 ########################
 
 
-def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
+def plot_corners(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
     """
     Displays the keypoints of an image
     points are in (r, c) format
