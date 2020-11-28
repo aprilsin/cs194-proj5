@@ -39,12 +39,12 @@ BLEND_METHOD = "average"
 #####################
 
 HARRIS_STRENGTH_THRESHOLD = (
-    0.05  # relative to max(image), i.e. most intense pixel of image
+    0.1  # relative to max(image), i.e. most intense pixel of image
 )
 
 NUM_KEEP = 500  # want to keep the best 500 corners
 
-MIN_RADIUS = 1
+MIN_RADIUS = 2
 MAX_RADIUS = 1600
 
 MATCHING_THRESHOLD = 0.3
@@ -52,7 +52,7 @@ MATCHING_THRESHOLD = 0.3
 # select points at random (>=4 points are needed to compute homography)
 NUM_SAMPLE_POINTS = 6
 
-RANSAC_THRESHOLD = 0.2
+RANSAC_THRESHOLD = 3  # 3 pixels
 
 colors = ["b", "g", "r", "c", "m", "y", "k", "w"]
 markers = ["o", ".", "+", "x", ">", "v", "^", "*", "D"]
