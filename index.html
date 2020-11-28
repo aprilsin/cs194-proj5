@@ -1,206 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="mystyle.css" />
-    <title>
-      CS194 Project 5: [Auto]stitching and Photo Mosaics
-    </title>
-  </head>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="mystyle.css" />
+        <title>
+            CS194 Project 5: [Auto]stitching and Photo Mosaics
+        </title>
+    </head>
 
-  <body>
-    <h1>CS194 Project 5A: IMAGE WARPING and MOSAICING </h1>
-    <h1 style="font-size: 24px">April Sin</h1>
+    <body>
+        <h1>CS194 Project 5A: IMAGE WARPING and MOSAICING </h1>
+        <h1 style="font-size: 24px">April Sin</h1>
 
-    <h2>Overview</h2>
+        <h2>Overview</h2>
 
-    <p>The goal of this part is to blend two images of the same scene togeter.
-      we can </p>
+        <p>The goal of this part is to blend two images of the same scene togeter.
+            we can </p>
 
-    <h2>Part 1: Pick Correspondences</h2>
+        <h2>Part 1: Pick Correspondences</h2>
 
-    <p>In this first part, we first pick
-      correspondences by hand and then use those points to compute homography matrices. Since perspective transformation
-      has 8 degrees of freedom, we need at least 4 correspondences to compute the homography matrix. Here are the input
-      imager and the points I picked.</p>
+        <p>In this first part, we first pick
+            correspondences by hand and then use those points to compute homography matrices. Since perspective
+            transformation
+            has 8 degrees of freedom, we need at least 4 correspondences to compute the homography matrix. Here are the
+            input
+            imager and the points I picked.</p>
 
-    <div class="row">
-      <div class="column">
-        <img src="web_imgs/doll/doll1.png" alt="input 1" />
-        <figcaption>input image 1</figcaption>
-      </div>
-      <div class="column">
-        <img src="web_imgs/doll/doll2.png" alt="input 2" />
-        <figcaption>input image 2</figcaption>
-      </div>
-    </div>
+        <div class="row">
+            <div class="column">
+                <img src="web_imgs/doll/doll1.png" alt="input 1" />
+                <figcaption>input image 1</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/doll/doll2.png" alt="input 2" />
+                <figcaption>input image 2</figcaption>
+            </div>
+        </div>
 
-    <h2>Part 2: Homography Matrices</h2>
+        <h2>Part 2: Homography Matrices</h2>
 
-    <div class="row">
-      <div class="clear" <p class=left>The simplest angle for stitching is the frontal plane. We want to warp the two
-        images onto the same
-        front view camera angle. </p>
+        <div class="row">
+            <div class="clear" <p class=left>The simplest angle for stitching is the frontal plane. We want to warp the
+                two
+                images onto the same
+                front view camera angle. </p>
 
-        <p>My input image size is <code>780x1000</code> and the points are
-          <code>[[360, 70], [360, 306], [560 , 306], [560, 70]]</code> </p>
-      </div>
-      <img id="canvas" src="web_imgs/doll/plane.png" />
-    </div>
+                <p>My input image size is <code>780x1000</code> and the points are
+                    <code>[[360, 70], [360, 306], [560 , 306], [560, 70]]</code> </p>
+            </div>
+            <img id="canvas" src="web_imgs/doll/plane.png" />
+        </div>
 
-    <p>Using the matrices,
-      I performed forward warping on the input images. I first tried using inverse warping, but parts of the image are
-      always cut out and I will need to scale each edge by trial and error. I ended up using <code>cv2.inpaint</code>
-      with the mask shown below.</p>
-    <div class="row">
-      <div class="column">
-        <img src="web_imgs/doll/inverse.png" alt="inverse warp" />
-        <figcaption>inverse warped image 1 </figcaption>
-      </div>
-      <div class="column">
-        <img src="web_imgs/doll/forward.png" alt="forward warp" />
-        <figcaption>forward warped image 1</figcaption>
-      </div>
-      <div class="column">
-        <img src="web_imgs/doll/forward_mask.png" alt="forward warp" />
-        <figcaption>forward warp mask</figcaption>
-      </div>
-    </div>
+        <p>Using the matrices,
+            I performed forward warping on the input images. I first tried using inverse warping, but parts of the image
+            are
+            always cut out and I will need to scale each edge by trial and error. I ended up using
+            <code>cv2.inpaint</code>
+            with the mask shown below.</p>
+        <div class="row">
+            <div class="column">
+                <img src="web_imgs/doll/inverse.png" alt="inverse warp" />
+                <figcaption>inverse warped image 1 </figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/doll/forward.png" alt="forward warp" />
+                <figcaption>forward warped image 1</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/doll/forward_mask.png" alt="forward warp" />
+                <figcaption>forward warp mask</figcaption>
+            </div>
+        </div>
 
-    <h3>Here are the results of warping.</h3>
-    <div class="row">
-      <div class="column">
-        <img src="web_imgs/doll/doll1_warped.png" alt="warped 1" />
-        <figcaption>warped image 1 </figcaption>
-      </div>
-      <div class="column">
-        <img src="web_imgs/doll/doll2_warped.png" alt="warped 2" />
-        <figcaption>warped image 2</figcaption>
-      </div>
-    </div>
+        <h3>Here are the results of warping.</h3>
+        <div class="row">
+            <div class="column">
+                <img src="web_imgs/doll/doll1_warped.png" alt="warped 1" />
+                <figcaption>warped image 1 </figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/doll/doll2_warped.png" alt="warped 2" />
+                <figcaption>warped image 2</figcaption>
+            </div>
+        </div>
 
-    <h2>Part 2: Rectification and Stitching </h2>
-    <p>To create a mosaic, I first aligned the images by padding the images. Then blended the two images with
-      alpha-blending.</p>
+        <h2>Part 2: Rectification and Stitching </h2>
+        <p>To create a mosaic, I first aligned the images by padding the images. Then blended the two images with
+            alpha-blending.</p>
 
-    <div class="row">
-      <div class="column">
-        <img src="web_imgs/doll/doll_aligned.png" alt="aligned" />
-        <figcaption>aligned</figcaption>
-      </div>
-      <div class="column">
-        <img src="web_imgs/doll/doll_mask.png" alt="mask" />
-        <figcaption>blending mask</figcaption>
-      </div>
-      <div class="column">
-        <img src="web_imgs/doll/doll_blend.png" alt="blended" />
-        <figcaption>blended</figcaption>
-      </div>
-    </div>
+        <div class="row">
+            <div class="column">
+                <img src="web_imgs/doll/doll_aligned.png" alt="aligned" />
+                <figcaption>aligned</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/doll/doll_mask.png" alt="mask" />
+                <figcaption>blending mask</figcaption>
+            </div>
+            <div class="column">
+                <img src="web_imgs/doll/doll_blend.png" alt="blended" />
+                <figcaption>blended</figcaption>
+            </div>
+        </div>
 
-    <h2>More Mosaics</h2>
-    <div class="row">
-      <div class="column">
-        <img src="data/plush1.jpg" alt="input 1" />
-        <figcaption>input 1</figcaption>
-      </div>
-      <div class="column">
-        <img src="data/plush2.jpg" alt="input 2" />
-        <figcaption>input 2</figcaption>
-      </div>
-      <div class="column">
-        <img src="data/plush3.jpg" alt="input 3" />
-        <figcaption>input 3</figcaption>
-      </div>
-    </div>
-    <div class="row">
-      <div class="column">
-        <img src="output_part1/plush_blend12.jpg" alt="mosaic" />
-        <figcaption>mosaic of image 1 and 2</figcaption>
-      </div>
-      <div class="column">
-        <img src="output_part1/plush_mosaic.jpg" alt="mosaic" />
-        <figcaption>mosaic</figcaption>
-      </div>
-    </div>
+        <h2>More Mosaics</h2>
+        <div class="row">
+            <div class="column">
+                <img src="data/plush1.jpg" alt="input 1" />
+                <figcaption>input 1</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/plush2.jpg" alt="input 2" />
+                <figcaption>input 2</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/plush3.jpg" alt="input 3" />
+                <figcaption>input 3</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="output_part1/plush_blend12.jpg" alt="mosaic" />
+                <figcaption>mosaic of image 1 and 2</figcaption>
+            </div>
+            <div class="column">
+                <img src="output_part1/plush_mosaic.jpg" alt="mosaic" />
+                <figcaption>mosaic</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="data/car1.jpg" alt="input 1" />
+                <figcaption>input 1</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/car2.jpg" alt="input 2" />
+                <figcaption>input 2</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/car3.jpg" alt="input 3" />
+                <figcaption>input 3</figcaption>
+            </div>
+            <div class="column">
+                <img src="output_part1/car_mosaic.jpg" alt="mosaic" />
+                <figcaption>mosaic</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="data/lohas1.jpg" alt="input 1" />
+                <figcaption>input 1</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/lohas2.jpg" alt="input 2" />
+                <figcaption>input 2</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/lohas3.jpg" alt="input 3" />
+                <figcaption>input 3</figcaption>
+            </div>
+            <div class="column">
+                <img src="output_part1/lohas_mosaic.jpg" alt="mosaic" />
+                <figcaption>mosaic</figcaption>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <img src="data/doll1.jpg" alt="input 1" />
+                <figcaption>input 1</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/doll2.jpg" alt="input 2" />
+                <figcaption>input 2</figcaption>
+            </div>
+            <div class="column">
+                <img src="data/doll3.jpg" alt="input 3" />
+                <figcaption>input 3</figcaption>
+            </div>
+            <div class="column">
+                <img src="output_part1/doll_mosaic.jpg" alt="mosaic" />
+                <figcaption>mosaic</figcaption>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="column">
-        <img src="data/lohas1.jpg" alt="input 1" />
-        <figcaption>input 1</figcaption>
-      </div>
-      <div class="column">
-        <img src="data/lohas2.jpg" alt="input 2" />
-        <figcaption>input 2</figcaption>
-      </div>
-      <div class="column">
-        <img src="data/lohas3.jpg" alt="input 3" />
-        <figcaption>input 3</figcaption>
-      </div>
-      <div class="column">
-        <img src="output_part1/lohas_mosaic.jpg" alt="mosaic" />
-        <figcaption>mosaic</figcaption>
-      </div>
-    </div>
-    <div class="row">
-      <div class="column">
-        <img src="data/doll1.jpg" alt="input 1" />
-        <figcaption>input 1</figcaption>
-      </div>
-      <div class="column">
-        <img src="data/doll2.jpg" alt="input 2" />
-        <figcaption>input 2</figcaption>
-      </div>
-      <div class="column">
-        <img src="data/doll3.jpg" alt="input 3" />
-        <figcaption>input 3</figcaption>
-      </div>
-      <div class="column">
-        <img src="output_part1/doll_mosaic.jpg" alt="mosaic" />
-        <figcaption>mosaic</figcaption>
-      </div>
-    </div>
+        <div style="padding: 25px 0px"></div>
+        <hr>
+        <div style="padding: 25px 0px"></div>
 
-    <div style="padding: 20px 0px"></div>
-    <h1>CS194 Project 5B: FEATURE MATCHING for AUTOSTITCHING </h1>
+        <h1>CS194 Project 5B: FEATURE MATCHING for AUTOSTITCHING </h1>
+        <h2>Overview</h2>
+        <p>In the real world, manually selected correspondances will be a pain! So in this part, we will implement
+            automatic
+            feature matching following this paper: <a href="http://matthewalunbrown.com/papers/cvpr05.pdf">Multi-Image
+                Matching using Multi-Scale Oriented Patches</a>.With the matched features, we can simply apply our
+            algorithm
+            from part 1 again to do image stitching.</p>
 
-    <h2>Corner Detection</h2>
-    <div class="row">
-      <div class="column">
-        <img src="output_part2/plush1_pts.jpg" alt="input 3" />
-        <figcaption>1</figcaption>
-      </div>
-      <div class="column">
-        <img src="output_part2/plush2_pts.jpg" alt="mosaic" />
-        <figcaption>2</figcaption>
-      </div>
-    </div>
+        <h2>Step 1: Corner Detection</h2>
 
-    <h2>Corner Descriptor</h2>
-    <div class="row">
-      <div class="column">
-        <img src="output_part2/patch1.jpg" alt="patch" />
-        <figcaption>1</figcaption>
-      </div>
-      <div class="column">
-        <img src="output_part2/patch2.jpg" alt="patch" />
-        <figcaption>2</figcaption>
-      </div>
-    </div>
-    <h2>Corner Matching</h2>
-    <div class="row">
-      <div class="column">
-        <img src="output_part2/plush1_pts.jpg" alt="input 3" />
-        <figcaption>1</figcaption>
-      </div>
-      <div class="column">
-        <img src="output_part2/plush2_pts.jpg" alt="mosaic" />
-        <figcaption>2</figcaption>
-      </div>
-    </div>
+        <p>In this project, we use the Harris Detector to find keypoints. Since the Harris Detector will return a lot of
+            points, we need to lower our computation cost for matching by doing <b>adaptive non-maximal suppression</b>.
+            The
+            idea is to have points that are evenly spread out across the input images while still choosing the points
+            have
+            sufficiently high Harris corner strength.</p>
 
-  </body>
+        <div class="row">
+            <div class="column">
+                <img src="output_part2/car1.jpg" alt="input" />
+                <figcaption>input image</figcaption>
+            </div>
+            <div class="column">
+                <img src="output_part2/car1_detected.jpg" alt="detected points" />
+                <figcaption>detected points from Harris Detector</figcaption>
+            </div>
+            <div class="column">
+                <img src="output_part2/car1_anms_100.jpg" alt="anms points" />
+                <figcaption>anms top 100 points</figcaption>
+            </div>
+            <div class="column">
+                <img src="output_part2/car1_anms_500.jpg" alt="anms points" />
+                <figcaption>anms top 500 points</figcaption>
+            </div>
+        </div>
+
+        <h2>Step 2: Corner Descriptor</h2>
+
+        <p>For every keypoint from the last part, we will use an 8x8 patch to describe it. First we extract a 40x40
+            around
+            the keypoint's coordinate. Then we select every 5th pixel and resul in a 8x8 grid. To improve matching (step
+            3)
+            results, I also applied a gaussian blur before subsampling the 40x40 patch.</p>
+
+
+        <div class="row">
+            <div class="column_4">
+                <p>This is the gaussian filter used.</p>
+                <img src="output_part2/patch1_without.png" alt="patch" />
+            </div>
+            <div class="column">
+                <p>Here are some of the patches extracted.</p>
+                <div class="row">
+                    <div class="column">
+                        <img src="output_part2/patch1_without.png" alt="patch" />
+                        <figcaption>without gaussian blur</figcaption>
+                    </div>
+                    <div class="column">
+                        <img src="output_part2/patch1_with.png" alt="patch" />
+                        <figcaption>with gaussian blur</figcaption>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="column">
+                        <img src="output_part2/patch1_without.png" alt="patch" />
+                        <figcaption>without gaussian blur</figcaption>
+                    </div>
+                    <div class="column">
+                        <img src="output_part2/patch1_with.png" alt="patch" />
+                        <figcaption>with gaussian blur</figcaption>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Corner Matching</h2>
+        <p>Given two sets of patches, we want to find the best way to match them. As mentioned in the paper</p>
+        <div class="row">
+            <div class="column">
+                <img src="web_imgs/graphs.jpg" alt="graph" />
+            </div>
+        </div>
+
+    </body>
 
 </html>
