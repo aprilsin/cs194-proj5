@@ -124,6 +124,11 @@ def manual_stitch_plane():
     plane_pts = (pts1 + pts2) / 2
     utils.save_points(pts1, OUTDIR_1a / "plane.pkl")
 
+    canvas = np.ones_like(im1)
+    utils.plot_points(canvas, plane_pts)
+    if SAVE:
+        plt.savefig(OUTDIR_1a / (name + "_canvas" + ".jpg"))
+
     # warp image 1
     print("Warp image 1 to plane.")
     H1 = homography.homo_matrix(pts1, plane_pts)
