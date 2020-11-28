@@ -41,19 +41,10 @@ parser.add_argument(
 )  # TODO: action=ToPath
 
 parser.add_argument(
-    "-s",
-    "--save",
-    dest="save_data",
-    action="store_false",
-    help="Save intermediate data.",
-)
-
-parser.add_argument(
-    "-S",
-    "--show",
-    dest="show_plots",
-    action="store_false",
-    help="Show intermediate images.",
+    "--not-save",
+    dest="not_save",
+    action="store_true",
+    help="Do not save intermediate data.",
 )
 
 parser.add_argument(
@@ -62,6 +53,14 @@ parser.add_argument(
     dest="load_data",
     action="store_true",
     help="Load points from pickle files.",
+)
+
+parser.add_argument(
+    "-s",
+    "--show",
+    dest="show_plots",
+    action="store_true",
+    help="Show intermediate images.",
 )
 
 parser.add_argument(
@@ -75,17 +74,18 @@ parser.add_argument(
 args = parser.parse_args()
 args.images = [Path(x) for x in args.images]
 
-constants.SAVE = args.save_data
-constants.LOAD = args.load_data
-constants.DEBUG = args.debug
+SAVE = not args.not_save
+LOAD = args.load_data
+
 constants.SHOW = args.show_plots
+constants.DEBUG = args.debug
 
 
 def manual_stitch_plane():
     i, j = [im_name.stem[-1] for im_name in args.images]
     imgs = [utils.read_img(im, resize=False) for im in args.images]
 
-    if constants.LOAD:
+    if LOAD:
         try:
             pts1 = utils.load_points(args.images[0])
             pts2 = utils.load_points(args.images[1])
@@ -95,7 +95,7 @@ def manual_stitch_plane():
             raise FileExistsError()
     else:
         pts = [utils.pick_points(im, constants.NUM_PTS) for im in args.images]
-        if constants.SAVE:
+        if SAVE:
             print("Saving points")
             utils.save_points(pts1, args.images[0])
             utils.save_points(pts2, args.images[1])
@@ -119,13 +119,20 @@ def manual_stitch_plane():
     plane_pts = (pts1 + pts2) / 2
 
     # warp image 1
+    print("Warp image 1 to plane.")
     H1 = homography.homo_matrix(pts1, plane_pts)
     warp1, shift1 = homography.inverse_warp(im1, H1)
     warp_pts1 = homography.warp_pts(pts1, H1, shift1)
+    utils.plot_points(warp1, warp_pts1)
+    if SAVE:
+
     # warp image 2
+    print("Warp image 2 to plane.")
     H2 = homography.homo_matrix(pts2, plane_pts)
     warp2, shift2 = homography.inverse_warp(im2, H2)
     warp_pts2 = homography.warp_pts(pts2, H2, shift2)
+    utils.plot_points(warp2, warp_pts2)
+    if SAVE:
 
     aligned1, aligned2, *_ = rectification.align(warp1, warp2, warp_pts1, warp_pts2)
     blended = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
@@ -139,7 +146,7 @@ def manual_stitch_plane():
 def manual_stitch_direct():
     imgs = [utils.read_img(im, resize=False) for im in args.images]
 
-    if constants.LOAD:
+    if LOAD:
         try:
             pts1 = utils.load_points(args.images[0])
             name_a = args.images[1].stem + "a" + args.images[1].suffix
@@ -157,7 +164,7 @@ def manual_stitch_direct():
         pts2b = utils.pick_points(args.images[1], constants.NUM_PTS)
         pts3 = utils.pick_points(args.images[2], constants.NUM_PTS)
         pts = [pts1, pts2a, pts2b, pts3]
-        if constants.SAVE:
+        if SAVE:
             print("Saving points")
             pts1 = utils.save_points(pts1, args.images[0])
             name_a = args.images[1].stem + "a" + args.images[1].suffix
@@ -210,7 +217,7 @@ def manual_stitch_direct():
     aligned12, aligned3, *_ = rectification.align(blend_12, warp3, pts2b, warp3_pts)
     blend_123 = rectification.blend(aligned12, aligned3, method=constants.BLEND_METHOD)
 
-    if constants.SAVE:
+    if SAVE:
         print("Saving images")
         plt.imsave(OUTDIR_1 / (name + "_warp1.jpg"), warp1)
         plt.imsave(OUTDIR_1 / (name + "_blend12.jpg"), blend_12)
@@ -231,13 +238,18 @@ def define_corners(im1, im2):
     print(f"Detected {len(coords1)} points from image 1.")
     print(f"Detected {len(coords2)} points from image 2.")
 
+    # update NUM_KEEP for ANMS to run correctly
     constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
 
-    if constants.SAVE:
-        fig = utils.plot_corners(im1, coords1)
-        plt.savefig(OUTDIR_2 / (args.images[0].stem + "_detected.jpg"))
-        fig = utils.plot_corners(im2, coords2)
-        plt.savefig(OUTDIR_2 / (args.images[1].stem + "_detected.jpg"))
+    # plot figures
+    name1 = f"{args.images[0].stem}_detected"
+    name2 = f"{args.images[1].stem}_detected"
+    utils.plot_corners(im1, coords1, title=name1)
+    if SAVE:
+        plt.savefig(OUTDIR_2 / (name1 + ".jpg"))
+    utils.plot_corners(im2, coords2, title=name2)
+    if SAVE:
+        plt.savefig(OUTDIR_2 / (name2 + ".jpg"))
 
     print("====== ANMS ======")
 
@@ -251,13 +263,18 @@ def define_corners(im1, im2):
     corners2 = detector.anms(strength2, coords2)
     print(f"Selected top {len(corners2)} points from image 2.")
 
-    if constants.SAVE:
-        fig = utils.plot_corners(im1, corners1)
-        plt.savefig(OUTDIR_2 / (args.images[0].stem + "_anms.jpg"))
-        fig = utils.plot_corners(im2, corners2)
-        plt.savefig(OUTDIR_2 / (args.images[1].stem + "_anms.jpg"))
+    # plot figures
+    name1 = f"{args.images[0].stem}_anms_{constants.NUM_KEEP}"
+    name2 = f"{args.images[1].stem}_anms_{constants.NUM_KEEP}"
+    utils.plot_corners(im1, corners1, title=name1)
+    if SAVE:
+        plt.savefig(OUTDIR_2 / (name1 + ".jpg"))
+    utils.plot_corners(im2, corners2, title=name2)
+    if SAVE:
+        plt.savefig(OUTDIR_2 / (name2 + ".jpg"))
 
     print("====== CORNER DESCRIPTION ======")
+
     patches1 = descriptor.get_patches(im1, corners1)
     vectors1 = np.stack([p.flatten() for p in patches1])
     print(f"Computed descriptors of image 1.")
@@ -265,45 +282,53 @@ def define_corners(im1, im2):
     vectors2 = np.stack([p.flatten() for p in patches2])
     print(f"Computed descriptors of image 2.")
 
+    # plot figures
     indices = np.random.randint(len(patches1), size=3)
-    if constants.SAVE:
-        for i in indices:
-            fig = utils.plot_corners(im1, corners1)
-            plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_patch{i}.jpg"))
-            fig = utils.plot_corners(im2, corners2)
-            plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_patch{i}.jpg"))
+    for i in indices:
+        name1 = args.images[0].stem + f"_patch{i}.jpg"
+        name2 = args.images[1].stem + f"_patch{i}.jpg"
+        utils.plot_corners(im1, corners1, title=name1)
+        if SAVE:
+            plt.savefig(OUTDIR_2 / name1)
+        utils.plot_corners(im2, corners2, title=name2)
+        if SAVE:
+            plt.savefig(OUTDIR_2 / name2)
 
     print("====== CORNER MATCHING ======")
-    matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
 
+    matched1, matched2 = matching.match_features(corners1, vectors1, corners2, vectors2)
     print(f"Found {len(matched1)} candidate coorespondences.")
 
     if len(matched1) < 4:
         print(f"Cannot stitch images.")
         sys.exit()
 
-    if constants.SAVE:
-        fig = utils.plot_corners(im1, matched1, colors=constants.colors)
+    # plot figures
+    utils.plot_corners(im1, matched1, colors=constants.colors)
+    if SAVE:
         plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_match_{time.time():.0f}.jpg"))
-        fig = utils.plot_corners(im2, matched2, colors=constants.colors)
+    utils.plot_corners(im2, matched2, colors=constants.colors)
+    if SAVE:
         plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_match_{time.time():.0f}.jpg"))
 
-    # find best matches / inliers
-    print("Do RANSAC...")
-    result1, result2 = matching.ransac(matched1, matched2)
+    print("===== RANSAC =====")  # find best matches / inliers
 
+    result1, result2 = matching.ransac(matched1, matched2)
     print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
-    if constants.SAVE:
-        fig = utils.plot_corners(im1, result1, colors=constants.colors)
+    # plot figures
+    utils.plot_corners(im1, result1, colors=constants.colors)
+    if SAVE:
         plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_ransac_{time.time():.0f}.jpg"))
-        fig = utils.plot_corners(im2, result2, colors=constants.colors)
+    utils.plot_corners(im2, result2, colors=constants.colors)
+    if SAVE:
         plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_ransac_{time.time():.0f}.jpg"))
 
     return result1, result2
 
 
 def stitch(im1, im2, pts1, pts2):
+
     print("===== STITCHING =====")
 
     # warp image 1
@@ -311,18 +336,21 @@ def stitch(im1, im2, pts1, pts2):
     H1 = homography.homo_matrix(pts1, pts2)
     warp1, shift1 = homography.inverse_warp(im1, H1)
     warp1_pts = homography.warp_pts(pts1, H1, shift1)
+    utils.plot_points(warp1, warp1_pts, title="Image 1 warped to Image 2)")
 
     # no need to warp image 2
     warp2, warp2_pts = im2, pts2
+    utils.plot_points(warp2, warp2_pts, title="Image 2 (not warped)")
 
     print("Align and blend image 1 and 2")
     aligned1, aligned2, _, _, _, shift2 = rectification.align(
         warp1, warp2, warp1_pts, warp2_pts
     )
-    utils.show_two(aligned1, aligned2)
+    utils.show_two(aligned1, aligned2, title="Aligned")
 
+    print("Creating Mosaic...")
     mosaic = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
-    plt.imshow(mosaic)
+    utils.show_img(mosaic, title="Mosaic")
     return mosaic
 
 

@@ -90,7 +90,13 @@ def load_points(name: os.PathLike) -> np.ndarray:
     return pickle.load(open(pickle_name, "rb"))
 
 
-def plot_points(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
+def plot_points(
+    img: np.ndarray,
+    points: np.ndarray,
+    title="Plot Points",
+    colors=None,
+    markers=None,
+):
     """
     Displays the keypoints of an image
     points are in (x, y) format
@@ -128,8 +134,10 @@ def show_two(im1, im2):
     p1.imshow(im1)
     p2 = fig.add_subplot(1, 2, 2)
     p2.imshow(im2)
+
     if constants.SHOW:
         plt.show()
+
     return fig
 
 
@@ -138,7 +146,13 @@ def show_two(im1, im2):
 ########################
 
 
-def plot_corners(img: np.ndarray, points: np.ndarray, markers=None, colors=None):
+def plot_corners(
+    img: np.ndarray,
+    points: np.ndarray,
+    title="Plot Corners",
+    colors=None,
+    markers=None,
+):
     """
     Displays the keypoints of an image
     points are in (r, c) format
@@ -249,6 +263,13 @@ def assert_coords(coords, num=None):
     if num is not None:
         assert len(coords) == num
     return True
+
+
+def show_img(img, title=None):
+    if constants.SHOW:
+        plt.imshow(img)
+        if title is not None:
+            plt.title(title)
 
 
 # def dist_patches(patch1, patch2):
