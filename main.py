@@ -259,10 +259,10 @@ def define_corners(im1, im2):
     name2 = f"{args.images[1].stem}_detected"
     utils.plot_corners(im1, coords1, title=name1)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (name1 + ".jpg"))
+        plt.savefig(OUTDIR_2a / (name1 + ".jpg"))
     utils.plot_corners(im2, coords2, title=name2)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (name2 + ".jpg"))
+        plt.savefig(OUTDIR_2a / (name2 + ".jpg"))
 
     print("====== ANMS ======")
 
@@ -281,10 +281,10 @@ def define_corners(im1, im2):
     name2 = f"{args.images[1].stem}_anms_{constants.NUM_KEEP}"
     utils.plot_corners(im1, corners1, title=name1)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (name1 + ".jpg"))
+        plt.savefig(OUTDIR_2a / (name1 + ".jpg"))
     utils.plot_corners(im2, corners2, title=name2)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (name2 + ".jpg"))
+        plt.savefig(OUTDIR_2a / (name2 + ".jpg"))
 
     print("====== CORNER DESCRIPTION ======")
 
@@ -302,10 +302,10 @@ def define_corners(im1, im2):
         name2 = args.images[1].stem + f"_patch{i}.jpg"
         utils.plot_corners(im1, corners1, title=name1)
         if SAVE:
-            plt.savefig(OUTDIR_2 / name1)
+            plt.savefig(OUTDIR_2a / name1)
         utils.plot_corners(im2, corners2, title=name2)
         if SAVE:
-            plt.savefig(OUTDIR_2 / name2)
+            plt.savefig(OUTDIR_2a / name2)
 
     print("====== CORNER MATCHING ======")
 
@@ -319,10 +319,10 @@ def define_corners(im1, im2):
     # plot figures
     utils.plot_corners(im1, matched1, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_match_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2a / (args.images[0].stem + f"_match_{time.time():.0f}.jpg"))
     utils.plot_corners(im2, matched2, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_match_{time.time():.0f}.jpg"))
+        plt.savefig(OUTDIR_2a / (args.images[1].stem + f"_match_{time.time():.0f}.jpg"))
 
     print("===== RANSAC =====")  # find best matches / inliers
 
@@ -332,10 +332,14 @@ def define_corners(im1, im2):
     # plot figures
     utils.plot_corners(im1, result1, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_ransac_{time.time():.0f}.jpg"))
+        plt.savefig(
+            OUTDIR_2a / (args.images[0].stem + f"_ransac_{time.time():.0f}.jpg")
+        )
     utils.plot_corners(im2, result2, colors=constants.colors)
     if SAVE:
-        plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_ransac_{time.time():.0f}.jpg"))
+        plt.savefig(
+            OUTDIR_2a / (args.images[1].stem + f"_ransac_{time.time():.0f}.jpg")
+        )
 
     return result1, result2
 
@@ -344,16 +348,19 @@ def stitch(im1, im2, pts1, pts2):
 
     print("===== STITCHING =====")
 
-    # warp image 1
     print("Warp image 1 to image 2")
     H1 = homography.homo_matrix(pts1, pts2)
     warp1, shift1 = homography.inverse_warp(im1, H1)
     warp1_pts = homography.warp_pts(pts1, H1, shift1)
     utils.plot_points(warp1, warp1_pts, title="Image 1 warped to Image 2)")
+    if SAVE:
+        plt.savefig(OUTDIR_2b / f"{args.images[0]}_w.jpg")
 
-    # no need to warp image 2
-    warp2, warp2_pts = im2, pts2
+    print("Warped image 2 = image 2")
+    warp2, warp2_pts = im2, pts2  # no need to warp image 2
     utils.plot_points(warp2, warp2_pts, title="Image 2 (not warped)")
+    if SAVE:
+        plt.savefig(OUTDIR_2b / f"{args.images[1]}_w.jpg")
 
     print("Align and blend image 1 and 2")
     aligned1, aligned2, _, _, _, shift2 = rectification.align(
@@ -364,6 +371,7 @@ def stitch(im1, im2, pts1, pts2):
     print("Creating Mosaic...")
     mosaic = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
     utils.show_img(mosaic, title="Mosaic")
+
     return mosaic
 
 
@@ -377,7 +385,7 @@ def auto_stitch():
     im1, im2 = [utils.read_img(im, resize=True) for im in args.images]
     mosaic = stitch(im1, im2, points1, points2)
 
-    mosaic_name = OUTDIR_2 / (name + "_mosaic.jpg")
+    mosaic_name = OUTDIR_2b / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, mosaic)
     print(f"Mosaic saved as {mosaic_name}")
 
