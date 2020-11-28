@@ -6,24 +6,24 @@ import numpy as np
 import pandas as pd
 
 DATA = Path("data")
-OUTDIR_1 = Path("output_part1")
-OUTDIR_2 = Path("output_part2")
-assert DATA.exists()
-OUTDIR_1.mkdir(exist_ok=True)
-OUTDIR_2.mkdir(exist_ok=True)
-# assert OUTDIR_1.exists()
-# assert OUTDIR_2.exists()
+# assert DATA.exists()
+
+OUTDIR_1a = Path("output_part1/to_plane")
+OUTDIR_1b = Path("output_part1/to_middle")
+OUTDIR_2a = Path("output_part2/define_corners")
+OUTDIR_2b = Path("output_part2/stitching")
+# OUTDIR_1a.mkdir(exist_ok=True)
+# OUTDIR_1b.mkdir(exist_ok=True)
+# OUTDIR_2.mkdir(exist_ok=True)
+
+DEBUG = None
+SHOW = None
 
 #####################
 #      PART 1       #
 #####################
 
 NUM_PTS = 8  # pick 8 points to define homography matrix
-
-LOAD = False
-SAVE = False
-DEBUG = False
-SHOW = False
 
 # gaussian filter
 DEFAULT_KERNEL = 5

@@ -18,8 +18,13 @@ import homography
 import matching
 import rectification
 import utils
-from constants import DATA, OUTDIR_1, OUTDIR_2
+from constants import DATA, OUTDIR_1a, OUTDIR_1b, OUTDIR_2a, OUTDIR_2b
 import math
+
+OUTDIR_1a.mkdir(parents=True, exist_ok=True)
+OUTDIR_1b.mkdir(parents=True, exist_ok=True)
+OUTDIR_2a.mkdir(parents=True, exist_ok=True)
+OUTDIR_2b.mkdir(parents=True, exist_ok=True)
 
 # class ToPath(argparse.Action):
 #     def __call__(self, parser, namespace, values, option_string=None)
@@ -117,6 +122,7 @@ def manual_stitch_plane():
     im1, im2 = imgs
     pts1, pts2 = pts
     plane_pts = (pts1 + pts2) / 2
+    utils.save_points(pts1, OUTDIR_1a / "plane.pkl")
 
     # warp image 1
     print("Warp image 1 to plane.")
@@ -125,6 +131,7 @@ def manual_stitch_plane():
     warp_pts1 = homography.warp_pts(pts1, H1, shift1)
     utils.plot_points(warp1, warp_pts1)
     if SAVE:
+        plt.savefig(OUTDIR_1a / (args.images[0].stem + "_w" + ".jpg"))
 
     # warp image 2
     print("Warp image 2 to plane.")
@@ -133,11 +140,12 @@ def manual_stitch_plane():
     warp_pts2 = homography.warp_pts(pts2, H2, shift2)
     utils.plot_points(warp2, warp_pts2)
     if SAVE:
+        plt.savefig(OUTDIR_1a / (args.images[1].stem + "_w" + ".jpg"))
 
     aligned1, aligned2, *_ = rectification.align(warp1, warp2, warp_pts1, warp_pts2)
     blended = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
 
-    mosaic_name = OUTDIR_1 / (name + "_mosaic.jpg")
+    mosaic_name = OUTDIR_1a / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, blended)
     print(f"Mosaic saved as {mosaic_name}")
     return
@@ -219,11 +227,11 @@ def manual_stitch_direct():
 
     if SAVE:
         print("Saving images")
-        plt.imsave(OUTDIR_1 / (name + "_warp1.jpg"), warp1)
-        plt.imsave(OUTDIR_1 / (name + "_blend12.jpg"), blend_12)
-        plt.imsave(OUTDIR_1 / (name + "_warp3.jpg"), warp3)
+        plt.imsave(OUTDIR_1b / (name + "_warp1.jpg"), warp1)
+        plt.imsave(OUTDIR_1b / (name + "_blend12.jpg"), blend_12)
+        plt.imsave(OUTDIR_1b / (name + "_warp3.jpg"), warp3)
 
-    mosaic_name = OUTDIR_1 / (name + "_mosaic.jpg")
+    mosaic_name = OUTDIR_1b / (name + "_mosaic.jpg")
     plt.imsave(mosaic_name, blend_123)
     print(f"Mosaic saved as {mosaic_name}")
     return
