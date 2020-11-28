@@ -61,10 +61,11 @@ def get_harris(im, edge_discard=20) -> list:
 
 
 def anms(strength, detected_coords, robust_factor=0.9):
-    """Everything in this function works with indices to detected_coords.
-    detected_coords: shape = (P,2) where P := number of pts
-
+    """
     Returns top NUM_KEEP points from detected_coords.
+    Everything in this function works with indices to detected_coords.
+
+    detected_coords: shape = (P,2) where P := number of pts
     """
     # P,P where entries are *distances* between detected_coords[i] and detected_coords[j]
     dists = squareform(pdist(detected_coords))
@@ -82,14 +83,17 @@ def anms(strength, detected_coords, robust_factor=0.9):
 
             # nonzero: j such that d(detected_coords[i],detected_coords[j])>r
             dist_js = np.argwhere(dists_mask[i])
-            strength_js = np.argwhere((strength[p[0],p[1]] <= robust_strength)).ravel()
+            strength_js = np.argwhere((strength[p[0], p[1]] <= robust_strength)).ravel()
 
             common_js = np.intersect1d(dist_js, strength_js, assume_unique=True)
             # to get pts, map back js
             candidates.update(tuple(x) for x in detected_coords[common_js])
 
             for c in candidates:
-                if len(candidates) == constants.NUM_KEEP:
+                if len(candidates) >= constants.NUM_KEEP:
                     return np.array(list(candidates))
                 candidates.add(c)
-    return np.array(list(candidates))
+
+    corners = np.array(list(candidates))
+    utils.assert_coords(corners)
+    return corners
