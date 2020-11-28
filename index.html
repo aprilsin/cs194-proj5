@@ -30,11 +30,11 @@
 
         <div class="row">
             <div class="column">
-                <img src="web_imgs/doll/doll1.png" alt="input 1" />
+                <img src="web_part1/doll/doll1.png" alt="input 1" />
                 <figcaption>input image 1</figcaption>
             </div>
             <div class="column">
-                <img src="web_imgs/doll/doll2.png" alt="input 2" />
+                <img src="web_part1/doll/doll2.png" alt="input 2" />
                 <figcaption>input image 2</figcaption>
             </div>
         </div>
@@ -50,7 +50,7 @@
                 <p>My input image size is <code>780x1000</code> and the points are
                     <code>[[360, 70], [360, 306], [560 , 306], [560, 70]]</code> </p>
             </div>
-            <img id="canvas" src="web_imgs/doll/plane.png" />
+            <img id="canvas" src="web_part1/doll/plane.png" />
         </div>
 
         <p>Using the matrices,
@@ -61,15 +61,15 @@
             with the mask shown below.</p>
         <div class="row">
             <div class="column">
-                <img src="web_imgs/doll/inverse.png" alt="inverse warp" />
+                <img src="web_part1/doll/inverse.png" alt="inverse warp" />
                 <figcaption>inverse warped image 1 </figcaption>
             </div>
             <div class="column">
-                <img src="web_imgs/doll/forward.png" alt="forward warp" />
+                <img src="web_part1/doll/forward.png" alt="forward warp" />
                 <figcaption>forward warped image 1</figcaption>
             </div>
             <div class="column">
-                <img src="web_imgs/doll/forward_mask.png" alt="forward warp" />
+                <img src="web_part1/doll/forward_mask.png" alt="forward warp" />
                 <figcaption>forward warp mask</figcaption>
             </div>
         </div>
@@ -77,11 +77,11 @@
         <h3>Here are the results of warping.</h3>
         <div class="row">
             <div class="column">
-                <img src="web_imgs/doll/doll1_warped.png" alt="warped 1" />
+                <img src="web_part1/doll/doll1_warped.png" alt="warped 1" />
                 <figcaption>warped image 1 </figcaption>
             </div>
             <div class="column">
-                <img src="web_imgs/doll/doll2_warped.png" alt="warped 2" />
+                <img src="web_part1/doll/doll2_warped.png" alt="warped 2" />
                 <figcaption>warped image 2</figcaption>
             </div>
         </div>
@@ -92,15 +92,15 @@
 
         <div class="row">
             <div class="column">
-                <img src="web_imgs/doll/doll_aligned.png" alt="aligned" />
+                <img src="web_part1/doll/doll_aligned.png" alt="aligned" />
                 <figcaption>aligned</figcaption>
             </div>
             <div class="column">
-                <img src="web_imgs/doll/doll_mask.png" alt="mask" />
+                <img src="web_part1/doll/doll_mask.png" alt="mask" />
                 <figcaption>blending mask</figcaption>
             </div>
             <div class="column">
-                <img src="web_imgs/doll/doll_blend.png" alt="blended" />
+                <img src="web_part1/doll/doll_blend.png" alt="blended" />
                 <figcaption>blended</figcaption>
             </div>
         </div>
@@ -122,11 +122,11 @@
         </div>
         <div class="row">
             <div class="column">
-                <img src="output_part1/plush_blend12.jpg" alt="mosaic" />
+                <img src="web_part1/plush_blend12.jpg" alt="mosaic" />
                 <figcaption>mosaic of image 1 and 2</figcaption>
             </div>
             <div class="column">
-                <img src="output_part1/plush_mosaic.jpg" alt="mosaic" />
+                <img src="web_part1/plush_mosaic.jpg" alt="mosaic" />
                 <figcaption>mosaic</figcaption>
             </div>
         </div>
@@ -144,7 +144,7 @@
                 <figcaption>input 3</figcaption>
             </div>
             <div class="column">
-                <img src="output_part1/car_mosaic.jpg" alt="mosaic" />
+                <img src="web_part1/car_mosaic.jpg" alt="mosaic" />
                 <figcaption>mosaic</figcaption>
             </div>
         </div>
@@ -162,7 +162,7 @@
                 <figcaption>input 3</figcaption>
             </div>
             <div class="column">
-                <img src="output_part1/lohas_mosaic.jpg" alt="mosaic" />
+                <img src="web_part1/lohas_mosaic.jpg" alt="mosaic" />
                 <figcaption>mosaic</figcaption>
             </div>
         </div>
@@ -180,48 +180,50 @@
                 <figcaption>input 3</figcaption>
             </div>
             <div class="column">
-                <img src="output_part1/doll_mosaic.jpg" alt="mosaic" />
+                <img src="web_part1/doll_mosaic.jpg" alt="mosaic" />
                 <figcaption>mosaic</figcaption>
             </div>
         </div>
 
-        <div style="padding: 25px 0px"></div>
-        <hr>
-        <div style="padding: 25px 0px"></div>
+        <hr class="spacer">
 
         <h1>CS194 Project 5B: FEATURE MATCHING for AUTOSTITCHING </h1>
+
         <h2>Overview</h2>
         <p>In the real world, manually selected correspondances will be a pain! So in this part, we will implement
             automatic
-            feature matching following this paper: <a href="http://matthewalunbrown.com/papers/cvpr05.pdf">Multi-Image
+            feature matching following this paper: <a href=" http://matthewalunbrown.com/papers/cvpr05.pdf">Multi-Image
                 Matching using Multi-Scale Oriented Patches</a>.With the matched features, we can simply apply our
             algorithm
             from part 1 again to do image stitching.</p>
 
         <h2>Step 1: Corner Detection</h2>
 
-        <p>In this project, we use the Harris Detector to find keypoints. Since the Harris Detector will return a lot of
-            points, we need to lower our computation cost for matching by doing <b>adaptive non-maximal suppression</b>.
+        <p>In this project, we use the Harris Detector to find keypoints. Since the Harris Detector will return a
+            lot of
+            points, we need to lower our computation cost for matching by doing <b>adaptive non-maximal
+                suppression</b>.
             The
-            idea is to have points that are evenly spread out across the input images while still choosing the points
+            idea is to have points that are evenly spread out across the input images while still choosing the
+            points
             have
             sufficiently high Harris corner strength.</p>
 
         <div class="row">
             <div class="column">
-                <img src="output_part2/car1.jpg" alt="input" />
+                <img src="data/car1.jpg" alt="input" />
                 <figcaption>input image</figcaption>
             </div>
             <div class="column">
-                <img src="output_part2/car1_detected.jpg" alt="detected points" />
+                <img src="web_part2/car1_detected.jpg" alt="detected points" />
                 <figcaption>detected points from Harris Detector</figcaption>
             </div>
             <div class="column">
-                <img src="output_part2/car1_anms_100.jpg" alt="anms points" />
+                <img src="web_part2/car1_anms_100.jpg" alt="anms points" />
                 <figcaption>anms top 100 points</figcaption>
             </div>
             <div class="column">
-                <img src="output_part2/car1_anms_500.jpg" alt="anms points" />
+                <img src="web_part2/car1_anms_500.jpg" alt="anms points" />
                 <figcaption>anms top 500 points</figcaption>
             </div>
         </div>
@@ -230,47 +232,51 @@
 
         <p>For every keypoint from the last part, we will use an 8x8 patch to describe it. First we extract a 40x40
             around
-            the keypoint's coordinate. Then we select every 5th pixel and resul in a 8x8 grid. To improve matching (step
+            the keypoint's coordinate. Then we select every 5th pixel and resul in a 8x8 grid. To improve matching
+            (step
             3)
             results, I also applied a gaussian blur before subsampling the 40x40 patch.</p>
 
 
         <div class="row">
-            <div class="column_4">
+            <div class="column_5">
+                <div class="spacer"></div>
                 <p>This is the gaussian filter used.</p>
-                <img src="output_part2/patch1_without.png" alt="patch" />
+                <img src="web_part2/gaussian.png" alt="patch" />
+                <figcaption>kernel size = 5, sigma = 1</figcaption>
             </div>
-            <div class="column">
+            <div class="column_6">
                 <p>Here are some of the patches extracted.</p>
                 <div class="row">
                     <div class="column">
-                        <img src="output_part2/patch1_without.png" alt="patch" />
-                        <figcaption>without gaussian blur</figcaption>
+                        <img src="web_part2/car1_patch0.jpg" alt="patch" />
                     </div>
                     <div class="column">
-                        <img src="output_part2/patch1_with.png" alt="patch" />
-                        <figcaption>with gaussian blur</figcaption>
+                        <img src="web_part2/car1_patch1.jpg" alt="patch" />
+                    </div>
+                    <div class="column">
+                        <img src="web_part2/car1_patch2.jpg" alt="patch" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="column">
-                        <img src="output_part2/patch1_without.png" alt="patch" />
-                        <figcaption>without gaussian blur</figcaption>
+                        <img src="web_part2/car1_patch3.jpg" alt="patch" />
                     </div>
                     <div class="column">
-                        <img src="output_part2/patch1_with.png" alt="patch" />
-                        <figcaption>with gaussian blur</figcaption>
+                        <img src="web_part2/car1_patch4.jpg" alt="patch" />
+                    </div>
+                    <div class="column">
+                        <img src="web_part2/car1_patch5.jpg" alt="patch" />
                     </div>
                 </div>
             </div>
         </div>
 
         <h2>Corner Matching</h2>
-        <p>Given two sets of patches, we want to find the best way to match them. As mentioned in the paper</p>
+        <p>Given two sets of patches, we want to find the best way to match them. As mentioned in the paper, the best
+            metric is 1-NN / 2-NN (atio of the closest distance to the second closest) </p>
         <div class="row">
-            <div class="column">
-                <img src="web_imgs/graphs.jpg" alt="graph" />
-            </div>
+            <img id="graph" src="web_part2/graph.png" alt="graph" />
         </div>
 
     </body>
