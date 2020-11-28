@@ -3,10 +3,13 @@ import sys
 from dataclasses import dataclass
 from functools import total_ordering
 from queue import PriorityQueue
+from tqdm import trange
+from tqdm.contrib import tenumerate
 
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage.transform
+from scipy.spatial.distance import pdist, squareform
 from skimage.feature import corner_harris, corner_peaks, peak_local_max
 
 # import constants
@@ -14,12 +17,12 @@ import constants
 import filters
 import homography
 import utils
-from constants import Corner
 
 
 def get_harris(im, edge_discard=20) -> list:
-    """
-    Returns a list of harris corners of img as Corner objects. Harris corners near the edge are discarded and the coordinates of the remaining corners are returned.
+    """Returns a list of harris corners of img as Corner objects. Harris
+    corners near the edge are discarded and the coordinates of the remaining
+    corners are returned.
 
     Args:
     im -- b&w image
@@ -33,9 +36,9 @@ def get_harris(im, edge_discard=20) -> list:
     im = filters.gauss_blur(im)
 
     # find harris corners
-    h_strengths = corner_harris(im, method="eps", sigma=1)
+    h = corner_harris(im, method="eps", sigma=1)
     coords = corner_peaks(
-        h_strengths,
+        h,
         min_distance=constants.MIN_RADIUS,
         indices=True,
         threshold_rel=constants.HARRIS_STRENGTH_THRESHOLD,
@@ -53,203 +56,40 @@ def get_harris(im, edge_discard=20) -> list:
 
     # return h, coords
     utils.assert_coords(coords)
-    return h_strengths, np.flip(coords, axis=-1)  # to get (x, y)
-
-
-def anms_ignore(h_strengths, coords, eps=0.9) -> list:
-    # initialize
-    keep = []
-    candidates = [
-        (coord[0], coord[1]) for coord in coords
-    ]  # turn np.ndarray into a list
-
-    # get global maximum
-    strongest_corner = None
-    strongest_strength = 0
-    for corner in candidates:
-        if h_strengths[corner] > strongest_strength:
-            strongest_corner = corner
-            strongest_strength = h_strengths[corner]
-    keep.append(strongest_corner)
-    candidates.remove(strongest_corner)
-
-    r = constants.MIN_RADIUS  # suppression radius
-    while (
-        len(keep) < constants.NUM_KEEP
-        and len(candidates) > 0
-        and r < constants.MAX_RADIUS
-    ):
-        # compute ssd for all kept centers / coords
-        sq_dist = utils.dist2(keep, candidates)
-        print(sq_dist)
-        # outlier rejection
-        mask = np.where(sq_dist <= 10)
-        print(sq_dist[mask])
-        sq_dist = sq_dist if mask else float("inf")
-        print(sq_dist.shape)
-        if len(sq_dist) == 0:
-            break
-        else:
-            indices = np.argmin(sq_dist, axis=0)
-            print(indices[0])
-            print(indices.shape)
-            nearest_neighbors = [np.unravel_index(i, sq_dist.shape) for i in indices]
-            print(nearest_neighbors[2])
-            # assert len(nearest_neighbors) == len(keep) # one nearest neighbor for each center?
-            for i in range(len(keep)):
-                center = keep[i]
-                neighbor = nearest_neighbors[i]
-                # if h_strengths[keep] < 0.9
-            keep.append(nearest_neighbors)
-            for n in nearest_neighbors:
-                candidates.remove(n)
-            # candidates.remove(nearest_neighbors)
-
-        r += constants.MIN_RADIUS
-
-    #     assert len(keep) == constants.NUM_KEEP
-    # return h_strengths, coords[:constants.NUM_KEEP]
-    return keep
-
-
-def anms_2(strength, coords):
-    selected_indices = []
-    candidates = [(coord[0], coord[1]) for coord in coords]
-    dists = utils.dist2(coords, coords)
-
-    max_global = float("-inf")
-    max_global_index = None
-    for index in range(len(coords)):
-        x = coords[index][0]
-        y = coords[index][1]
-        if strength[y, x] > max_global:
-            max_global_index = index
-            max_global = strength[y, x]
-
-    selected_indices = [max_global_index]
-
-    # add nearest neighbors repeatedly
-    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
-        for candidate_index in range(len(candidates)):
-            isGood = True
-            for good_index in selected_indices:
-                if dists[candidate_index, good_index] < r * r:
-                    isGood = False
-                    break
-            if isGood:
-                selected_indices.append(candidate_index)
-                if len(selected_indices) >= constants.NUM_KEEP:
-                    break
-        if len(selected_indices) >= constants.NUM_KEEP:
-            break
-
-    assert (
-        len(selected_indices) == constants.NUM_KEEP
-    ), f"expected {constants.NUM_KEEP} points but got {len(selected_indices)}"
-
-    selected_coords = np.array([coords[i] for i in selected_indices])
-    utils.assert_coords(selected_coords, constants.NUM_KEEP)
-    return selected_coords
-
-
-def anms_ignore_again(strength, detected_coords, robust_factor=0.9):
-    """
-    Everything in this function works with indices to detected_coords.
-    Returns top NUM_KEEP points from detected_coords.
-    """
-
-    # sort by strength
-    detected_coords = sorted(detected_coords, key=lambda i: strength[i[1], i[0]])
-
-    selected = []
-    all_candidates = [*range(len(detected_coords))]
-    r = constants.MAX_RADIUS  # initialize suppression radius to infinity
-
-    # add global maximum
-    selected = [0]
-    all_candidates.remove(0)
-
-    # while (
-    #     len(selected) < constants.NUM_KEEP and r > constants.MIN_RADIUS
-    # ):  # TODO can I do this???
-    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
-        for detected in all_candidates:
-            coord = detected_coords[candidate]
-            candidate_coords = [detected_coords[i] for i in all_candidates]
-            dists = np.sqrt(utils.dist2(coord, candidate_coords)).T
-
-            # keep if candidate is outside of supression index
-            contenders = [
-                candidate for i, candidate in enumerate(all_candidates) if dists[i] > r
-            ]
-            if len(contenders) > 0:
-                # print(f"{len(candidate_coords) = }")
-                # print(f"{contenders = }")
-                print(
-                    f"{len(contenders) = } possibly be removed from {len(all_candidates) = }"
-                )
-            for i in contenders:
-                candidate_coord = detected_coords[i]
-                if (
-                    strength[coord[1], coord[0]]
-                    < robust_factor * strength[candidate_coord[1], candidate_coord[0]]
-                ):
-                    if len(selected) >= constants.NUM_KEEP:
-                        break  # TODO speedup: break out of two loops
-                    else:
-                        # print(f"selected {i}")
-                        selected.append(i)
-                        all_candidates.remove(i)
-                        print(
-                            f"Found {len(selected)} out {constants.NUM_KEEP} points expected."
-                        )
-                        # print(f"removed {i}")
-        # if len(selected) >= constants.NUM_KEEP // 3:
-        # sys.exit()  # TODO remove me
-
-    selected_coords = np.array([detected_coords[i] for i in selected])
-    utils.assert_coords(selected_coords, constants.NUM_KEEP)
-    return selected_coords
+    # return h, np.flip(coords, axis=-1)  # to get (x, y)
+    return h, coords
 
 
 def anms(strength, detected_coords, robust_factor=0.9):
-    """
-    Everything in this function works with indices to detected_coords.
+    """Everything in this function works with indices to detected_coords.
+    detected_coords: shape = (P,2) where P := number of pts
+
     Returns top NUM_KEEP points from detected_coords.
     """
+    # P,P where entries are *distances* between detected_coords[i] and detected_coords[j]
+    dists = squareform(pdist(detected_coords))
+    # only care about common pts
+    # shape = P,
+    robust_strength = (
+        robust_factor * strength[detected_coords[:, 0], detected_coords[:, 1]]
+    )
+    candidates = set()
 
-    # sort by strength
-    detected_coords = sorted(detected_coords, key=lambda i: strength[i[1], i[0]])
+    for r in range(constants.MAX_RADIUS, constants.MIN_RADIUS, -constants.MIN_RADIUS):
+        dists_mask = dists > r
 
-    selected = []
-    interest_indices = set(range(len(detected_coords)))
-    r = constants.MAX_RADIUS  # initialize suppression radius to 'infinity'
+        for (i, p) in enumerate(detected_coords):
 
-    # add global maximum
-    selected = {0}
-    interest_indices.remove(0)
+            # nonzero: j such that d(detected_coords[i],detected_coords[j])>r
+            dist_js = np.argwhere(dists_mask[i])
+            strength_js = np.argwhere((strength[p[0],p[1]] <= robust_strength)).ravel()
 
-    for r in reversed(range(constants.MIN_RADIUS, constants.MAX_RADIUS)):
-        for index in interest_indices:
-            coord_i = detected_coords[index]
-            coords_j = np.array([detected_coords[i] for i in interest_indices])
-            dists = np.sqrt(utils.dist2(coord_i, coords_j))
+            common_js = np.intersect1d(dist_js, strength_js, assume_unique=True)
+            # to get pts, map back js
+            candidates.update(tuple(x) for x in detected_coords[common_js])
 
-            # keep only if F(i) < robust_factor * F(j)
-            fi_val = strength[coord_i[1], coord_i[0]]
-            fj_vals = [strength[coord[1], coord[0]] for coord in coords_j]
-            coords_satisfy = [
-                coords_j[i]
-                for i in range(len(interest_indices))
-                if fi_val < robust_factor * fj_vals[i]
-            ]
-
-            # pick the minimum coord_j
-            keep = min(coords_satisfy, key=lambda i: dists[i])
-
-            selected.append(keep) # TODO this is wrong, need index
-
-
-    selected_coords = np.array([detected_coords[i] for i in selected])
-    utils.assert_coords(selected_coords, constants.NUM_KEEP)
-    return selected_coords
+            for c in candidates:
+                if len(candidates) == constants.NUM_KEEP:
+                    return np.array(list(candidates))
+                candidates.add(c)
+    return np.array(list(candidates))
