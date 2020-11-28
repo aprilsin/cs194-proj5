@@ -323,8 +323,8 @@ def define_corners(im1, im2):
 
     print("===== RANSAC =====")  # find best matches / inliers
 
-    result1, result2 = matched1, matched2
-    # result1, result2 = matching.ransac(matched1, matched2)
+    # result1, result2 = matched1, matched2
+    result1, result2 = matching.ransac(matched1, matched2)
     # print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
     # plot figures
