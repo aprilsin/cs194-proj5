@@ -49,6 +49,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-S",
+    "--show",
+    dest="show_plots",
+    action="store_false",
+    help="Show intermediate images.",
+)
+
+parser.add_argument(
     "-l",
     "--load",
     dest="load_data",
@@ -70,6 +78,7 @@ args.images = [Path(x) for x in args.images]
 constants.SAVE = args.save_data
 constants.LOAD = args.load_data
 constants.DEBUG = args.debug
+constants.SHOW = args.show_plots
 
 
 def manual_stitch_plane():
@@ -225,9 +234,9 @@ def define_corners(im1, im2):
     constants.NUM_KEEP = min([constants.NUM_KEEP, len(coords1), len(coords2)])
 
     if constants.SAVE:
-        fig = utils.plot_points(im1, coords1)
+        fig = utils.plot_corners(im1, coords1)
         plt.savefig(OUTDIR_2 / (args.images[0].stem + "_detected.jpg"))
-        fig = utils.plot_points(im2, coords2)
+        fig = utils.plot_corners(im2, coords2)
         plt.savefig(OUTDIR_2 / (args.images[1].stem + "_detected.jpg"))
 
     print("====== ANMS ======")
@@ -243,9 +252,9 @@ def define_corners(im1, im2):
     print(f"Selected top {len(corners2)} points from image 2.")
 
     if constants.SAVE:
-        fig = utils.plot_points(im1, corners1)
+        fig = utils.plot_corners(im1, corners1)
         plt.savefig(OUTDIR_2 / (args.images[0].stem + "_anms.jpg"))
-        fig = utils.plot_points(im2, corners2)
+        fig = utils.plot_corners(im2, corners2)
         plt.savefig(OUTDIR_2 / (args.images[1].stem + "_anms.jpg"))
 
     print("====== CORNER DESCRIPTION ======")
@@ -259,9 +268,9 @@ def define_corners(im1, im2):
     indices = np.random.randint(len(patches1), size=3)
     if constants.SAVE:
         for i in indices:
-            fig = utils.plot_points(im1, corners1)
+            fig = utils.plot_corners(im1, corners1)
             plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_patch{i}.jpg"))
-            fig = utils.plot_points(im2, corners2)
+            fig = utils.plot_corners(im2, corners2)
             plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_patch{i}.jpg"))
 
     print("====== CORNER MATCHING ======")
@@ -274,9 +283,9 @@ def define_corners(im1, im2):
         sys.exit()
 
     if constants.SAVE:
-        fig = utils.plot_points(im1, matched1, colors=constants.colors)
+        fig = utils.plot_corners(im1, matched1, colors=constants.colors)
         plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_match_{time.time():.0f}.jpg"))
-        fig = utils.plot_points(im2, matched2, colors=constants.colors)
+        fig = utils.plot_corners(im2, matched2, colors=constants.colors)
         plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_match_{time.time():.0f}.jpg"))
 
     # find best matches / inliers
@@ -286,9 +295,9 @@ def define_corners(im1, im2):
     print(f"Total features matched = {len(result1)}, {len(result2)}.")
 
     if constants.SAVE:
-        fig = utils.plot_points(im1, result1, colors=constants.colors)
+        fig = utils.plot_corners(im1, result1, colors=constants.colors)
         plt.savefig(OUTDIR_2 / (args.images[0].stem + f"_ransac_{time.time():.0f}.jpg"))
-        fig = utils.plot_points(im2, result2, colors=constants.colors)
+        fig = utils.plot_corners(im2, result2, colors=constants.colors)
         plt.savefig(OUTDIR_2 / (args.images[1].stem + f"_ransac_{time.time():.0f}.jpg"))
 
     return result1, result2
@@ -310,14 +319,19 @@ def stitch(im1, im2, pts1, pts2):
     aligned1, aligned2, _, _, _, shift2 = rectification.align(
         warp1, warp2, warp1_pts, warp2_pts
     )
+    utils.show_two(aligned1, aligned2)
 
     mosaic = rectification.blend(aligned1, aligned2, method=constants.BLEND_METHOD)
+    plt.imshow(mosaic)
     return mosaic
 
 
 def auto_stitch():
     im1, im2 = [utils.read_img(im, resize=True, gray=True) for im in args.images]
     points1, points2 = define_corners(im1, im2)
+
+    points1 = np.flip(points1, axis=-1)
+    points2 = np.flip(points1, axis=-1)
 
     im1, im2 = [utils.read_img(im, resize=True) for im in args.images]
     mosaic = stitch(im1, im2, points1, points2)
