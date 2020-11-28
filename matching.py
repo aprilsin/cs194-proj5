@@ -10,18 +10,6 @@ import homography
 import utils
 from constants import MATCHING_THRESHOLD, RANSAC_THRESHOLD
 
-# def feature_match(desc_imA, desc_imB):
-#     results = {}
-#     for point_A, vector_A in desc_imA.items():
-#         dists = {}
-#         for point_B, vector_B in desc_imB.items():
-#             dists[point_B] = harris.dist2(vector_A, vector_B)[0][0]
-#         dists = sorted((value, key) for (key, value) in dists.items())
-
-#         if dists[0][0]/dists[1][0] < .3:
-#             results[point_A] = dists[0][1]
-#     return results
-
 
 def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRESHOLD):
     print(f"Matching {len(coords1)} features with {len(coords2)} features.")
@@ -42,11 +30,6 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
         second_match_dist = float("inf")
 
         for j in range(len(coords2)):  # for each corner in image 2
-            # print(best_match_ind, second_match_ind)
-            # print(
-            #     not is_candidate.all(),
-            #     f"{is_candidate.size - np.sum(is_candidate)} are rejected",
-            # )
             if is_candidate[i, j]:  # TODO how to break out of two loops?
                 dist = ssd[i, j]
 
@@ -64,18 +47,6 @@ def match_features(coords1, patches1, coords2, patches2, threshold=MATCHING_THRE
                     matched_indices.append([i, j])
                     is_candidate[i, :] = False
                     is_candidate[:, j] = False
-                    # is_candidate[j, i] = False
-
-    print(
-        len(matched_indices),
-        len(np.unique(np.array(matched_indices)[:, 0])),
-        len(np.unique(np.array(matched_indices)[:, 1])),
-    )  # TODO this number is not less than NUM_KEEP
-    m1 = np.array([i for i, j in matched_indices])
-    m2 = np.array([j for i, j in matched_indices])
-    print(len(m1), len(np.unique(m1)))
-    print(len(m2), len(np.unique(m2)))
-    sys.exit()  # TODO remove this
 
     matched1 = np.array([coords1[i] for i, j in matched_indices])
     matched2 = np.array([coords2[j] for i, j in matched_indices])
