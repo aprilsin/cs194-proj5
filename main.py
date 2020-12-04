@@ -425,11 +425,16 @@ detection: {args.detection}
         elif NUM_IMGS > 2:
             imgs = [utils.read_img(im, resize=True) for im in IMAGES]
             tmp = imgs[0]
-            for i in range(1, NUM_IMGS):
+            for i in range(1, NUM_IMGS - 1):
                 tmp = auto_stitch(tmp, imgs[i])
-                mosaic_name = OUTDIR_2b / f"{time.time():.0f}-{NAME}_blend{i}.jpg"
-                plt.imsave(mosaic_name, tmp)
-                print(f"Mosaic saved as {mosaic_name}")
+                if SAVE:
+                    mosaic_name = OUTDIR_2b / f"{time.time():.0f}-{NAME}_blend{i}.jpg"
+                    plt.imsave(mosaic_name, tmp)
+                    print(f"Mosaic saved as {mosaic_name}")
+            mosaic = auto_stitch(tmp, imgs[-1])
+            mosaic_name = OUTDIR_2b / f"{time.time():.0f}-{NAME}_mosaic.jpg"
+            plt.imsave(mosaic_name, mosaic)
+            print(f"Mosaic saved as {mosaic_name}")
 
         else:
             raise ValueError(f"cannot stitch {NUM_IMGS} images")
